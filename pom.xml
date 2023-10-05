@@ -11,8 +11,13 @@
     <groupId>com.pbl</groupId>
     <artifactId>load-test-web</artifactId>
     <version>0.0.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
     <name>load-test-web</name>
     <description>load-test-web</description>
+    <modules>
+        <module>common</module>
+        <module>web</module>
+    </modules>
     <properties>
         <java.version>11</java.version>
     </properties>
