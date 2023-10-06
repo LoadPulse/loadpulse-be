@@ -26,6 +26,10 @@ public class HttpDataResponse {
 
   private String latency;
 
+  private String headerSize;
+
+  private String bodySize;
+
   private String responseCode;
 
   private String responseMessage;
@@ -76,6 +80,31 @@ public class HttpDataResponse {
 
     public Builder requestMethod(String requestMethod) {
       httpDataResponse.requestMethod = requestMethod;
+      return this;
+    }
+
+    public Builder loadTime(String loadTime) {
+      httpDataResponse.loadTime = loadTime;
+      return this;
+    }
+
+    public Builder connectTime(String connectTime) {
+      httpDataResponse.connectTime = connectTime;
+      return this;
+    }
+
+    public Builder latency(String latency) {
+      httpDataResponse.latency = latency;
+      return this;
+    }
+
+    public Builder headerSize(String headerSize) {
+      httpDataResponse.headerSize = headerSize;
+      return this;
+    }
+
+    public Builder bodySize(String bodySize) {
+      httpDataResponse.bodySize = bodySize;
       return this;
     }
 
