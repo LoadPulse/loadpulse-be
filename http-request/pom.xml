@@ -9,14 +9,14 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <groupId>com.pbl.loadtestweb</groupId>
+    <groupId>com.pbl</groupId>
     <artifactId>http-request</artifactId>
+
     <dependencies>
         <dependency>
-            <groupId>com.pbl.loadtestweb</groupId>
+            <groupId>com.pbl</groupId>
             <artifactId>common</artifactId>
             <version>0.0.1-SNAPSHOT</version>
-            <scope>compile</scope>
         </dependency>
     </dependencies>
 

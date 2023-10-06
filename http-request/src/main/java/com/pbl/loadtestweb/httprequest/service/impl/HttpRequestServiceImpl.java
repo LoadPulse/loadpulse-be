@@ -3,6 +3,7 @@ package com.pbl.loadtestweb.httprequest.service.impl;
 import com.pbl.loadtestweb.common.common.CommonFunction;
 import com.pbl.loadtestweb.common.constant.CommonConstant;
 import com.pbl.loadtestweb.common.exception.InternalServerException;
+import com.pbl.loadtestweb.httprequest.mapper.HttpRequestMapper;
 import com.pbl.loadtestweb.httprequest.payload.response.HttpDataResponse;
 import com.pbl.loadtestweb.httprequest.service.HttpRequestService;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,8 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class HttpRequestServiceImpl implements HttpRequestService {
 
+  private final HttpRequestMapper httpRequestMapper;
+
   @Override
   public HttpDataResponse handleMethodGetLoadTestWeb(String url) {
     Map<String, String> result = this.loadTestThread(url, CommonConstant.HTTP_METHOD_GET);
@@ -28,20 +31,19 @@ public class HttpRequestServiceImpl implements HttpRequestService {
   }
 
   private HttpDataResponse buildHttpDataResponse(Map<String, String> result) {
-    return HttpDataResponse.builder()
-        .startAt(result.get("startAt"))
-        .threadName(result.get("threadName"))
-        .responseCode(result.get("responseCode"))
-        .responseMessage(result.get("responseMessage"))
-        .contentType(result.get("contentType"))
-        .dataEncoding(result.get("dataEncoding"))
-        .requestMethod(result.get("requestMethod"))
-        .loadTime(result.get("loadTime"))
-        .connectTime(result.get("connectTime"))
-        .latency(result.get("latency"))
-        .bodySize(result.get("bodySize"))
-        .headerSize(result.get("headerSize"))
-        .build();
+    return httpRequestMapper.toHttpDataResponse(
+        result.get("threadName"),
+        result.get("startAt"),
+        result.get("responseCode"),
+        result.get("responseMessage"),
+        result.get("contentType"),
+        result.get("dataEncoding"),
+        result.get("requestMethod"),
+        result.get("loadTime"),
+        result.get("connectTime"),
+        result.get("latency"),
+        result.get("headerSize"),
+        result.get("bodySize"));
   }
 
   private long calcBodySize(HttpURLConnection connection) throws IOException {

@@ -15,6 +15,11 @@ public interface HttpRequestMapper {
   @Mapping(source = "contentType", target = "contentType")
   @Mapping(source = "dataEncoding", target = "dataEncoding")
   @Mapping(source = "requestMethod", target = "requestMethod")
+  @Mapping(source = "loadTime", target = "loadTime")
+  @Mapping(source = "connectTime", target = "connectTime")
+  @Mapping(source = "latency", target = "latency")
+  @Mapping(source = "headerSize", target = "headerSize")
+  @Mapping(source = "bodySize", target = "bodySize")
   HttpDataResponse toHttpDataResponse(
       String threadName,
       String startAt,
@@ -22,5 +27,10 @@ public interface HttpRequestMapper {
       String responseMessage,
       String contentType,
       String dataEncoding,
-      String requestMethod);
+      String requestMethod,
+      String loadTime,
+      String connectTime,
+      String latency,
+      String headerSize,
+      String bodySize);
 }
