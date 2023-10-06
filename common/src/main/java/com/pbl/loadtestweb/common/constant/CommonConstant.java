@@ -8,4 +8,14 @@ public final class CommonConstant {
   public static final String SUCCESS = "success";
 
   public static final String ERROR = "error";
+
+  public static final String HTTP = "http://";
+
+  public static final String HTTPS = "https://";
+
+  public static final String HTTP_METHOD_GET = "GET";
+
+  public static final String HTTP_METHOD_POST = "POST";
+
+  public static final String HTTP_METHOD_PUT = "PUT";
 }

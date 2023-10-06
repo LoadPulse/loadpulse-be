@@ -1,5 +1,6 @@
 package com.pbl.loadtestweb.web.endpoint.http;
 
+import com.pbl.loadtestweb.common.constant.CommonConstant;
 import com.pbl.loadtestweb.common.payload.general.ResponseDataAPI;
 import com.pbl.loadtestweb.httprequest.service.HttpRequestService;
 import io.swagger.annotations.Api;
@@ -18,8 +19,16 @@ public class HttpController {
 
   private final HttpRequestService httpRequestService;
 
-  @GetMapping("/get/{url}")
-  public ResponseEntity<ResponseDataAPI> handleMethodGetLoadTestWeb(@PathVariable String url) {
+  @GetMapping("/get/http/{url}")
+  public ResponseEntity<ResponseDataAPI> handleMethodGetHttp(@PathVariable String url) {
+    url = CommonConstant.HTTP + url;
+    return ResponseEntity.ok(
+        ResponseDataAPI.successWithoutMeta(httpRequestService.handleMethodGetLoadTestWeb(url)));
+  }
+
+  @GetMapping("/get/https/{url}")
+  public ResponseEntity<ResponseDataAPI> handleMethodGetHttps(@PathVariable String url) {
+    url = CommonConstant.HTTPS + url;
     return ResponseEntity.ok(
         ResponseDataAPI.successWithoutMeta(httpRequestService.handleMethodGetLoadTestWeb(url)));
   }
