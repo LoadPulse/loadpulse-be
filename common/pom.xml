@@ -9,14 +9,7 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <groupId>com.pbl.loadtestweb</groupId>
+    <groupId>com.pbl</groupId>
     <artifactId>common</artifactId>
 
-    <dependencies>
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-boot-starter</artifactId>
-            <version>3.0.0</version>
-        </dependency>
-    </dependencies>
 </project>
