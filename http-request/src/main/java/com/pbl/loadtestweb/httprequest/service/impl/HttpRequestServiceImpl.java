@@ -7,28 +7,73 @@ import com.pbl.loadtestweb.httprequest.mapper.HttpRequestMapper;
 import com.pbl.loadtestweb.httprequest.payload.response.HttpDataResponse;
 import com.pbl.loadtestweb.httprequest.service.HttpRequestService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.*;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class HttpRequestServiceImpl implements HttpRequestService {
 
   private final HttpRequestMapper httpRequestMapper;
 
+  private final ExecutorService executorService = Executors.newCachedThreadPool();
+
   @Override
-  public HttpDataResponse handleMethodGetLoadTestWeb(String url) {
-    Map<String, String> result = this.loadTestThread(url, CommonConstant.HTTP_METHOD_GET);
-    return buildHttpDataResponse(result);
+  public SseEmitter handleMethodGetLoadTestWeb(String url, int threadCount, int iterations) {
+    SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
+
+    CountDownLatch latch = new CountDownLatch(threadCount);
+
+    for (int i = 0; i < threadCount; i++) {
+      executorService.execute(() -> {
+        try {
+          for (int j = 0; j < iterations; j++) {
+            Map<String, String> result = this.loadTestThread(url, CommonConstant.HTTP_METHOD_GET);
+            HttpDataResponse jsonResponse = this.buildHttpDataResponse(result);
+            sseEmitter.send(jsonResponse, MediaType.APPLICATION_JSON);
+            sleep(1);
+          }
+        } catch (IOException e) {
+          e.printStackTrace();
+          sseEmitter.completeWithError(e);
+        } finally {
+          latch.countDown();
+        }
+      });
+    }
+
+    new Thread(() -> {
+      try {
+        latch.await();
+        sseEmitter.complete();
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+        sseEmitter.completeWithError(e);
+      }
+    }).start();
+
+    return sseEmitter;
   }
+
+  private void sleep(int seconds) {
+    try {
+      Thread.sleep(seconds * 1000);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+  }
+
 
   private HttpDataResponse buildHttpDataResponse(Map<String, String> result) {
     return httpRequestMapper.toHttpDataResponse(
