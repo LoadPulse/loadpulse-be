@@ -2,8 +2,8 @@ package com.pbl.loadtestweb.httprequest.service.impl;
 
 import com.pbl.loadtestweb.common.common.CommonFunction;
 import com.pbl.loadtestweb.common.constant.CommonConstant;
-import com.pbl.loadtestweb.common.exception.InternalServerException;
 import com.pbl.loadtestweb.httprequest.mapper.HttpRequestMapper;
+import com.pbl.loadtestweb.httprequest.payload.request.HttpPostRequest;
 import com.pbl.loadtestweb.httprequest.payload.response.HttpDataResponse;
 import com.pbl.loadtestweb.httprequest.service.HttpRequestService;
 import lombok.RequiredArgsConstructor;
@@ -12,11 +12,10 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -30,65 +29,73 @@ public class HttpRequestServiceImpl implements HttpRequestService {
   private final ExecutorService executorService = Executors.newCachedThreadPool();
 
   @Override
-  public SseEmitter handleMethodGetLoadTestWeb(String url, int threadCount, int iterations) {
+  public SseEmitter handleLoadTestWeb(
+      String url, int threadCount, int iterations, String method, HttpPostRequest httpPostRequest) {
     SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
 
     CountDownLatch latch = new CountDownLatch(threadCount);
 
     for (int i = 0; i < threadCount; i++) {
-      executorService.execute(() -> {
-        try {
-          for (int j = 0; j < iterations; j++) {
-            Map<String, String> result = this.loadTestThread(url, CommonConstant.HTTP_METHOD_GET);
-            HttpDataResponse jsonResponse = this.buildHttpDataResponse(result);
-            sseEmitter.send(jsonResponse, MediaType.APPLICATION_JSON);
-            sleep(1);
-          }
-        } catch (IOException e) {
-          e.printStackTrace();
-          sseEmitter.completeWithError(e);
-        } finally {
-          latch.countDown();
-        }
-      });
+      executorService.execute(
+          () -> {
+            try {
+              for (int j = 0; j < iterations; j++) {
+                Map<String, String> result;
+                if (httpPostRequest == null) {
+                  result = this.loadTestThread(url, method);
+                } else {
+                  result = this.loadTestThreadWithHttpPostRequest(url, method, httpPostRequest);
+                }
+                HttpDataResponse jsonResponse = this.buildHttpDataResponse(result);
+                sseEmitter.send(jsonResponse, MediaType.APPLICATION_JSON);
+                sleep();
+              }
+            } catch (IOException e) {
+              e.printStackTrace();
+              sseEmitter.completeWithError(e);
+            } finally {
+              latch.countDown();
+            }
+          });
     }
 
-    new Thread(() -> {
-      try {
-        latch.await();
-        sseEmitter.complete();
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-        sseEmitter.completeWithError(e);
-      }
-    }).start();
+    new Thread(
+            () -> {
+              try {
+                latch.await();
+                sseEmitter.complete();
+              } catch (InterruptedException e) {
+                e.printStackTrace();
+                sseEmitter.completeWithError(e);
+              }
+            })
+        .start();
 
     return sseEmitter;
   }
 
-  private void sleep(int seconds) {
+  private void sleep() {
     try {
-      Thread.sleep(seconds * 1000);
+      Thread.sleep(1000);
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
   }
 
-
   private HttpDataResponse buildHttpDataResponse(Map<String, String> result) {
     return httpRequestMapper.toHttpDataResponse(
-        result.get("threadName"),
-        result.get("startAt"),
-        result.get("responseCode"),
-        result.get("responseMessage"),
-        result.get("contentType"),
-        result.get("dataEncoding"),
-        result.get("requestMethod"),
-        result.get("loadTime"),
-        result.get("connectTime"),
-        result.get("latency"),
-        result.get("headerSize"),
-        result.get("bodySize"));
+        result.get(CommonConstant.THREAD_NAME),
+        result.get(CommonConstant.START_AT),
+        result.get(CommonConstant.RESPONSE_CODE),
+        result.get(CommonConstant.RESPONSE_MESSAGE),
+        result.get(CommonConstant.CONTENT_TYPE),
+        result.get(CommonConstant.DATA_ENCODING),
+        result.get(CommonConstant.REQUEST_METHOD),
+        result.get(CommonConstant.LOAD_TIME),
+        result.get(CommonConstant.CONNECT_TIME),
+        result.get(CommonConstant.LATENCY),
+        result.get(CommonConstant.HEADER_SIZE),
+        result.get(CommonConstant.BODY_SIZE));
   }
 
   private long calcBodySize(HttpURLConnection connection) throws IOException {
@@ -120,8 +127,9 @@ public class HttpRequestServiceImpl implements HttpRequestService {
   }
 
   public Map<String, String> loadTestThread(String url, String method) {
+    Map<String, String> result = new HashMap<>();
+
     try {
-      Map<String, String> result = new HashMap<>();
       URL obj = new URL(url);
 
       long startTime = System.currentTimeMillis();
@@ -135,25 +143,94 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       long connectTime = connection.getHeaderFieldLong("Date", 0) - startTime;
       long loadTime = endTime - connection.getHeaderFieldLong("Date", 0);
 
-      result.put("loadTime", String.valueOf(loadTime));
-      result.put("connectTime", String.valueOf(connectTime));
-      result.put("latency", String.valueOf(latency));
-      result.put("headerSize", String.valueOf(this.calcHeaderSize(connection)));
-      result.put("bodySize", String.valueOf(this.calcBodySize(connection)));
+      result.put(CommonConstant.LOAD_TIME, String.valueOf(loadTime));
+      result.put(CommonConstant.CONNECT_TIME, String.valueOf(connectTime));
+      result.put(CommonConstant.LATENCY, String.valueOf(latency));
+      result.put(CommonConstant.HEADER_SIZE, String.valueOf(this.calcHeaderSize(connection)));
+      result.put(CommonConstant.BODY_SIZE, String.valueOf(this.calcBodySize(connection)));
       result.put("Sample Count", "1");
       result.put("Error Count", "0");
       result.put("Data type", "text");
-      result.put("startAt", CommonFunction.formatDateToString(CommonFunction.getCurrentDateTime()));
-      result.put("threadName", Thread.currentThread().getName());
-      result.put("responseCode", Integer.toString(connection.getResponseCode()));
-      result.put("responseMessage", connection.getResponseMessage());
-      result.put("contentType", connection.getContentType());
-      result.put("dataEncoding", connection.getContentEncoding());
-      result.put("requestMethod", connection.getRequestMethod());
+      result.put(
+          CommonConstant.START_AT,
+          CommonFunction.formatDateToString(CommonFunction.getCurrentDateTime()));
+      result.put(CommonConstant.THREAD_NAME, Thread.currentThread().getName());
+      result.put(CommonConstant.RESPONSE_CODE, Integer.toString(connection.getResponseCode()));
+      result.put(CommonConstant.RESPONSE_MESSAGE, connection.getResponseMessage());
+      result.put(CommonConstant.CONTENT_TYPE, connection.getContentType());
+      result.put(CommonConstant.DATA_ENCODING, connection.getContentEncoding());
+      result.put(CommonConstant.REQUEST_METHOD, connection.getRequestMethod());
 
-      return result;
-    } catch (Exception e) {
-      throw new InternalServerException(e.getMessage());
+    } catch (Exception ignored) {
+      log.error(ignored.getMessage());
     }
+    return result;
+  }
+
+  private String handleParamsToRequestBody(HttpPostRequest httpPostRequest) {
+    Map<String, String> params = new HashMap<>();
+    for (int i = 0; i < httpPostRequest.getKey().size(); i++) {
+      params.put(httpPostRequest.getKey().get(i), httpPostRequest.getValue().get(i));
+    }
+    StringBuilder requestBody = new StringBuilder();
+    for (Map.Entry<String, String> entry : params.entrySet()) {
+      if (requestBody.length() > 0) {
+        requestBody.append("&");
+      }
+      requestBody.append(entry.getKey()).append("=").append(entry.getValue());
+    }
+    return requestBody.toString();
+  }
+
+  public Map<String, String> loadTestThreadWithHttpPostRequest(
+      String url, String method, HttpPostRequest httpPostRequest) {
+    Map<String, String> result = new HashMap<>();
+
+    try {
+      URL obj = new URL(url);
+
+      long startTime = System.currentTimeMillis();
+
+      HttpURLConnection connection = (HttpURLConnection) obj.openConnection();
+      connection.setRequestMethod(method);
+
+      connection.setDoInput(true);
+      connection.setDoOutput(true);
+
+      String requestBody = this.handleParamsToRequestBody(httpPostRequest);
+
+      try (OutputStream os = connection.getOutputStream();
+          OutputStreamWriter writer = new OutputStreamWriter(os, StandardCharsets.UTF_8)) {
+        writer.write(requestBody);
+      }
+
+      long endTime = System.currentTimeMillis();
+
+      long latency = endTime - startTime;
+      long connectTime = connection.getHeaderFieldLong("Date", 0) - startTime;
+      long loadTime = endTime - connection.getHeaderFieldLong("Date", 0);
+
+      result.put(CommonConstant.LOAD_TIME, String.valueOf(loadTime));
+      result.put(CommonConstant.CONNECT_TIME, String.valueOf(connectTime));
+      result.put(CommonConstant.LATENCY, String.valueOf(latency));
+      result.put(CommonConstant.HEADER_SIZE, String.valueOf(this.calcHeaderSize(connection)));
+      result.put(CommonConstant.BODY_SIZE, String.valueOf(this.calcBodySize(connection)));
+      result.put("Sample Count", "1");
+      result.put("Error Count", "0");
+      result.put("Data type", "text");
+      result.put(
+          CommonConstant.START_AT,
+          CommonFunction.formatDateToString(CommonFunction.getCurrentDateTime()));
+      result.put(CommonConstant.THREAD_NAME, Thread.currentThread().getName());
+      result.put(CommonConstant.RESPONSE_CODE, Integer.toString(connection.getResponseCode()));
+      result.put(CommonConstant.RESPONSE_MESSAGE, connection.getResponseMessage());
+      result.put(CommonConstant.CONTENT_TYPE, connection.getContentType());
+      result.put(CommonConstant.DATA_ENCODING, connection.getContentEncoding());
+      result.put(CommonConstant.REQUEST_METHOD, connection.getRequestMethod());
+
+    } catch (Exception ignored) {
+      log.error(ignored.getMessage());
+    }
+    return result;
   }
 }
