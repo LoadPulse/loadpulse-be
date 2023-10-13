@@ -132,10 +132,12 @@ public class HttpRequestServiceImpl implements HttpRequestService {
     try {
       URL obj = new URL(url);
 
+
       long startTime = System.currentTimeMillis();
 
       HttpURLConnection connection = (HttpURLConnection) obj.openConnection();
       connection.setRequestMethod(method);
+
 
       long endTime = System.currentTimeMillis();
 
