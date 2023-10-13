@@ -18,6 +18,8 @@ public class HttpDataResponse {
 
   private String threadName;
 
+  private String iterations;
+
   private String startAt;
 
   private String loadTime;
@@ -39,77 +41,4 @@ public class HttpDataResponse {
   private String dataEncoding;
 
   private String requestMethod;
-
-  public static Builder builder() {
-    return new Builder();
-  }
-
-  // Builder class
-  public static class Builder {
-    private final HttpDataResponse httpDataResponse = new HttpDataResponse();
-
-    public Builder threadName(String threadName) {
-      httpDataResponse.threadName = threadName;
-      return this;
-    }
-
-    public Builder startAt(String startAt) {
-      httpDataResponse.startAt = startAt;
-      return this;
-    }
-
-    public Builder responseCode(String responseCode) {
-      httpDataResponse.responseCode = responseCode;
-      return this;
-    }
-
-    public Builder responseMessage(String responseMessage) {
-      httpDataResponse.responseMessage = responseMessage;
-      return this;
-    }
-
-    public Builder contentType(String contentType) {
-      httpDataResponse.contentType = contentType;
-      return this;
-    }
-
-    public Builder dataEncoding(String dataEncoding) {
-      httpDataResponse.dataEncoding = dataEncoding;
-      return this;
-    }
-
-    public Builder requestMethod(String requestMethod) {
-      httpDataResponse.requestMethod = requestMethod;
-      return this;
-    }
-
-    public Builder loadTime(String loadTime) {
-      httpDataResponse.loadTime = loadTime;
-      return this;
-    }
-
-    public Builder connectTime(String connectTime) {
-      httpDataResponse.connectTime = connectTime;
-      return this;
-    }
-
-    public Builder latency(String latency) {
-      httpDataResponse.latency = latency;
-      return this;
-    }
-
-    public Builder headerSize(String headerSize) {
-      httpDataResponse.headerSize = headerSize;
-      return this;
-    }
-
-    public Builder bodySize(String bodySize) {
-      httpDataResponse.bodySize = bodySize;
-      return this;
-    }
-
-    public HttpDataResponse build() {
-      return httpDataResponse;
-    }
-  }
 }

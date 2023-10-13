@@ -9,6 +9,7 @@ import org.mapstruct.Mapping;
 public interface HttpRequestMapper {
 
   @Mapping(source = "threadName", target = "threadName")
+  @Mapping(source = "iterations", target = "iterations")
   @Mapping(source = "startAt", target = "startAt")
   @Mapping(source = "responseCode", target = "responseCode")
   @Mapping(source = "responseMessage", target = "responseMessage")
@@ -22,6 +23,7 @@ public interface HttpRequestMapper {
   @Mapping(source = "bodySize", target = "bodySize")
   HttpDataResponse toHttpDataResponse(
       String threadName,
+      String iterations,
       String startAt,
       String responseCode,
       String responseMessage,

@@ -1,7 +1,9 @@
 package com.pbl.loadtestweb.httprequest.service;
 
-import com.pbl.loadtestweb.httprequest.payload.response.HttpDataResponse;
+import com.pbl.loadtestweb.httprequest.payload.request.HttpPostRequest;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 public interface HttpRequestService {
-  HttpDataResponse handleMethodGetLoadTestWeb(String url);
+  SseEmitter handleLoadTestWeb(
+      String url, int threadCount, int iterations, String method, HttpPostRequest httpPostRequest);
 }
