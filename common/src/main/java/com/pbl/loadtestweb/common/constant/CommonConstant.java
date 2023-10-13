@@ -34,6 +34,8 @@ public final class CommonConstant {
 
   public static final String THREAD_NAME = "threadName";
 
+  public static final String ITERATIONS = "iterations";
+
   public static final String RESPONSE_CODE = "responseCode";
 
   public static final String RESPONSE_MESSAGE = "responseMessage";

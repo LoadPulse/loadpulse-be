@@ -42,9 +42,9 @@ public class HttpRequestServiceImpl implements HttpRequestService {
               for (int j = 0; j < iterations; j++) {
                 Map<String, String> result;
                 if (httpPostRequest == null) {
-                  result = this.loadTestThread(url, method);
+                  result = this.loadTestThread(url, method, j);
                 } else {
-                  result = this.loadTestThreadWithHttpPostRequest(url, method, httpPostRequest);
+                  result = this.loadTestThreadWithHttpPostRequest(url, method, httpPostRequest, j);
                 }
                 HttpDataResponse jsonResponse = this.buildHttpDataResponse(result);
                 sseEmitter.send(jsonResponse, MediaType.APPLICATION_JSON);
@@ -85,6 +85,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
   private HttpDataResponse buildHttpDataResponse(Map<String, String> result) {
     return httpRequestMapper.toHttpDataResponse(
         result.get(CommonConstant.THREAD_NAME),
+        result.get(CommonConstant.ITERATIONS),
         result.get(CommonConstant.START_AT),
         result.get(CommonConstant.RESPONSE_CODE),
         result.get(CommonConstant.RESPONSE_MESSAGE),
@@ -126,42 +127,41 @@ public class HttpRequestServiceImpl implements HttpRequestService {
     return headersSize;
   }
 
-  public Map<String, String> loadTestThread(String url, String method) {
+  public Map<String, String> loadTestThread(String url, String method, int iterations) {
     Map<String, String> result = new HashMap<>();
 
     try {
       URL obj = new URL(url);
-
-
-      long startTime = System.currentTimeMillis();
-
       HttpURLConnection connection = (HttpURLConnection) obj.openConnection();
       connection.setRequestMethod(method);
+      long startTime = System.currentTimeMillis();
+      connection.connect();
 
 
       long endTime = System.currentTimeMillis();
 
       long latency = endTime - startTime;
-      long connectTime = connection.getHeaderFieldLong("Date", 0) - startTime;
-      long loadTime = endTime - connection.getHeaderFieldLong("Date", 0);
+      long connectTime = connection.getDate() - startTime;
+      long loadTime = endTime - connection.getDate();
 
       result.put(CommonConstant.LOAD_TIME, String.valueOf(loadTime));
       result.put(CommonConstant.CONNECT_TIME, String.valueOf(connectTime));
       result.put(CommonConstant.LATENCY, String.valueOf(latency));
       result.put(CommonConstant.HEADER_SIZE, String.valueOf(this.calcHeaderSize(connection)));
       result.put(CommonConstant.BODY_SIZE, String.valueOf(this.calcBodySize(connection)));
-      result.put("Sample Count", "1");
       result.put("Error Count", "0");
-      result.put("Data type", "text");
       result.put(
           CommonConstant.START_AT,
           CommonFunction.formatDateToString(CommonFunction.getCurrentDateTime()));
       result.put(CommonConstant.THREAD_NAME, Thread.currentThread().getName());
+      result.put(CommonConstant.ITERATIONS, Integer.toString(iterations));
       result.put(CommonConstant.RESPONSE_CODE, Integer.toString(connection.getResponseCode()));
       result.put(CommonConstant.RESPONSE_MESSAGE, connection.getResponseMessage());
       result.put(CommonConstant.CONTENT_TYPE, connection.getContentType());
       result.put(CommonConstant.DATA_ENCODING, connection.getContentEncoding());
       result.put(CommonConstant.REQUEST_METHOD, connection.getRequestMethod());
+
+      connection.disconnect();
 
     } catch (Exception ignored) {
       log.error(ignored.getMessage());
@@ -185,7 +185,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
   }
 
   public Map<String, String> loadTestThreadWithHttpPostRequest(
-      String url, String method, HttpPostRequest httpPostRequest) {
+      String url, String method, HttpPostRequest httpPostRequest, int iterations) {
     Map<String, String> result = new HashMap<>();
 
     try {
@@ -195,6 +195,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
 
       HttpURLConnection connection = (HttpURLConnection) obj.openConnection();
       connection.setRequestMethod(method);
+      connection.connect();
 
       connection.setDoInput(true);
       connection.setDoOutput(true);
@@ -209,21 +210,20 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       long endTime = System.currentTimeMillis();
 
       long latency = endTime - startTime;
-      long connectTime = connection.getHeaderFieldLong("Date", 0) - startTime;
-      long loadTime = endTime - connection.getHeaderFieldLong("Date", 0);
+      long connectTime = connection.getDate() - startTime;
+      long loadTime = endTime - connection.getDate();
 
       result.put(CommonConstant.LOAD_TIME, String.valueOf(loadTime));
       result.put(CommonConstant.CONNECT_TIME, String.valueOf(connectTime));
       result.put(CommonConstant.LATENCY, String.valueOf(latency));
       result.put(CommonConstant.HEADER_SIZE, String.valueOf(this.calcHeaderSize(connection)));
       result.put(CommonConstant.BODY_SIZE, String.valueOf(this.calcBodySize(connection)));
-      result.put("Sample Count", "1");
       result.put("Error Count", "0");
-      result.put("Data type", "text");
       result.put(
           CommonConstant.START_AT,
           CommonFunction.formatDateToString(CommonFunction.getCurrentDateTime()));
       result.put(CommonConstant.THREAD_NAME, Thread.currentThread().getName());
+      result.put(CommonConstant.ITERATIONS, Integer.toString(iterations));
       result.put(CommonConstant.RESPONSE_CODE, Integer.toString(connection.getResponseCode()));
       result.put(CommonConstant.RESPONSE_MESSAGE, connection.getResponseMessage());
       result.put(CommonConstant.CONTENT_TYPE, connection.getContentType());
