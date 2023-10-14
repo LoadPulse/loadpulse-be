@@ -135,14 +135,26 @@ public class HttpRequestServiceImpl implements HttpRequestService {
 
       HttpURLConnection connection = (HttpURLConnection) obj.openConnection();
       connection.setRequestMethod(method);
-      long startTime = System.currentTimeMillis();
+
+      long connectStartTime = System.currentTimeMillis();
+
       connection.connect();
 
-      long endTime = System.currentTimeMillis();
+      long connectEndTime = System.currentTimeMillis();
 
-      long latency = endTime - startTime;
-      long connectTime = connection.getDate() - startTime;
-      long loadTime = endTime - connection.getDate();
+      long loadStartTime = System.currentTimeMillis();
+
+      InputStream inputStream = connection.getInputStream();
+      long responseTime = 0;
+      if (inputStream != null) {
+        responseTime = System.currentTimeMillis();
+      }
+
+      long loadEndTime = System.currentTimeMillis();
+
+      long latency = responseTime - connectStartTime;
+      long connectTime = connectEndTime - connectStartTime;
+      long loadTime = loadEndTime - loadStartTime;
 
       result.put(CommonConstant.LOAD_TIME, String.valueOf(loadTime));
       result.put(CommonConstant.CONNECT_TIME, String.valueOf(connectTime));
@@ -195,7 +207,22 @@ public class HttpRequestServiceImpl implements HttpRequestService {
 
       HttpURLConnection connection = (HttpURLConnection) obj.openConnection();
       connection.setRequestMethod(method);
+
+      long connectStartTime = System.currentTimeMillis();
+
       connection.connect();
+
+      long connectEndTime = System.currentTimeMillis();
+
+      long loadStartTime = System.currentTimeMillis();
+
+      InputStream inputStream = connection.getInputStream();
+      long responseTime = 0;
+      if (inputStream != null) {
+        responseTime = System.currentTimeMillis();
+      }
+
+      long loadEndTime = System.currentTimeMillis();
 
       connection.setDoInput(true);
       connection.setDoOutput(true);
@@ -207,11 +234,9 @@ public class HttpRequestServiceImpl implements HttpRequestService {
         writer.write(requestBody);
       }
 
-      long endTime = System.currentTimeMillis();
-
-      long latency = endTime - startTime;
-      long connectTime = connection.getDate() - startTime;
-      long loadTime = endTime - connection.getDate();
+      long latency = responseTime - connectStartTime;
+      long connectTime = connectEndTime - connectStartTime;
+      long loadTime = loadEndTime - loadStartTime;
 
       result.put(CommonConstant.LOAD_TIME, String.valueOf(loadTime));
       result.put(CommonConstant.CONNECT_TIME, String.valueOf(connectTime));
