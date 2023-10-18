@@ -8,6 +8,7 @@ import com.pbl.loadtestweb.httprequest.payload.response.HttpDataResponse;
 import com.pbl.loadtestweb.httprequest.service.HttpRequestService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -35,11 +36,11 @@ public class HttpRequestServiceImpl implements HttpRequestService {
 
     CountDownLatch latch = new CountDownLatch(threadCount);
 
-    for (int i = 0; i < threadCount; i++) {
+    for (int i = 1; i <= threadCount; i++) {
       executorService.execute(
           () -> {
             try {
-              for (int j = 0; j < iterations; j++) {
+              for (int j = 1; j <= iterations; j++) {
                 Map<String, String> result;
                 if (httpPostRequest == null) {
                   result = this.loadTestThread(url, method, j);
@@ -66,6 +67,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
                 sseEmitter.complete();
               } catch (InterruptedException e) {
                 e.printStackTrace();
+                Thread.currentThread().interrupt();
                 sseEmitter.completeWithError(e);
               }
             })
@@ -79,6 +81,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       Thread.sleep(1000);
     } catch (InterruptedException e) {
       e.printStackTrace();
+      Thread.currentThread().interrupt();
     }
   }
 
@@ -161,7 +164,6 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       result.put(CommonConstant.LATENCY, String.valueOf(latency));
       result.put(CommonConstant.HEADER_SIZE, String.valueOf(this.calcHeaderSize(connection)));
       result.put(CommonConstant.BODY_SIZE, String.valueOf(this.calcBodySize(connection)));
-      result.put("Error Count", "0");
       result.put(
           CommonConstant.START_AT,
           CommonFunction.formatDateToString(CommonFunction.getCurrentDateTime()));
@@ -173,9 +175,10 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       result.put(CommonConstant.DATA_ENCODING, connection.getContentEncoding());
       result.put(CommonConstant.REQUEST_METHOD, connection.getRequestMethod());
 
-      connection.disconnect();
-
     } catch (Exception ignored) {
+      result.put(CommonConstant.THREAD_NAME, Thread.currentThread().getName());
+      result.put(CommonConstant.ITERATIONS, Integer.toString(iterations));
+      result.put(CommonConstant.RESPONSE_MESSAGE, ignored.getMessage());
       log.error(ignored.getMessage());
     }
     return result;
@@ -202,8 +205,6 @@ public class HttpRequestServiceImpl implements HttpRequestService {
 
     try {
       URL obj = new URL(url);
-
-      long startTime = System.currentTimeMillis();
 
       HttpURLConnection connection = (HttpURLConnection) obj.openConnection();
       connection.setRequestMethod(method);
@@ -243,7 +244,6 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       result.put(CommonConstant.LATENCY, String.valueOf(latency));
       result.put(CommonConstant.HEADER_SIZE, String.valueOf(this.calcHeaderSize(connection)));
       result.put(CommonConstant.BODY_SIZE, String.valueOf(this.calcBodySize(connection)));
-      result.put("Error Count", "0");
       result.put(
           CommonConstant.START_AT,
           CommonFunction.formatDateToString(CommonFunction.getCurrentDateTime()));
