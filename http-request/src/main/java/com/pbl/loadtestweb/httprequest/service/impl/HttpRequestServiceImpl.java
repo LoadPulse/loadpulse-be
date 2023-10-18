@@ -211,6 +211,9 @@ public class HttpRequestServiceImpl implements HttpRequestService {
 
       long connectStartTime = System.currentTimeMillis();
 
+      connection.setDoInput(true);
+      connection.setDoOutput(true);
+
       connection.connect();
 
       long connectEndTime = System.currentTimeMillis();
@@ -224,9 +227,6 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       }
 
       long loadEndTime = System.currentTimeMillis();
-
-      connection.setDoInput(true);
-      connection.setDoOutput(true);
 
       String requestBody = this.handleParamsToRequestBody(httpPostRequest);
 
@@ -256,6 +256,9 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       result.put(CommonConstant.REQUEST_METHOD, connection.getRequestMethod());
 
     } catch (Exception ignored) {
+      result.put(CommonConstant.THREAD_NAME, Thread.currentThread().getName());
+      result.put(CommonConstant.ITERATIONS, Integer.toString(iterations));
+      result.put(CommonConstant.RESPONSE_MESSAGE, ignored.getMessage());
       log.error(ignored.getMessage());
     }
     return result;

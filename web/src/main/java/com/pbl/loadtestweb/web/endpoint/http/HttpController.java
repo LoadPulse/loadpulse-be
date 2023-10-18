@@ -5,7 +5,6 @@ import com.pbl.loadtestweb.httprequest.payload.request.HttpPostRequest;
 import com.pbl.loadtestweb.httprequest.service.HttpRequestService;
 import io.swagger.annotations.Api;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -18,7 +17,7 @@ public class HttpController {
 
   private final HttpRequestService httpRequestService;
 
-  @GetMapping(value = "/get/http/{url}", produces = MediaType.APPLICATION_STREAM_JSON_VALUE)
+  @GetMapping(value = "/get/http/{url}")
   public ResponseEntity<SseEmitter> handleMethodGetHttp(
       @PathVariable String url,
       @RequestParam(name = "threads", defaultValue = "1") int threadCount,
