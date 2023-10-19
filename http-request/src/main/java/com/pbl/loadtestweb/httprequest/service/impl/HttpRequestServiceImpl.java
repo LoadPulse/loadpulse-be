@@ -8,6 +8,7 @@ import com.pbl.loadtestweb.httprequest.payload.response.HttpDataResponse;
 import com.pbl.loadtestweb.httprequest.service.HttpRequestService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -35,11 +36,11 @@ public class HttpRequestServiceImpl implements HttpRequestService {
 
     CountDownLatch latch = new CountDownLatch(threadCount);
 
-    for (int i = 0; i < threadCount; i++) {
+    for (int i = 1; i <= threadCount; i++) {
       executorService.execute(
           () -> {
             try {
-              for (int j = 0; j < iterations; j++) {
+              for (int j = 1; j <= iterations; j++) {
                 Map<String, String> result;
                 if (httpPostRequest == null) {
                   result = this.loadTestThread(url, method, j);
@@ -66,6 +67,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
                 sseEmitter.complete();
               } catch (InterruptedException e) {
                 e.printStackTrace();
+                Thread.currentThread().interrupt();
                 sseEmitter.completeWithError(e);
               }
             })
@@ -79,6 +81,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       Thread.sleep(1000);
     } catch (InterruptedException e) {
       e.printStackTrace();
+      Thread.currentThread().interrupt();
     }
   }
 
@@ -134,22 +137,34 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       URL obj = new URL(url);
       HttpURLConnection connection = (HttpURLConnection) obj.openConnection();
       connection.setRequestMethod(method);
-      long startTime = System.currentTimeMillis();
+
+      long connectStartTime = System.currentTimeMillis();
+
       connection.connect();
 
 
-      long endTime = System.currentTimeMillis();
+      long connectEndTime = System.currentTimeMillis();
 
-      long latency = endTime - startTime;
-      long connectTime = connection.getDate() - startTime;
-      long loadTime = endTime - connection.getDate();
+
+      long loadStartTime = System.currentTimeMillis();
+
+      InputStream inputStream = connection.getInputStream();
+      long responseTime = 0;
+      if (inputStream != null) {
+        responseTime = System.currentTimeMillis();
+      }
+
+      long loadEndTime = System.currentTimeMillis();
+
+      long latency = responseTime - connectStartTime;
+      long connectTime = connectEndTime - connectStartTime;
+      long loadTime = loadEndTime - loadStartTime;
 
       result.put(CommonConstant.LOAD_TIME, String.valueOf(loadTime));
       result.put(CommonConstant.CONNECT_TIME, String.valueOf(connectTime));
       result.put(CommonConstant.LATENCY, String.valueOf(latency));
       result.put(CommonConstant.HEADER_SIZE, String.valueOf(this.calcHeaderSize(connection)));
       result.put(CommonConstant.BODY_SIZE, String.valueOf(this.calcBodySize(connection)));
-      result.put("Error Count", "0");
       result.put(
           CommonConstant.START_AT,
           CommonFunction.formatDateToString(CommonFunction.getCurrentDateTime()));
@@ -161,9 +176,10 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       result.put(CommonConstant.DATA_ENCODING, connection.getContentEncoding());
       result.put(CommonConstant.REQUEST_METHOD, connection.getRequestMethod());
 
-      connection.disconnect();
-
     } catch (Exception ignored) {
+      result.put(CommonConstant.THREAD_NAME, Thread.currentThread().getName());
+      result.put(CommonConstant.ITERATIONS, Integer.toString(iterations));
+      result.put(CommonConstant.RESPONSE_MESSAGE, ignored.getMessage());
       log.error(ignored.getMessage());
     }
     return result;
@@ -191,14 +207,27 @@ public class HttpRequestServiceImpl implements HttpRequestService {
     try {
       URL obj = new URL(url);
 
-      long startTime = System.currentTimeMillis();
-
       HttpURLConnection connection = (HttpURLConnection) obj.openConnection();
       connection.setRequestMethod(method);
-      connection.connect();
+
+      long connectStartTime = System.currentTimeMillis();
 
       connection.setDoInput(true);
       connection.setDoOutput(true);
+
+      connection.connect();
+
+      long connectEndTime = System.currentTimeMillis();
+
+      long loadStartTime = System.currentTimeMillis();
+
+      InputStream inputStream = connection.getInputStream();
+      long responseTime = 0;
+      if (inputStream != null) {
+        responseTime = System.currentTimeMillis();
+      }
+
+      long loadEndTime = System.currentTimeMillis();
 
       String requestBody = this.handleParamsToRequestBody(httpPostRequest);
 
@@ -207,18 +236,15 @@ public class HttpRequestServiceImpl implements HttpRequestService {
         writer.write(requestBody);
       }
 
-      long endTime = System.currentTimeMillis();
-
-      long latency = endTime - startTime;
-      long connectTime = connection.getDate() - startTime;
-      long loadTime = endTime - connection.getDate();
+      long latency = responseTime - connectStartTime;
+      long connectTime = connectEndTime - connectStartTime;
+      long loadTime = loadEndTime - loadStartTime;
 
       result.put(CommonConstant.LOAD_TIME, String.valueOf(loadTime));
       result.put(CommonConstant.CONNECT_TIME, String.valueOf(connectTime));
       result.put(CommonConstant.LATENCY, String.valueOf(latency));
       result.put(CommonConstant.HEADER_SIZE, String.valueOf(this.calcHeaderSize(connection)));
       result.put(CommonConstant.BODY_SIZE, String.valueOf(this.calcBodySize(connection)));
-      result.put("Error Count", "0");
       result.put(
           CommonConstant.START_AT,
           CommonFunction.formatDateToString(CommonFunction.getCurrentDateTime()));
@@ -231,6 +257,9 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       result.put(CommonConstant.REQUEST_METHOD, connection.getRequestMethod());
 
     } catch (Exception ignored) {
+      result.put(CommonConstant.THREAD_NAME, Thread.currentThread().getName());
+      result.put(CommonConstant.ITERATIONS, Integer.toString(iterations));
+      result.put(CommonConstant.RESPONSE_MESSAGE, ignored.getMessage());
       log.error(ignored.getMessage());
     }
     return result;
