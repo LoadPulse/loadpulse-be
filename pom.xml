@@ -19,8 +19,6 @@
         <module>common</module>
         <module>web</module>
         <module>http-request</module>
-
-        <module>proxy</module>
         <module>jdbc-request</module>
 
     </modules>
