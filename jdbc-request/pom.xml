@@ -9,15 +9,13 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <groupId>com.pbl</groupId>
-    <artifactId>proxy</artifactId>
+    <groupId>org.example</groupId>
+    <artifactId>jdbc-request</artifactId>
 
-    <dependencies>
-        <dependency>
-            <groupId>com.pbl</groupId>
-            <artifactId>http-request</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-        </dependency>
-    </dependencies>
+    <properties>
+        <maven.compiler.source>19</maven.compiler.source>
+        <maven.compiler.target>19</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
 
 </project>

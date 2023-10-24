@@ -21,6 +21,7 @@
         <module>http-request</module>
 
         <module>proxy</module>
+        <module>jdbc-request</module>
 
     </modules>
 
