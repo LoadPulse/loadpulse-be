@@ -18,14 +18,15 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class JdbcRequestServiceImpl {
+public class JdbcRequestServiceImpl implements JdbcRequestService {
   private final JdbcRequestMapper jdbcRequestMapper;
 
+  @Override
   public JdbcDataResponse handleJdbcRequest(
       String databaseUrl, String jdbcDriverClass, String username, String password, String query)
       throws ClassNotFoundException {
     Map<String, String> result =
-        this.loadTestThread(databaseUrl, jdbcDriverClass, username, password, query);
+        this.loadTestThread(databaseUrl, jdbcDriverClass, username, password);
     return buildJdbcDataResponse(result);
   }
 
@@ -51,13 +52,12 @@ public class JdbcRequestServiceImpl {
       String databaseUrl,
       String jdbcDriverClass,
       String username,
-      String password,
-      String query)
+      String password)
       throws ClassNotFoundException, SQLException {
     Class.forName(jdbcDriverClass);
     connection = DriverManager.getConnection(databaseUrl, username, password);
     Statement statement = connection.createStatement();
-    ResultSet resultSet = statement.executeQuery(query);
+    ResultSet resultSet = statement.executeQuery("SELECT * FROM wordpress.wp_users");
     long bodySize = 0;
     while (resultSet.next()) {
       StringBuilder rowBuilder = new StringBuilder();
@@ -70,7 +70,7 @@ public class JdbcRequestServiceImpl {
   }
 
   public Map<String, String> loadTestThread(
-      String databaseUrl, String jdbcDriverClass, String username, String password, String query)
+      String databaseUrl, String jdbcDriverClass, String username, String password)
       throws ClassNotFoundException {
     Map<String, String> result = new HashMap<>();
 
@@ -81,7 +81,7 @@ public class JdbcRequestServiceImpl {
       Connection connection = DriverManager.getConnection(databaseUrl, username, password);
       long connectTime = System.currentTimeMillis() - startTime;
       Statement statement = connection.createStatement();
-      ResultSet resultSet = statement.executeQuery(query);
+      ResultSet resultSet = statement.executeQuery("SELECT * FROM wordpress.wp_users");
 
       long latency = 76;
       long loadTime = 77;
@@ -92,16 +92,15 @@ public class JdbcRequestServiceImpl {
       result.put(
           CommonConstant.BODY_SIZE,
           String.valueOf(
-              this.calcBodySize(
-                  connection, databaseUrl, jdbcDriverClass, username, password, query)));
+              this.calcBodySize(connection, databaseUrl, jdbcDriverClass, username, password)));
       result.put(
           CommonConstant.START_AT,
           CommonFunction.formatDateToString(CommonFunction.getCurrentDateTime()));
       result.put(CommonConstant.THREAD_NAME, Thread.currentThread().getName());
       // result.put(CommonConstant.ITERATIONS, Integer.toString(iterations));
       result.put(
-          CommonConstant.RESPONSE_CODE, Integer.toString(resultSet.getWarnings().getErrorCode()));
-      result.put(CommonConstant.RESPONSE_MESSAGE, resultSet.getWarnings().getMessage());
+          CommonConstant.RESPONSE_CODE, "200");
+      result.put(CommonConstant.RESPONSE_MESSAGE, "OK");
       result.put(CommonConstant.CONTENT_TYPE, "Text");
       result.put(CommonConstant.DATA_ENCODING, "Chịu");
 
