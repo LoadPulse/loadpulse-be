@@ -115,11 +115,11 @@ public class HttpController {
 
   @PostMapping("/put/https/{url}")
   public ResponseEntity<SseEmitter> handleMethodPutHttps(
-          @PathVariable String url,
-          @RequestParam(name = "threads", defaultValue = "1") int threadCount,
-          @RequestParam(name = "iterations", defaultValue = "1") int iterations,
-          @RequestParam(name = "path", required = false) String path,
-          @RequestBody HttpPostRequest httpPostRequest) {
+      @PathVariable String url,
+      @RequestParam(name = "threads", defaultValue = "1") int threadCount,
+      @RequestParam(name = "iterations", defaultValue = "1") int iterations,
+      @RequestParam(name = "path", required = false) String path,
+      @RequestBody HttpPostRequest httpPostRequest) {
 
     if (path == null || path.isEmpty()) {
       url = CommonConstant.HTTPS + url;
@@ -129,12 +129,12 @@ public class HttpController {
 
     if (httpPostRequest.getKey().isEmpty()) {
       return ResponseEntity.ok(
-              httpRequestService.handleLoadTestWeb(
-                      url, threadCount, iterations, CommonConstant.HTTP_METHOD_PUT, null));
+          httpRequestService.handleLoadTestWeb(
+              url, threadCount, iterations, CommonConstant.HTTP_METHOD_PUT, null));
     } else {
       return ResponseEntity.ok(
-              httpRequestService.handleLoadTestWeb(
-                      url, threadCount, iterations, CommonConstant.HTTP_METHOD_PUT, httpPostRequest));
+          httpRequestService.handleLoadTestWeb(
+              url, threadCount, iterations, CommonConstant.HTTP_METHOD_PUT, httpPostRequest));
     }
   }
 }

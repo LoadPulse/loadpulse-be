@@ -19,7 +19,7 @@ public final class CommonConstant {
 
   public static final String HTTP_METHOD_PUT = "PUT";
 
-  //Key
+  // Key
   public static final String LOAD_TIME = "loadTime";
 
   public static final String CONNECT_TIME = "connectTime";

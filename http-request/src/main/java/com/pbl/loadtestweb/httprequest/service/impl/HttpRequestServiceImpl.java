@@ -142,9 +142,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
 
       connection.connect();
 
-
       long connectEndTime = System.currentTimeMillis();
-
 
       long loadStartTime = System.currentTimeMillis();
 

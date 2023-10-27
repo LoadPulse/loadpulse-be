@@ -12,9 +12,7 @@ import java.util.List;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class JdbcDataRequest {
 
-   private String DatabaseURL;
-   private String JdbcDriverClass;
-   private String Username;
-   private String Password;
-   private String SqlStatements;
+  private List<String> key;
+
+  private List<String> value;
 }

@@ -1,4 +1,3 @@
 package com.pbl.loadtestweb.web.endpoint.jdbc;
 
-public class JdbcController {
-}
+public class JdbcController {}
