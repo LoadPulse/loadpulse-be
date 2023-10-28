@@ -8,7 +8,6 @@ import com.pbl.loadtestweb.httprequest.payload.response.HttpDataResponse;
 import com.pbl.loadtestweb.httprequest.service.HttpRequestService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -30,7 +29,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
   private final ExecutorService executorService = Executors.newCachedThreadPool();
 
   @Override
-  public SseEmitter handleLoadTestWeb(
+  public SseEmitter httpLoadTestWeb(
       String url, int threadCount, int iterations, String method, HttpPostRequest httpPostRequest) {
     SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
 
@@ -45,7 +44,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
                 if (httpPostRequest == null) {
                   result = this.loadTestThread(url, method, j);
                 } else {
-                  result = this.loadTestThreadWithHttpPostRequest(url, method, httpPostRequest, j);
+                  result = this.loadTestThreadWithParams(url, method, httpPostRequest, j);
                 }
                 HttpDataResponse jsonResponse = this.buildHttpDataResponse(result);
                 sseEmitter.send(jsonResponse, MediaType.APPLICATION_JSON);
@@ -199,7 +198,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
     return requestBody.toString();
   }
 
-  public Map<String, String> loadTestThreadWithHttpPostRequest(
+  public Map<String, String> loadTestThreadWithParams(
       String url, String method, HttpPostRequest httpPostRequest, int iterations) {
     Map<String, String> result = new HashMap<>();
 
@@ -216,6 +215,13 @@ public class HttpRequestServiceImpl implements HttpRequestService {
 
       connection.connect();
 
+      String requestBody = this.handleParamsToRequestBody(httpPostRequest);
+
+      try (OutputStream os = connection.getOutputStream();
+           OutputStreamWriter writer = new OutputStreamWriter(os, StandardCharsets.UTF_8)) {
+        writer.write(requestBody);
+      }
+
       long connectEndTime = System.currentTimeMillis();
 
       long loadStartTime = System.currentTimeMillis();
@@ -227,13 +233,6 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       }
 
       long loadEndTime = System.currentTimeMillis();
-
-      String requestBody = this.handleParamsToRequestBody(httpPostRequest);
-
-      try (OutputStream os = connection.getOutputStream();
-          OutputStreamWriter writer = new OutputStreamWriter(os, StandardCharsets.UTF_8)) {
-        writer.write(requestBody);
-      }
 
       long latency = responseTime - connectStartTime;
       long connectTime = connectEndTime - connectStartTime;
