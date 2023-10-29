@@ -11,7 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -19,14 +21,23 @@ import java.util.Map;
 @Slf4j
 public class JdbcRequestServiceImpl implements JdbcRequestService {
   private final JdbcRequestMapper jdbcRequestMapper;
-  @Override
-  public JdbcDataResponse handleJdbcRequest(
-          String databaseUrl, String jdbcDriverClass, String username, String password)
-      throws ClassNotFoundException {
-    Map<String, String> result =
-        this.loadTestThread(databaseUrl, jdbcDriverClass, username, password);
-    return buildJdbcDataResponse(result);
 
+  @Override
+  public List<JdbcDataResponse> handleJdbcRequest(
+      String databaseUrl, String jdbcDriverClass, String username, String password) {
+    List<JdbcDataResponse> jdbcDataResponses = new ArrayList<>();
+
+    try {
+      List<Map<String, String>> results =
+          loadTestThread(databaseUrl, jdbcDriverClass, username, password);
+      for (Map<String, String> result : results) {
+        jdbcDataResponses.add(buildJdbcDataResponse(result));
+      }
+    } catch (Exception e) {
+      e.getMessage();
+    }
+
+    return jdbcDataResponses;
   }
 
   private JdbcDataResponse buildJdbcDataResponse(Map<String, String> result) {
@@ -68,53 +79,52 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
     return bodySize;
   }
 
-  public Map<String, String> loadTestThread(
+  public List<Map<String, String>> loadTestThread(
       String databaseUrl, String jdbcDriverClass, String username, String password)
       throws ClassNotFoundException {
-    Map<String, String> result = new HashMap<>();
+    List<Map<String, String>> results = new ArrayList<>();
 
     long startTime = System.currentTimeMillis();
     Class.forName(jdbcDriverClass);
 
-    try( Connection connection = DriverManager.getConnection(databaseUrl, username, password);) {
+    try {
+      Connection connection = DriverManager.getConnection(databaseUrl, username, password);
       long connectTime = System.currentTimeMillis() - startTime;
       Statement statement = connection.createStatement();
       ResultSet resultSet = statement.executeQuery("SELECT * FROM wordpress.wp_users");
-      //ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
-      //int cols = resultSetMetaData.getColumnCount();
+      ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
+      int cols = resultSetMetaData.getColumnCount();
 
-//      for(int i = 0; i < cols; i++) {
+      for (int i = 0; i < cols; i++) {
+        Map<String, String> result = new HashMap<>();
+        long latency = 76;
+        long loadTime = 77;
+        result.put(CommonConstant.LOAD_TIME, String.valueOf(loadTime));
+        result.put(CommonConstant.CONNECT_TIME, String.valueOf(connectTime));
+        result.put(CommonConstant.LATENCY, String.valueOf(latency));
+        result.put(CommonConstant.HEADER_SIZE, String.valueOf(0));
+        result.put(
+            CommonConstant.BODY_SIZE,
+            String.valueOf(
+                this.calcBodySize(connection, databaseUrl, jdbcDriverClass, username, password)));
+        result.put(
+            CommonConstant.START_AT,
+            CommonFunction.formatDateToString(CommonFunction.getCurrentDateTime()));
+        result.put(CommonConstant.THREAD_NAME, Thread.currentThread().getName());
+        // result.put(CommonConstant.ITERATIONS, Integer.toString(iterations));
+        result.put(CommonConstant.RESPONSE_CODE, "200");
 
-      long latency = 76;
-      long loadTime = 77;
-      result.put(CommonConstant.LOAD_TIME, String.valueOf(loadTime));
-      result.put(CommonConstant.CONNECT_TIME, String.valueOf(connectTime));
-      result.put(CommonConstant.LATENCY, String.valueOf(latency));
-      result.put(CommonConstant.HEADER_SIZE, String.valueOf(0));
-      result.put(
-          CommonConstant.BODY_SIZE,
-          String.valueOf(
-              this.calcBodySize(connection, databaseUrl, jdbcDriverClass, username, password)));
-      result.put(
-          CommonConstant.START_AT,
-          CommonFunction.formatDateToString(CommonFunction.getCurrentDateTime()));
-      result.put(CommonConstant.THREAD_NAME, Thread.currentThread().getName());
-      // result.put(CommonConstant.ITERATIONS, Integer.toString(iterations));
-      result.put(CommonConstant.RESPONSE_CODE,"200");
+        result.put(CommonConstant.CONTENT_TYPE, resultSetMetaData.getColumnName(i));
+        // result.put(CommonConstant.DATA_ENCODING, resultSet.getString(2));
+        // System.out.println("NAME: " + resultSetMetaData.getColumnName(i) + " " + "TYPE: " +
+        // resultSetMetaData.getColumnLabel(i));
+        // result.put(CommonConstant.RESPONSE_MESSAGE, " ");
+        results.add(result);
+      }
 
-
-
-        //result.put(CommonConstant.CONTENT_TYPE,  resultSetMetaData.getColumnName(2) );
-        result.put(CommonConstant.DATA_ENCODING, resultSet.getString(2));
-        //System.out.println("NAME: " + resultSetMetaData.getColumnName(i) + " " + "TYPE: " + resultSetMetaData.getColumnLabel(i));
-
-//      }
-      result.put(CommonConstant.RESPONSE_MESSAGE, " ");
     } catch (SQLException e) {
 
-
     }
-    return result;
+    return results;
   }
-
 }
