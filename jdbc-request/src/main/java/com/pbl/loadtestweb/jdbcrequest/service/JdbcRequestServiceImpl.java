@@ -1,16 +1,15 @@
 package com.pbl.loadtestweb.jdbcrequest.service;
 
-import com.mysql.cj.jdbc.JdbcConnection;
-import com.mysql.jdbc.Driver;
 import com.pbl.loadtestweb.common.common.CommonFunction;
 import com.pbl.loadtestweb.common.constant.CommonConstant;
 import com.pbl.loadtestweb.jdbcrequest.mapper.JdbcRequestMapper;
 import com.pbl.loadtestweb.jdbcrequest.payload.response.JdbcDataResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.InputStream;
 import java.sql.*;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,14 +19,14 @@ import java.util.Map;
 @Slf4j
 public class JdbcRequestServiceImpl implements JdbcRequestService {
   private final JdbcRequestMapper jdbcRequestMapper;
-
   @Override
   public JdbcDataResponse handleJdbcRequest(
-      String databaseUrl, String jdbcDriverClass, String username, String password, String query)
+          String databaseUrl, String jdbcDriverClass, String username, String password)
       throws ClassNotFoundException {
     Map<String, String> result =
         this.loadTestThread(databaseUrl, jdbcDriverClass, username, password);
     return buildJdbcDataResponse(result);
+
   }
 
   private JdbcDataResponse buildJdbcDataResponse(Map<String, String> result) {
@@ -77,11 +76,14 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
     long startTime = System.currentTimeMillis();
     Class.forName(jdbcDriverClass);
 
-    try {
-      Connection connection = DriverManager.getConnection(databaseUrl, username, password);
+    try( Connection connection = DriverManager.getConnection(databaseUrl, username, password);) {
       long connectTime = System.currentTimeMillis() - startTime;
       Statement statement = connection.createStatement();
       ResultSet resultSet = statement.executeQuery("SELECT * FROM wordpress.wp_users");
+      //ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
+      //int cols = resultSetMetaData.getColumnCount();
+
+//      for(int i = 0; i < cols; i++) {
 
       long latency = 76;
       long loadTime = 77;
@@ -98,15 +100,21 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
           CommonFunction.formatDateToString(CommonFunction.getCurrentDateTime()));
       result.put(CommonConstant.THREAD_NAME, Thread.currentThread().getName());
       // result.put(CommonConstant.ITERATIONS, Integer.toString(iterations));
-      result.put(
-          CommonConstant.RESPONSE_CODE, "200");
-      result.put(CommonConstant.RESPONSE_MESSAGE, "OK");
-      result.put(CommonConstant.CONTENT_TYPE, "Text");
-      result.put(CommonConstant.DATA_ENCODING, "Chịu");
+      result.put(CommonConstant.RESPONSE_CODE,"200");
 
+
+
+        //result.put(CommonConstant.CONTENT_TYPE,  resultSetMetaData.getColumnName(2) );
+        result.put(CommonConstant.DATA_ENCODING, resultSet.getString(2));
+        //System.out.println("NAME: " + resultSetMetaData.getColumnName(i) + " " + "TYPE: " + resultSetMetaData.getColumnLabel(i));
+
+//      }
+      result.put(CommonConstant.RESPONSE_MESSAGE, " ");
     } catch (SQLException e) {
-      throw new RuntimeException(e);
+
+
     }
     return result;
   }
+
 }

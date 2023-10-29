@@ -21,11 +21,9 @@ public class JdbcController {
       @RequestParam(name = "databaseUrl", defaultValue = " ") String databaseUrl,
       @RequestParam(name = "jdbcDriverClass", defaultValue = " ") String jdbcDriverClass,
       @RequestParam(name = "username", defaultValue = " ") String username,
-      @RequestParam(name = "password", defaultValue = " ") String password,
-      @RequestParam(name = "query", defaultValue = " ") String query)
-      throws ClassNotFoundException {
+      @RequestParam(name = "password", defaultValue = " ") String password ) throws ClassNotFoundException {
     return ResponseEntity.ok(
         jdbcRequestService.handleJdbcRequest(
-            databaseUrl, jdbcDriverClass, username, password, query));
+            databaseUrl, jdbcDriverClass, username, password));
   }
 }
