@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.security.PublicKey;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,23 +24,18 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
   private final JdbcRequestMapper jdbcRequestMapper;
 
   @Override
-  public List<JdbcDataResponse> handleJdbcRequest(
-      String databaseUrl, String jdbcDriverClass, String username, String password) {
-    List<JdbcDataResponse> jdbcDataResponses = new ArrayList<>();
-
-    try {
-      List<Map<String, String>> results =
-          loadTestThread(databaseUrl, jdbcDriverClass, username, password);
-      for (Map<String, String> result : results) {
-        jdbcDataResponses.add(buildJdbcDataResponse(result));
-      }
-    } catch (Exception e) {
-      e.getMessage();
-    }
-
-    return jdbcDataResponses;
+  public JdbcDataResponse handleJdbcRequest(
+      String databaseUrl, String jdbcDriverClass, String username, String password)
+      throws ClassNotFoundException {
+    Map<String, String> result =
+        this.loadTestThread(databaseUrl, jdbcDriverClass, username, password);
+    return buildJdbcDataResponse(result);
   }
-
+  @Override
+  public  JdbcDataResponse handleJdbcColumn(String databaseUrl, String jdbcDriverClass, String username, String password) throws ClassNotFoundException, SQLException {
+    Map<String,List<String>> result = this.getColumnName(databaseUrl, jdbcDriverClass, username, password);
+    return bulidJdbcDataColumnResponse(result);
+  }
   private JdbcDataResponse buildJdbcDataResponse(Map<String, String> result) {
     return jdbcRequestMapper.toJdbcDataResponse(
         result.get(CommonConstant.THREAD_NAME),
@@ -56,18 +52,28 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
         result.get(CommonConstant.HEADER_SIZE),
         result.get(CommonConstant.BODY_SIZE));
   }
-
+  public JdbcDataResponse bulidJdbcDataColumnResponse(Map<String,List<String>> result)
+  {
+    return jdbcRequestMapper.toJdbcDataColumnResponse(
+            result.get(CommonConstant.COLUMN_NAME)
+    );
+  }
+  public ResultSet connectMysqlDb(
+      String databaseUrl, String jdbcDriverClass, String username, String password)
+      throws ClassNotFoundException, SQLException {
+    Class.forName(jdbcDriverClass);
+    Connection connection = DriverManager.getConnection(databaseUrl, username, password);
+    Statement statement = connection.createStatement();
+    ResultSet resultSet = statement.executeQuery("SELECT * FROM wordpress.wp_users");
+    return resultSet;
+  }
   private long calcBodySize(
-      Connection connection,
       String databaseUrl,
       String jdbcDriverClass,
       String username,
       String password)
       throws ClassNotFoundException, SQLException {
-    Class.forName(jdbcDriverClass);
-    connection = DriverManager.getConnection(databaseUrl, username, password);
-    Statement statement = connection.createStatement();
-    ResultSet resultSet = statement.executeQuery("SELECT * FROM wordpress.wp_users");
+    ResultSet resultSet = connectMysqlDb(databaseUrl, jdbcDriverClass, username, password);
     long bodySize = 0;
     while (resultSet.next()) {
       StringBuilder rowBuilder = new StringBuilder();
@@ -79,10 +85,10 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
     return bodySize;
   }
 
-  public List<Map<String, String>> loadTestThread(
+  public Map<String, String> loadTestThread(
       String databaseUrl, String jdbcDriverClass, String username, String password)
       throws ClassNotFoundException {
-    List<Map<String, String>> results = new ArrayList<>();
+    Map<String, String> result = new HashMap<>();
 
     long startTime = System.currentTimeMillis();
     Class.forName(jdbcDriverClass);
@@ -92,39 +98,45 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
       long connectTime = System.currentTimeMillis() - startTime;
       Statement statement = connection.createStatement();
       ResultSet resultSet = statement.executeQuery("SELECT * FROM wordpress.wp_users");
-      ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
-      int cols = resultSetMetaData.getColumnCount();
 
-      for (int i = 0; i < cols; i++) {
-        Map<String, String> result = new HashMap<>();
-        long latency = 76;
-        long loadTime = 77;
-        result.put(CommonConstant.LOAD_TIME, String.valueOf(loadTime));
-        result.put(CommonConstant.CONNECT_TIME, String.valueOf(connectTime));
-        result.put(CommonConstant.LATENCY, String.valueOf(latency));
-        result.put(CommonConstant.HEADER_SIZE, String.valueOf(0));
-        result.put(
-            CommonConstant.BODY_SIZE,
-            String.valueOf(
-                this.calcBodySize(connection, databaseUrl, jdbcDriverClass, username, password)));
-        result.put(
-            CommonConstant.START_AT,
-            CommonFunction.formatDateToString(CommonFunction.getCurrentDateTime()));
-        result.put(CommonConstant.THREAD_NAME, Thread.currentThread().getName());
-        // result.put(CommonConstant.ITERATIONS, Integer.toString(iterations));
-        result.put(CommonConstant.RESPONSE_CODE, "200");
+      long latency = 76;
+      long loadTime = 77;
+      result.put(CommonConstant.LOAD_TIME, String.valueOf(loadTime));
+      result.put(CommonConstant.CONNECT_TIME, String.valueOf(connectTime));
+      result.put(CommonConstant.LATENCY, String.valueOf(latency));
+      result.put(CommonConstant.HEADER_SIZE, String.valueOf(0));
+      result.put(
+          CommonConstant.BODY_SIZE,
+          String.valueOf(
+              this.calcBodySize(databaseUrl, jdbcDriverClass, username, password)));
+      result.put(
+          CommonConstant.START_AT,
+          CommonFunction.formatDateToString(CommonFunction.getCurrentDateTime()));
+      result.put(CommonConstant.THREAD_NAME, Thread.currentThread().getName());
+      // result.put(CommonConstant.ITERATIONS, Integer.toString(iterations));
+      result.put(CommonConstant.RESPONSE_CODE, "200");
 
-        result.put(CommonConstant.CONTENT_TYPE, resultSetMetaData.getColumnName(i));
-        // result.put(CommonConstant.DATA_ENCODING, resultSet.getString(2));
-        // System.out.println("NAME: " + resultSetMetaData.getColumnName(i) + " " + "TYPE: " +
-        // resultSetMetaData.getColumnLabel(i));
-        // result.put(CommonConstant.RESPONSE_MESSAGE, " ");
-        results.add(result);
-      }
 
+      result.put(CommonConstant.RESPONSE_MESSAGE, " ");
     } catch (SQLException e) {
 
     }
-    return results;
+    return result;
+  }
+
+  public Map<String, List<String>> getColumnName(
+      String databaseUrl, String jdbcDriverClass, String username, String password)
+      throws ClassNotFoundException, SQLException {
+    ResultSet resultSet = connectMysqlDb(databaseUrl,jdbcDriverClass, username, password);
+    ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
+    int cols = resultSetMetaData.getColumnCount();
+    Map<String, List<String>> result = new HashMap<>();
+    List<String> columnNameList = new  ArrayList<>();
+
+    for (int i = 1; i <= cols; i++) {
+      columnNameList.add(resultSetMetaData.getColumnName(i));
+    }
+    result.put(CommonConstant.COLUMN_NAME, columnNameList);
+    return result;
   }
 }

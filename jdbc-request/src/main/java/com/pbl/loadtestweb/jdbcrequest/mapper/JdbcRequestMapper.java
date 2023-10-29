@@ -5,6 +5,8 @@ import com.pbl.loadtestweb.jdbcrequest.payload.response.JdbcDataResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
+import java.util.List;
+
 @Mapper(config = SpringMapStructConfig.class)
 public interface JdbcRequestMapper {
   @Mapping(source = "threadName", target = "threadName")
@@ -20,6 +22,7 @@ public interface JdbcRequestMapper {
   @Mapping(source = "latency", target = "latency")
   @Mapping(source = "headerSize", target = "headerSize")
   @Mapping(source = "bodySize", target = "bodySize")
+
   JdbcDataResponse toJdbcDataResponse(
       String threadName,
       // String iterations,
@@ -34,4 +37,14 @@ public interface JdbcRequestMapper {
       String latency,
       String headerSize,
       String bodySize);
+
+  @Mapping(source = "columnName",target = "columnName")
+  default JdbcDataResponse toJdbcDataColumnResponse(List<String> detail)
+  {
+    return toJdbcDataColumnResponse(detail.get(0),detail);
+  }
+  JdbcDataResponse toJdbcDataColumnResponse(
+          String detail,
+          List<String> columnName
+  );
 }

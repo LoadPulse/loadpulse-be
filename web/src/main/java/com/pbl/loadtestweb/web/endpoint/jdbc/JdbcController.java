@@ -9,7 +9,7 @@ import org.openqa.selenium.devtools.v116.network.model.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.sql.SQLException;
 
 @RestController
 @RequiredArgsConstructor
@@ -19,7 +19,7 @@ public class JdbcController {
   private final JdbcRequestService jdbcRequestService;
 
   @GetMapping(value = "/")
-  public ResponseEntity<List<JdbcDataResponse>> handleJdbcResponse(
+  public ResponseEntity<JdbcDataResponse> handleJdbcResponse(
       @RequestParam(name = "databaseUrl", defaultValue = " ") String databaseUrl,
       @RequestParam(name = "jdbcDriverClass", defaultValue = " ") String jdbcDriverClass,
       @RequestParam(name = "username", defaultValue = " ") String username,
@@ -27,5 +27,16 @@ public class JdbcController {
       throws ClassNotFoundException {
     return ResponseEntity.ok(
         jdbcRequestService.handleJdbcRequest(databaseUrl, jdbcDriverClass, username, password));
+  }
+
+  @GetMapping(value = "/column")
+  public ResponseEntity<JdbcDataResponse> handleColumnJdbc(
+      @RequestParam(name = "databaseUrl", defaultValue = " ") String databaseUrl,
+      @RequestParam(name = "jdbcDriverClass", defaultValue = " ") String jdbcDriverClass,
+      @RequestParam(name = "username", defaultValue = " ") String username,
+      @RequestParam(name = "password", defaultValue = " ") String password)
+      throws SQLException, ClassNotFoundException {
+    return  ResponseEntity.ok(
+            jdbcRequestService.handleJdbcColumn(databaseUrl, jdbcDriverClass, username, password));
   }
 }

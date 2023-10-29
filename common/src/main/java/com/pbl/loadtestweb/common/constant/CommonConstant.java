@@ -45,4 +45,6 @@ public final class CommonConstant {
   public static final String DATA_ENCODING = "dataEncoding";
 
   public static final String REQUEST_METHOD = "requestMethod";
+
+  public static final String COLUMN_NAME = "columnName";
 }
