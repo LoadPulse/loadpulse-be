@@ -9,7 +9,7 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.example</groupId>
+    <groupId>com.pbl</groupId>
     <artifactId>jdbc-request</artifactId>
 
     <properties>
