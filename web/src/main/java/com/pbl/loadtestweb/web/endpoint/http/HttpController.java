@@ -13,6 +13,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @RequiredArgsConstructor
 @RequestMapping("/v1/http-methods")
 @Api(tags = "Http Request APIs")
+@CrossOrigin()
 public class HttpController {
 
   private final HttpRequestService httpRequestService;
