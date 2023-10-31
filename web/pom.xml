@@ -14,16 +14,6 @@
     <dependencies>
         <dependency>
             <groupId>com.pbl</groupId>
-<<<<<<< HEAD
-            <artifactId>common</artifactId>
-=======
-            <artifactId>http-request</artifactId>
->>>>>>> cf94735485f0da1989e8c9268006174df0b2b05c
-            <version>0.0.1-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.pbl</groupId>
             <artifactId>http-request</artifactId>
             <version>0.0.1-SNAPSHOT</version>
             <scope>compile</scope>
