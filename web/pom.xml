@@ -14,7 +14,7 @@
     <dependencies>
         <dependency>
             <groupId>com.pbl</groupId>
-            <artifactId>proxy</artifactId>
+            <artifactId>http-request</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
     </dependencies>
