@@ -1,5 +1,9 @@
 package com.pbl.loadtestweb.web.endpoint.jdbc;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.pbl.loadtestweb.httprequest.service.HttpRequestService;
 import com.pbl.loadtestweb.jdbcrequest.payload.response.JdbcDataResponse;
 import com.pbl.loadtestweb.jdbcrequest.service.JdbcRequestService;
@@ -10,6 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -23,20 +29,23 @@ public class JdbcController {
       @RequestParam(name = "databaseUrl", defaultValue = " ") String databaseUrl,
       @RequestParam(name = "jdbcDriverClass", defaultValue = " ") String jdbcDriverClass,
       @RequestParam(name = "username", defaultValue = " ") String username,
-      @RequestParam(name = "password", defaultValue = " ") String password)
+      @RequestParam(name = "password", defaultValue = " ") String password,
+      @RequestParam(name = "sqlStatemment", defaultValue = " ") String sql)
       throws ClassNotFoundException {
     return ResponseEntity.ok(
-        jdbcRequestService.handleJdbcRequest(databaseUrl, jdbcDriverClass, username, password));
+        jdbcRequestService.handleJdbcRequest(
+            databaseUrl, jdbcDriverClass, username, password, sql));
   }
 
   @GetMapping(value = "/column")
-  public ResponseEntity<JdbcDataResponse> handleColumnJdbc(
+  public ResponseEntity<List<JsonNode>> getJdbcData(
       @RequestParam(name = "databaseUrl", defaultValue = " ") String databaseUrl,
       @RequestParam(name = "jdbcDriverClass", defaultValue = " ") String jdbcDriverClass,
       @RequestParam(name = "username", defaultValue = " ") String username,
-      @RequestParam(name = "password", defaultValue = " ") String password)
-      throws SQLException, ClassNotFoundException {
-    return  ResponseEntity.ok(
-            jdbcRequestService.handleJdbcColumn(databaseUrl, jdbcDriverClass, username, password));
+      @RequestParam(name = "password", defaultValue = " ") String password,
+      @RequestParam(name = "sqlStatement", defaultValue = " ") String sql)
+      throws SQLException, ClassNotFoundException, JsonProcessingException {
+    return ResponseEntity.ok(
+        jdbcRequestService.handleJdbcData(databaseUrl, jdbcDriverClass, username, password, sql));
   }
 }

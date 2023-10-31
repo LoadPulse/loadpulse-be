@@ -3,6 +3,7 @@ package com.pbl.loadtestweb.jdbcrequest.payload.response;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.google.gson.JsonArray;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -44,5 +45,5 @@ public class JdbcDataResponse {
 
   private String requestMethod;
 
-  private List<String> columnName;
+  private JsonArray dataJdbc;
 }

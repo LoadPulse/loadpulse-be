@@ -1,5 +1,6 @@
 package com.pbl.loadtestweb.jdbcrequest.mapper;
 
+import com.google.gson.JsonArray;
 import com.pbl.loadtestweb.common.config.SpringMapStructConfig;
 import com.pbl.loadtestweb.jdbcrequest.payload.response.JdbcDataResponse;
 import org.mapstruct.Mapper;
@@ -22,7 +23,6 @@ public interface JdbcRequestMapper {
   @Mapping(source = "latency", target = "latency")
   @Mapping(source = "headerSize", target = "headerSize")
   @Mapping(source = "bodySize", target = "bodySize")
-
   JdbcDataResponse toJdbcDataResponse(
       String threadName,
       // String iterations,
@@ -37,14 +37,4 @@ public interface JdbcRequestMapper {
       String latency,
       String headerSize,
       String bodySize);
-
-  @Mapping(source = "columnName",target = "columnName")
-  default JdbcDataResponse toJdbcDataColumnResponse(List<String> detail)
-  {
-    return toJdbcDataColumnResponse(detail.get(0),detail);
-  }
-  JdbcDataResponse toJdbcDataColumnResponse(
-          String detail,
-          List<String> columnName
-  );
 }

@@ -1,5 +1,9 @@
 package com.pbl.loadtestweb.jdbcrequest.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.JsonObject;
 import com.pbl.loadtestweb.common.common.CommonFunction;
 import com.pbl.loadtestweb.common.constant.CommonConstant;
 import com.pbl.loadtestweb.jdbcrequest.mapper.JdbcRequestMapper;
@@ -25,17 +29,20 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
 
   @Override
   public JdbcDataResponse handleJdbcRequest(
-      String databaseUrl, String jdbcDriverClass, String username, String password)
+      String databaseUrl, String jdbcDriverClass, String username, String password, String sql)
       throws ClassNotFoundException {
     Map<String, String> result =
-        this.loadTestThread(databaseUrl, jdbcDriverClass, username, password);
+        this.loadTestThread(databaseUrl, jdbcDriverClass, username, password, sql);
     return buildJdbcDataResponse(result);
   }
+
   @Override
-  public  JdbcDataResponse handleJdbcColumn(String databaseUrl, String jdbcDriverClass, String username, String password) throws ClassNotFoundException, SQLException {
-    Map<String,List<String>> result = this.getColumnName(databaseUrl, jdbcDriverClass, username, password);
-    return bulidJdbcDataColumnResponse(result);
+  public List<JsonNode> handleJdbcData(
+      String databaseUrl, String jdbcDriverClass, String username, String password, String sql)
+      throws ClassNotFoundException, SQLException, JsonProcessingException {
+    return this.getJdbcData(databaseUrl, jdbcDriverClass, username, password, sql);
   }
+
   private JdbcDataResponse buildJdbcDataResponse(Map<String, String> result) {
     return jdbcRequestMapper.toJdbcDataResponse(
         result.get(CommonConstant.THREAD_NAME),
@@ -52,28 +59,14 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
         result.get(CommonConstant.HEADER_SIZE),
         result.get(CommonConstant.BODY_SIZE));
   }
-  public JdbcDataResponse bulidJdbcDataColumnResponse(Map<String,List<String>> result)
-  {
-    return jdbcRequestMapper.toJdbcDataColumnResponse(
-            result.get(CommonConstant.COLUMN_NAME)
-    );
-  }
-  public ResultSet connectMysqlDb(
-      String databaseUrl, String jdbcDriverClass, String username, String password)
+
+  private long calcBodySize(
+      String databaseUrl, String jdbcDriverClass, String username, String password, String sql)
       throws ClassNotFoundException, SQLException {
     Class.forName(jdbcDriverClass);
     Connection connection = DriverManager.getConnection(databaseUrl, username, password);
     Statement statement = connection.createStatement();
-    ResultSet resultSet = statement.executeQuery("SELECT * FROM wordpress.wp_users");
-    return resultSet;
-  }
-  private long calcBodySize(
-      String databaseUrl,
-      String jdbcDriverClass,
-      String username,
-      String password)
-      throws ClassNotFoundException, SQLException {
-    ResultSet resultSet = connectMysqlDb(databaseUrl, jdbcDriverClass, username, password);
+    ResultSet resultSet = statement.executeQuery(sql);
     long bodySize = 0;
     while (resultSet.next()) {
       StringBuilder rowBuilder = new StringBuilder();
@@ -86,7 +79,7 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
   }
 
   public Map<String, String> loadTestThread(
-      String databaseUrl, String jdbcDriverClass, String username, String password)
+      String databaseUrl, String jdbcDriverClass, String username, String password, String sql)
       throws ClassNotFoundException {
     Map<String, String> result = new HashMap<>();
 
@@ -97,7 +90,7 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
       Connection connection = DriverManager.getConnection(databaseUrl, username, password);
       long connectTime = System.currentTimeMillis() - startTime;
       Statement statement = connection.createStatement();
-      ResultSet resultSet = statement.executeQuery("SELECT * FROM wordpress.wp_users");
+      ResultSet resultSet = statement.executeQuery(sql);
 
       long latency = 76;
       long loadTime = 77;
@@ -107,15 +100,13 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
       result.put(CommonConstant.HEADER_SIZE, String.valueOf(0));
       result.put(
           CommonConstant.BODY_SIZE,
-          String.valueOf(
-              this.calcBodySize(databaseUrl, jdbcDriverClass, username, password)));
+          String.valueOf(this.calcBodySize(databaseUrl, jdbcDriverClass, username, password, sql)));
       result.put(
           CommonConstant.START_AT,
           CommonFunction.formatDateToString(CommonFunction.getCurrentDateTime()));
       result.put(CommonConstant.THREAD_NAME, Thread.currentThread().getName());
       // result.put(CommonConstant.ITERATIONS, Integer.toString(iterations));
       result.put(CommonConstant.RESPONSE_CODE, "200");
-
 
       result.put(CommonConstant.RESPONSE_MESSAGE, " ");
     } catch (SQLException e) {
@@ -124,19 +115,28 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
     return result;
   }
 
-  public Map<String, List<String>> getColumnName(
-      String databaseUrl, String jdbcDriverClass, String username, String password)
-      throws ClassNotFoundException, SQLException {
-    ResultSet resultSet = connectMysqlDb(databaseUrl,jdbcDriverClass, username, password);
+  public List<JsonNode> getJdbcData(
+      String databaseUrl, String jdbcDriverClass, String username, String password, String sql)
+      throws ClassNotFoundException, SQLException, JsonProcessingException {
+
+    Class.forName(jdbcDriverClass);
+    Connection connection = DriverManager.getConnection(databaseUrl, username, password);
+    Statement statement = connection.createStatement();
+    ResultSet resultSet = statement.executeQuery(sql);
     ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
     int cols = resultSetMetaData.getColumnCount();
-    Map<String, List<String>> result = new HashMap<>();
-    List<String> columnNameList = new  ArrayList<>();
-
-    for (int i = 1; i <= cols; i++) {
-      columnNameList.add(resultSetMetaData.getColumnName(i));
+    List<JsonNode> jsonNodeList = new ArrayList<>();
+    JsonNode jsonNode = null;
+    while (resultSet.next()) {
+      JsonObject jsonObject = new JsonObject();
+      for (int ii = 1; ii <= cols; ii++) {
+        String alias = resultSetMetaData.getColumnLabel(ii);
+        jsonObject.addProperty(alias, resultSet.getString(alias));
+      }
+      ObjectMapper objectMapper = new ObjectMapper();
+      jsonNode = objectMapper.readTree(jsonObject.toString());
+      jsonNodeList.add(jsonNode);
     }
-    result.put(CommonConstant.COLUMN_NAME, columnNameList);
-    return result;
+    return jsonNodeList;
   }
 }
