@@ -29,22 +29,22 @@ public class HttpRequestServiceImpl implements HttpRequestService {
   private final ExecutorService executorService = Executors.newCachedThreadPool();
 
   @Override
-  public SseEmitter handleLoadTestWeb(
+  public SseEmitter httpLoadTestWeb(
       String url, int threadCount, int iterations, String method, HttpPostRequest httpPostRequest) {
     SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
 
     CountDownLatch latch = new CountDownLatch(threadCount);
 
-    for (int i = 0; i < threadCount; i++) {
+    for (int i = 1; i <= threadCount; i++) {
       executorService.execute(
           () -> {
             try {
-              for (int j = 0; j < iterations; j++) {
+              for (int j = 1; j <= iterations; j++) {
                 Map<String, String> result;
                 if (httpPostRequest == null) {
                   result = this.loadTestThread(url, method, j);
                 } else {
-                  result = this.loadTestThreadWithHttpPostRequest(url, method, httpPostRequest, j);
+                  result = this.loadTestThreadWithParams(url, method, httpPostRequest, j);
                 }
                 HttpDataResponse jsonResponse = this.buildHttpDataResponse(result);
                 sseEmitter.send(jsonResponse, MediaType.APPLICATION_JSON);
@@ -66,6 +66,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
                 sseEmitter.complete();
               } catch (InterruptedException e) {
                 e.printStackTrace();
+                Thread.currentThread().interrupt();
                 sseEmitter.completeWithError(e);
               }
             })
@@ -79,6 +80,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       Thread.sleep(1000);
     } catch (InterruptedException e) {
       e.printStackTrace();
+      Thread.currentThread().interrupt();
     }
   }
 
@@ -161,7 +163,6 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       result.put(CommonConstant.LATENCY, String.valueOf(latency));
       result.put(CommonConstant.HEADER_SIZE, String.valueOf(this.calcHeaderSize(connection)));
       result.put(CommonConstant.BODY_SIZE, String.valueOf(this.calcBodySize(connection)));
-      result.put("Error Count", "0");
       result.put(
           CommonConstant.START_AT,
           CommonFunction.formatDateToString(CommonFunction.getCurrentDateTime()));
@@ -173,9 +174,10 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       result.put(CommonConstant.DATA_ENCODING, connection.getContentEncoding());
       result.put(CommonConstant.REQUEST_METHOD, connection.getRequestMethod());
 
-      connection.disconnect();
-
     } catch (Exception ignored) {
+      result.put(CommonConstant.THREAD_NAME, Thread.currentThread().getName());
+      result.put(CommonConstant.ITERATIONS, Integer.toString(iterations));
+      result.put(CommonConstant.RESPONSE_MESSAGE, ignored.getMessage());
       log.error(ignored.getMessage());
     }
     return result;
@@ -196,21 +198,29 @@ public class HttpRequestServiceImpl implements HttpRequestService {
     return requestBody.toString();
   }
 
-  public Map<String, String> loadTestThreadWithHttpPostRequest(
+  public Map<String, String> loadTestThreadWithParams(
       String url, String method, HttpPostRequest httpPostRequest, int iterations) {
     Map<String, String> result = new HashMap<>();
 
     try {
       URL obj = new URL(url);
 
-      long startTime = System.currentTimeMillis();
-
       HttpURLConnection connection = (HttpURLConnection) obj.openConnection();
       connection.setRequestMethod(method);
 
       long connectStartTime = System.currentTimeMillis();
 
+      connection.setDoInput(true);
+      connection.setDoOutput(true);
+
       connection.connect();
+
+      String requestBody = this.handleParamsToRequestBody(httpPostRequest);
+
+      try (OutputStream os = connection.getOutputStream();
+           OutputStreamWriter writer = new OutputStreamWriter(os, StandardCharsets.UTF_8)) {
+        writer.write(requestBody);
+      }
 
       long connectEndTime = System.currentTimeMillis();
 
@@ -224,16 +234,6 @@ public class HttpRequestServiceImpl implements HttpRequestService {
 
       long loadEndTime = System.currentTimeMillis();
 
-      connection.setDoInput(true);
-      connection.setDoOutput(true);
-
-      String requestBody = this.handleParamsToRequestBody(httpPostRequest);
-
-      try (OutputStream os = connection.getOutputStream();
-          OutputStreamWriter writer = new OutputStreamWriter(os, StandardCharsets.UTF_8)) {
-        writer.write(requestBody);
-      }
-
       long latency = responseTime - connectStartTime;
       long connectTime = connectEndTime - connectStartTime;
       long loadTime = loadEndTime - loadStartTime;
@@ -243,7 +243,6 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       result.put(CommonConstant.LATENCY, String.valueOf(latency));
       result.put(CommonConstant.HEADER_SIZE, String.valueOf(this.calcHeaderSize(connection)));
       result.put(CommonConstant.BODY_SIZE, String.valueOf(this.calcBodySize(connection)));
-      result.put("Error Count", "0");
       result.put(
           CommonConstant.START_AT,
           CommonFunction.formatDateToString(CommonFunction.getCurrentDateTime()));
@@ -256,6 +255,9 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       result.put(CommonConstant.REQUEST_METHOD, connection.getRequestMethod());
 
     } catch (Exception ignored) {
+      result.put(CommonConstant.THREAD_NAME, Thread.currentThread().getName());
+      result.put(CommonConstant.ITERATIONS, Integer.toString(iterations));
+      result.put(CommonConstant.RESPONSE_MESSAGE, ignored.getMessage());
       log.error(ignored.getMessage());
     }
     return result;
