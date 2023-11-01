@@ -134,7 +134,6 @@ public class HttpRequestServiceImpl implements HttpRequestService {
 
     try {
       URL obj = new URL(url);
-
       HttpURLConnection connection = (HttpURLConnection) obj.openConnection();
       connection.setRequestMethod(method);
 
