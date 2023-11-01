@@ -1,8 +1,5 @@
 package com.pbl.loadtestweb.common.constant;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-
 public final class CommonConstant {
   private CommonConstant() {}
 
@@ -22,7 +19,7 @@ public final class CommonConstant {
 
   public static final String HTTP_METHOD_PUT = "PUT";
 
-  // Key
+  //Key
   public static final String LOAD_TIME = "loadTime";
 
   public static final String CONNECT_TIME = "connectTime";
