@@ -87,6 +87,7 @@ public class HttpController {
               url, threadCount, iterations, CommonConstant.HTTP_METHOD_POST, httpPostRequest));
     }
   }
+
   @PostMapping("/put/http/{url}")
   public ResponseEntity<SseEmitter> handleMethodPutHttp(
       @PathVariable String url,
@@ -136,5 +137,4 @@ public class HttpController {
               url, threadCount, iterations, CommonConstant.HTTP_METHOD_PUT, httpPostRequest));
     }
   }
-
 }

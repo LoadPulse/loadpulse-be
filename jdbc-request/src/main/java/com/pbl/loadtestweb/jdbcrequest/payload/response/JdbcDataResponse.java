@@ -44,6 +44,4 @@ public class JdbcDataResponse {
   private String dataEncoding;
 
   private String requestMethod;
-
-  private JsonArray dataJdbc;
 }

@@ -9,17 +9,21 @@ import com.pbl.loadtestweb.common.constant.CommonConstant;
 import com.pbl.loadtestweb.jdbcrequest.mapper.JdbcRequestMapper;
 import com.pbl.loadtestweb.jdbcrequest.payload.response.JdbcDataResponse;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
-import java.security.PublicKey;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
+import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Service
 @RequiredArgsConstructor
@@ -27,16 +31,110 @@ import java.util.Map;
 public class JdbcRequestServiceImpl implements JdbcRequestService {
   private final JdbcRequestMapper jdbcRequestMapper;
 
-  @Override
-  public JdbcDataResponse handleJdbcRequest(
-      String databaseUrl, String jdbcDriverClass, String username, String password, String sql)
-      throws ClassNotFoundException {
-    Map<String, String> result =
-        this.loadTestThread(databaseUrl, jdbcDriverClass, username, password, sql);
-    return buildJdbcDataResponse(result);
-  }
+  private final ExecutorService executorService = Executors.newCachedThreadPool();
 
   @Override
+  public SseEmitter jdbcLoadTestWeb(
+      String databaseUrl,
+      String jdbcDriverClass,
+      String username,
+      String password,
+      String sql,
+      int threadCount,
+      int iterations) {
+    SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
+
+    CountDownLatch latch = new CountDownLatch(threadCount);
+    for (int i = 1; i <= threadCount; i++) {
+      executorService.execute(
+          () -> {
+            try {
+              for (int j = 1; j <= iterations; j++) {
+
+                Map<String, String> result =
+                    this.loadTestThread(databaseUrl, jdbcDriverClass, username, password, sql, j);
+                JdbcDataResponse jdbcDataResponse = this.buildJdbcDataResponse(result);
+                sseEmitter.send(jdbcDataResponse, MediaType.APPLICATION_JSON);
+                sleep();
+              }
+            } catch (ClassNotFoundException | IOException e) {
+              throw new RuntimeException(e);
+            } finally {
+              latch.countDown();
+            }
+          });
+    }
+
+    new Thread(
+            () -> {
+              try {
+                latch.await();
+                sseEmitter.complete();
+              } catch (InterruptedException e) {
+                e.printStackTrace();
+                Thread.currentThread().interrupt();
+                sseEmitter.completeWithError(e);
+              }
+            })
+        .start();
+
+    return sseEmitter;
+  }
+
+  public SseEmitter jdbcDataLoadTestWeb(
+      String databaseUrl,
+      String jdbcDriverClass,
+      String username,
+      String password,
+      String sql,
+      int threadCount,
+      int iterations) {
+    SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
+
+    CountDownLatch latch = new CountDownLatch(threadCount);
+    for (int i = 1; i <= threadCount; i++) {
+      executorService.execute(
+          () -> {
+            try {
+              for (int j = 1; j <= iterations; j++) {
+                List<JsonNode> result =
+                    this.handleJdbcData(databaseUrl, jdbcDriverClass, username, password, sql);
+                sseEmitter.send(result, MediaType.APPLICATION_JSON);
+                sleep();
+              }
+            } catch (ClassNotFoundException | IOException | SQLException e) {
+              throw new RuntimeException(e);
+            } finally {
+              latch.countDown();
+            }
+          });
+    }
+
+    new Thread(
+            () -> {
+              try {
+                latch.await();
+                sseEmitter.complete();
+              } catch (InterruptedException e) {
+                e.printStackTrace();
+                Thread.currentThread().interrupt();
+                sseEmitter.completeWithError(e);
+              }
+            })
+        .start();
+
+    return sseEmitter;
+  }
+
+  private void sleep() {
+    try {
+      Thread.sleep(1000);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+      Thread.currentThread().interrupt();
+    }
+  }
+
   public List<JsonNode> handleJdbcData(
       String databaseUrl, String jdbcDriverClass, String username, String password, String sql)
       throws ClassNotFoundException, SQLException, JsonProcessingException {
@@ -46,7 +144,7 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
   private JdbcDataResponse buildJdbcDataResponse(Map<String, String> result) {
     return jdbcRequestMapper.toJdbcDataResponse(
         result.get(CommonConstant.THREAD_NAME),
-        // result.get(CommonConstant.ITERATIONS),
+        result.get(CommonConstant.ITERATIONS),
         result.get(CommonConstant.START_AT),
         result.get(CommonConstant.RESPONSE_CODE),
         result.get(CommonConstant.RESPONSE_MESSAGE),
@@ -79,7 +177,12 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
   }
 
   public Map<String, String> loadTestThread(
-      String databaseUrl, String jdbcDriverClass, String username, String password, String sql)
+      String databaseUrl,
+      String jdbcDriverClass,
+      String username,
+      String password,
+      String sql,
+      int iterations)
       throws ClassNotFoundException {
     Map<String, String> result = new HashMap<>();
 
@@ -105,12 +208,11 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
           CommonConstant.START_AT,
           CommonFunction.formatDateToString(CommonFunction.getCurrentDateTime()));
       result.put(CommonConstant.THREAD_NAME, Thread.currentThread().getName());
-      // result.put(CommonConstant.ITERATIONS, Integer.toString(iterations));
+      result.put(CommonConstant.ITERATIONS, Integer.toString(iterations));
       result.put(CommonConstant.RESPONSE_CODE, "200");
 
       result.put(CommonConstant.RESPONSE_MESSAGE, " ");
-    } catch (SQLException e) {
-
+    } catch (SQLException ignored) {
     }
     return result;
   }
