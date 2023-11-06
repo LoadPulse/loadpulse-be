@@ -1,4 +1,4 @@
-package com.pbl.loadtestweb.jdbcrequest.service;
+package com.pbl.loadtestweb.jdbcrequest.service.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -8,6 +8,7 @@ import com.pbl.loadtestweb.common.common.CommonFunction;
 import com.pbl.loadtestweb.common.constant.CommonConstant;
 import com.pbl.loadtestweb.jdbcrequest.mapper.JdbcRequestMapper;
 import com.pbl.loadtestweb.jdbcrequest.payload.response.JdbcDataResponse;
+import com.pbl.loadtestweb.jdbcrequest.service.JdbcRequestService;
 import lombok.RequiredArgsConstructor;
 
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -57,7 +59,7 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
                 sseEmitter.send(jdbcDataResponse, MediaType.APPLICATION_JSON);
                 sleep();
               }
-            } catch (ClassNotFoundException | IOException e) {
+            } catch (IOException | ClassNotFoundException e) {
               throw new RuntimeException(e);
             } finally {
               latch.countDown();
@@ -185,18 +187,30 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
       int iterations)
       throws ClassNotFoundException {
     Map<String, String> result = new HashMap<>();
-
-    long startTime = System.currentTimeMillis();
-    Class.forName(jdbcDriverClass);
-
     try {
+      long startConnectTime = System.currentTimeMillis();
+      Class.forName(jdbcDriverClass);
+
+
       Connection connection = DriverManager.getConnection(databaseUrl, username, password);
-      long connectTime = System.currentTimeMillis() - startTime;
+      long endConnectTime = System.currentTimeMillis();
+      long loadStartTime = System.currentTimeMillis();
+      long connectTime = endConnectTime  - startConnectTime;
+
+
       Statement statement = connection.createStatement();
       ResultSet resultSet = statement.executeQuery(sql);
 
-      long latency = 76;
-      long loadTime = 77;
+      InputStream inputStream = connection.createNClob().getAsciiStream();
+      long responseTime = 0;
+      if (inputStream != null) {
+        responseTime = System.currentTimeMillis();
+      }
+
+      long loadEndTime = System.currentTimeMillis();
+
+      long latency = responseTime - endConnectTime;
+      long loadTime = loadEndTime - loadStartTime;
       result.put(CommonConstant.LOAD_TIME, String.valueOf(loadTime));
       result.put(CommonConstant.CONNECT_TIME, String.valueOf(connectTime));
       result.put(CommonConstant.LATENCY, String.valueOf(latency));
@@ -211,30 +225,44 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
       result.put(CommonConstant.ITERATIONS, Integer.toString(iterations));
       result.put(CommonConstant.RESPONSE_CODE, "200");
 
-      result.put(CommonConstant.RESPONSE_MESSAGE, " ");
+      result.put(CommonConstant.RESPONSE_MESSAGE, "OK");
     } catch (SQLException ignored) {
+      result.put(CommonConstant.THREAD_NAME, Thread.currentThread().getName());
+      result.put(
+          CommonConstant.START_AT,
+          CommonFunction.formatDateToString(CommonFunction.getCurrentDateTime()));
+      result.put(CommonConstant.RESPONSE_CODE, String.valueOf(ignored.getErrorCode()));
+      result.put(CommonConstant.RESPONSE_MESSAGE, ignored.getMessage());
     }
     return result;
   }
 
   public List<JsonNode> getJdbcData(
       String databaseUrl, String jdbcDriverClass, String username, String password, String sql)
-      throws ClassNotFoundException, SQLException, JsonProcessingException {
-
-    Class.forName(jdbcDriverClass);
-    Connection connection = DriverManager.getConnection(databaseUrl, username, password);
-    Statement statement = connection.createStatement();
-    ResultSet resultSet = statement.executeQuery(sql);
-    ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
-    int cols = resultSetMetaData.getColumnCount();
+      throws JsonProcessingException {
     List<JsonNode> jsonNodeList = new ArrayList<>();
     JsonNode jsonNode = null;
-    while (resultSet.next()) {
-      JsonObject jsonObject = new JsonObject();
-      for (int ii = 1; ii <= cols; ii++) {
-        String alias = resultSetMetaData.getColumnLabel(ii);
-        jsonObject.addProperty(alias, resultSet.getString(alias));
+    try {
+      Class.forName(jdbcDriverClass);
+      Connection connection = DriverManager.getConnection(databaseUrl, username, password);
+      Statement statement = connection.createStatement();
+      ResultSet resultSet = statement.executeQuery(sql);
+      ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
+      int cols = resultSetMetaData.getColumnCount();
+
+      while (resultSet.next()) {
+        JsonObject jsonObject = new JsonObject();
+        for (int ii = 1; ii <= cols; ii++) {
+          String alias = resultSetMetaData.getColumnLabel(ii);
+          jsonObject.addProperty(alias, resultSet.getString(alias));
+        }
+        ObjectMapper objectMapper = new ObjectMapper();
+        jsonNode = objectMapper.readTree(jsonObject.toString());
+        jsonNodeList.add(jsonNode);
       }
+    } catch (SQLException | ClassNotFoundException ignored) {
+      JsonObject jsonObject = new JsonObject();
+      jsonObject.addProperty(CommonConstant.RESPONSE_MESSAGE, ignored.getMessage());
       ObjectMapper objectMapper = new ObjectMapper();
       jsonNode = objectMapper.readTree(jsonObject.toString());
       jsonNodeList.add(jsonNode);
