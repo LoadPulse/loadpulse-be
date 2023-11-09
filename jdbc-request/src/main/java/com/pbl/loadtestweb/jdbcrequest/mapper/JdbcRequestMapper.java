@@ -11,7 +11,7 @@ import org.mapstruct.Mapping;
 @Mapper(config = SpringMapStructConfig.class)
 public interface JdbcRequestMapper {
   @Mapping(source = "threadName", target = "threadName")
-  // @Mapping(source = "iterations", target = "iterations")
+  @Mapping(source = "iterations", target = "iterations")
   @Mapping(source = "startAt", target = "startAt")
   @Mapping(source = "responseCode", target = "responseCode")
   @Mapping(source = "responseMessage", target = "responseMessage")
@@ -24,7 +24,7 @@ public interface JdbcRequestMapper {
   @Mapping(source = "bodySize", target = "bodySize")
   JdbcDataResponse toJdbcDataResponse(
       String threadName,
-      // String iterations,
+      String iterations,
       String startAt,
       String responseCode,
       String responseMessage,

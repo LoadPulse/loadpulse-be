@@ -217,7 +217,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       String requestBody = this.handleParamsToRequestBody(httpPostRequest);
 
       try (OutputStream os = connection.getOutputStream();
-           OutputStreamWriter writer = new OutputStreamWriter(os, StandardCharsets.UTF_8)) {
+          OutputStreamWriter writer = new OutputStreamWriter(os, StandardCharsets.UTF_8)) {
         writer.write(requestBody);
       }
 

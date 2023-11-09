@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.openqa.selenium.devtools.v116.network.model.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -25,27 +26,30 @@ public class JdbcController {
   private final JdbcRequestService jdbcRequestService;
 
   @GetMapping(value = "/")
-  public ResponseEntity<JdbcDataResponse> handleJdbcResponse(
+  public ResponseEntity<SseEmitter> handleJdbcResponse(
       @RequestParam(name = "databaseUrl", defaultValue = " ") String databaseUrl,
       @RequestParam(name = "jdbcDriverClass", defaultValue = " ") String jdbcDriverClass,
       @RequestParam(name = "username", defaultValue = " ") String username,
       @RequestParam(name = "password", defaultValue = " ") String password,
-      @RequestParam(name = "sqlStatemment", defaultValue = " ") String sql)
-      throws ClassNotFoundException {
+      @RequestParam(name = "sqlStatement", defaultValue = " ") String sql,
+      @RequestParam(name = "threads", defaultValue = "1") int threads,
+      @RequestParam(name = "iterations", defaultValue = "1") int iterations) {
     return ResponseEntity.ok(
-        jdbcRequestService.handleJdbcRequest(
-            databaseUrl, jdbcDriverClass, username, password, sql));
+        jdbcRequestService.jdbcLoadTestWeb(
+            databaseUrl, jdbcDriverClass, username, password, sql, threads, iterations));
   }
 
   @GetMapping(value = "/column")
-  public ResponseEntity<List<JsonNode>> getJdbcData(
+  public ResponseEntity<SseEmitter> handleJdbcData(
       @RequestParam(name = "databaseUrl", defaultValue = " ") String databaseUrl,
       @RequestParam(name = "jdbcDriverClass", defaultValue = " ") String jdbcDriverClass,
       @RequestParam(name = "username", defaultValue = " ") String username,
       @RequestParam(name = "password", defaultValue = " ") String password,
-      @RequestParam(name = "sqlStatement", defaultValue = " ") String sql)
-      throws SQLException, ClassNotFoundException, JsonProcessingException {
+      @RequestParam(name = "sqlStatement", defaultValue = " ") String sql,
+      @RequestParam(name = "threads", defaultValue = "1") int threads,
+      @RequestParam(name = "iterations", defaultValue = "1") int iterations) {
     return ResponseEntity.ok(
-        jdbcRequestService.handleJdbcData(databaseUrl, jdbcDriverClass, username, password, sql));
+        jdbcRequestService.jdbcDataLoadTestWeb(
+            databaseUrl, jdbcDriverClass, username, password, sql, threads, iterations));
   }
 }
