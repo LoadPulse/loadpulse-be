@@ -1,12 +1,12 @@
 package com.pbl.loadtestweb.jdbcrequest.mapper;
 
-import com.google.gson.JsonArray;
+
 import com.pbl.loadtestweb.common.config.SpringMapStructConfig;
 import com.pbl.loadtestweb.jdbcrequest.payload.response.JdbcDataResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-import java.util.List;
+
 
 @Mapper(config = SpringMapStructConfig.class)
 public interface JdbcRequestMapper {
@@ -17,7 +17,6 @@ public interface JdbcRequestMapper {
   @Mapping(source = "responseMessage", target = "responseMessage")
   @Mapping(source = "contentType", target = "contentType")
   @Mapping(source = "dataEncoding", target = "dataEncoding")
-  // @Mapping(source = "requestMethod", target = "requestMethod")
   @Mapping(source = "loadTime", target = "loadTime")
   @Mapping(source = "connectTime", target = "connectTime")
   @Mapping(source = "latency", target = "latency")
@@ -31,7 +30,6 @@ public interface JdbcRequestMapper {
       String responseMessage,
       String contentType,
       String dataEncoding,
-      // String requestMethod,
       String loadTime,
       String connectTime,
       String latency,
