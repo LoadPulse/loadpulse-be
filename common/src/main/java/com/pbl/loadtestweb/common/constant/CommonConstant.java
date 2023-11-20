@@ -48,4 +48,21 @@ public final class CommonConstant {
   public static final String DATA_ENCODING = "dataEncoding";
 
   public static final String REQUEST_METHOD = "requestMethod";
+
+  public static final String SERVER_SOFTWARE = "serverSoftware";
+
+  public static final String SERVER_HOST = "serverHost";
+
+  public static final String SERVER_PORT = "serverPort";
+
+  public static final String CURRENT_LEVEL = "concurrentLevel";
+  public static final String TIME_TAKE_FOR_TEST = "timeTakenForTest";
+  public static final String COMPLETE_REQUEST = "completeRequest";
+  public static final String FAIL_REQUEST = "failRequest";
+  public static final String NON2XX_REQUEST = "non2xxResponse";
+  public static final String KEEPALIVE_REQUEST = "keepAliveRequest";
+  public static final String TOTAL_TRANSFERRED = "totalTransferred";
+  public static final String HTML_TRANSFERRED = "htmlTransferred";
+  public static final String REQUEST_PER_SEC = "requestPerSec";
+
 }
