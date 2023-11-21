@@ -1,7 +1,5 @@
 package com.pbl.loadtestweb.common.constant;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 
 public final class CommonConstant {
   private CommonConstant() {}
@@ -48,4 +46,6 @@ public final class CommonConstant {
   public static final String DATA_ENCODING = "dataEncoding";
 
   public static final String REQUEST_METHOD = "requestMethod";
+
+  public static final String RESPONSE_BODY = "responseBody";
 }

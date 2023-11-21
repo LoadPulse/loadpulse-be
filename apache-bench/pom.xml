@@ -11,6 +11,14 @@
 
     <groupId>com.pbl.loadtestweb</groupId>
     <artifactId>apache-bench</artifactId>
+    <dependencies>
+        <dependency>
+            <groupId>com.pbl</groupId>
+            <artifactId>common</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
 
 
 </project>

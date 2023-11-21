@@ -1,3 +1,8 @@
 package com.pbl.loadtestweb.service;
 
-public interface ApacheBenchService {}
+import com.pbl.loadtestweb.payload.response.ApacheBenchResponse;
+
+public interface ApacheBenchService {
+
+  ApacheBenchResponse loadTestABDefaultWithParams(int request, int concurrent, String path);
+}
