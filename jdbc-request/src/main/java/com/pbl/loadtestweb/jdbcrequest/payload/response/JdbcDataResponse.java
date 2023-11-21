@@ -1,12 +1,15 @@
-package com.pbl.loadtestweb.httprequest.payload.response;
+package com.pbl.loadtestweb.jdbcrequest.payload.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.google.gson.JsonArray;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+
+
 
 @Getter
 @Setter
@@ -14,7 +17,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class HttpDataResponse {
+public class JdbcDataResponse {
 
   private String threadName;
 
@@ -40,7 +43,5 @@ public class HttpDataResponse {
 
   private String dataEncoding;
 
-  private String requestMethod;
-
-  private String responseBody;
+  private JsonArray dataJdbc;
 }

@@ -1,13 +1,15 @@
-package com.pbl.loadtestweb.httprequest.mapper;
+package com.pbl.loadtestweb.jdbcrequest.mapper;
+
 
 import com.pbl.loadtestweb.common.config.SpringMapStructConfig;
-import com.pbl.loadtestweb.httprequest.payload.response.HttpDataResponse;
+import com.pbl.loadtestweb.jdbcrequest.payload.response.JdbcDataResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(config = SpringMapStructConfig.class)
-public interface HttpRequestMapper {
 
+
+@Mapper(config = SpringMapStructConfig.class)
+public interface JdbcRequestMapper {
   @Mapping(source = "threadName", target = "threadName")
   @Mapping(source = "iterations", target = "iterations")
   @Mapping(source = "startAt", target = "startAt")
@@ -15,23 +17,19 @@ public interface HttpRequestMapper {
   @Mapping(source = "responseMessage", target = "responseMessage")
   @Mapping(source = "contentType", target = "contentType")
   @Mapping(source = "dataEncoding", target = "dataEncoding")
-  @Mapping(source = "requestMethod", target = "requestMethod")
   @Mapping(source = "loadTime", target = "loadTime")
   @Mapping(source = "connectTime", target = "connectTime")
   @Mapping(source = "latency", target = "latency")
   @Mapping(source = "headerSize", target = "headerSize")
   @Mapping(source = "bodySize", target = "bodySize")
-  @Mapping(source = "responseBody", target = "responseBody")
-  HttpDataResponse toHttpDataResponse(
+  JdbcDataResponse toJdbcDataResponse(
       String threadName,
       String iterations,
       String startAt,
       String responseCode,
       String responseMessage,
-      String responseBody,
       String contentType,
       String dataEncoding,
-      String requestMethod,
       String loadTime,
       String connectTime,
       String latency,

@@ -9,27 +9,16 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>web</artifactId>
-
+    <groupId>com.pbl.loadtestweb</groupId>
+    <artifactId>apache-bench</artifactId>
     <dependencies>
         <dependency>
             <groupId>com.pbl</groupId>
-            <artifactId>http-request</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.pbl</groupId>
-            <artifactId>jdbc-request</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.pbl.loadtestweb</groupId>
-            <artifactId>apache-bench</artifactId>
+            <artifactId>common</artifactId>
             <version>0.0.1-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>
+
 
 </project>

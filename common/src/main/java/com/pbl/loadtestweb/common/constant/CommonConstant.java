@@ -1,5 +1,6 @@
 package com.pbl.loadtestweb.common.constant;
 
+
 public final class CommonConstant {
   private CommonConstant() {}
 
@@ -19,7 +20,7 @@ public final class CommonConstant {
 
   public static final String HTTP_METHOD_PUT = "PUT";
 
-  //Key
+  // Key
   public static final String LOAD_TIME = "loadTime";
 
   public static final String CONNECT_TIME = "connectTime";
@@ -45,4 +46,6 @@ public final class CommonConstant {
   public static final String DATA_ENCODING = "dataEncoding";
 
   public static final String REQUEST_METHOD = "requestMethod";
+
+  public static final String RESPONSE_BODY = "responseBody";
 }

@@ -24,8 +24,7 @@ public class HttpController {
       @RequestParam(name = "iterations", defaultValue = "1") int iterations) {
     url = CommonConstant.HTTP + url;
     return ResponseEntity.ok(
-        httpRequestService.httpLoadTestWeb(
-            url, threadCount, iterations, CommonConstant.HTTP_METHOD_GET, null));
+        httpRequestService.httpGet(url, threadCount, iterations, CommonConstant.HTTP_METHOD_GET));
   }
 
   @GetMapping("/get/https/{url}")
@@ -35,12 +34,11 @@ public class HttpController {
       @RequestParam(name = "iterations", defaultValue = "1") int iterations) {
     url = CommonConstant.HTTPS + url;
     return ResponseEntity.ok(
-        httpRequestService.httpLoadTestWeb(
-            url, threadCount, iterations, CommonConstant.HTTP_METHOD_GET, null));
+        httpRequestService.httpGet(url, threadCount, iterations, CommonConstant.HTTP_METHOD_GET));
   }
 
-  @PostMapping("/post/http/{url}")
-  public ResponseEntity<SseEmitter> handleMethodPostHttp(
+  @PostMapping("/post/mvc/http/{url}")
+  public ResponseEntity<SseEmitter> handleMethodPostMVCHttp(
       @PathVariable String url,
       @RequestParam(name = "threads", defaultValue = "1") int threadCount,
       @RequestParam(name = "iterations", defaultValue = "1") int iterations,
@@ -54,17 +52,17 @@ public class HttpController {
 
     if (httpPostRequest.getKey().isEmpty()) {
       return ResponseEntity.ok(
-          httpRequestService.httpLoadTestWeb(
-              url, threadCount, iterations, CommonConstant.HTTP_METHOD_POST, null));
+          httpRequestService.httpGet(
+              url, threadCount, iterations, CommonConstant.HTTP_METHOD_POST));
     } else {
       return ResponseEntity.ok(
-          httpRequestService.httpLoadTestWeb(
+          httpRequestService.httpPostMVC(
               url, threadCount, iterations, CommonConstant.HTTP_METHOD_POST, httpPostRequest));
     }
   }
 
-  @PostMapping("/post/https/{url}")
-  public ResponseEntity<SseEmitter> handleMethodPostHttps(
+  @PostMapping("/post/mvc/https/{url}")
+  public ResponseEntity<SseEmitter> handleMethodPostMVCHttps(
       @PathVariable String url,
       @RequestParam(name = "threads", defaultValue = "1") int threadCount,
       @RequestParam(name = "iterations", defaultValue = "1") int iterations,
@@ -79,11 +77,11 @@ public class HttpController {
 
     if (httpPostRequest.getKey().isEmpty()) {
       return ResponseEntity.ok(
-          httpRequestService.httpLoadTestWeb(
-              url, threadCount, iterations, CommonConstant.HTTP_METHOD_POST, null));
+          httpRequestService.httpGet(
+              url, threadCount, iterations, CommonConstant.HTTP_METHOD_POST));
     } else {
       return ResponseEntity.ok(
-          httpRequestService.httpLoadTestWeb(
+          httpRequestService.httpPostMVC(
               url, threadCount, iterations, CommonConstant.HTTP_METHOD_POST, httpPostRequest));
     }
   }
