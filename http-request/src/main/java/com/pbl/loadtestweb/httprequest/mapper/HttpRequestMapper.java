@@ -21,12 +21,14 @@ public interface HttpRequestMapper {
   @Mapping(source = "latency", target = "latency")
   @Mapping(source = "headerSize", target = "headerSize")
   @Mapping(source = "bodySize", target = "bodySize")
+  @Mapping(source = "responseBody", target = "responseBody")
   HttpDataResponse toHttpDataResponse(
       String threadName,
       String iterations,
       String startAt,
       String responseCode,
       String responseMessage,
+      String responseBody,
       String contentType,
       String dataEncoding,
       String requestMethod,

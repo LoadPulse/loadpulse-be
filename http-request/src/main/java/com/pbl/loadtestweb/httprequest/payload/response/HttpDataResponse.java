@@ -41,4 +41,6 @@ public class HttpDataResponse {
   private String dataEncoding;
 
   private String requestMethod;
+
+  private String responseBody;
 }
