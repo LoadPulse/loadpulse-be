@@ -1,5 +1,6 @@
 package com.pbl.loadtestweb.httprequest.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.goebl.david.Webb;
 import com.pbl.loadtestweb.common.common.CommonFunction;
 import com.pbl.loadtestweb.common.constant.CommonConstant;
@@ -226,7 +227,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       }
       return body.toString();
     } catch (Exception e) {
-      throw new RuntimeException(e);
+      throw new RuntimeException("Unable to get response body", e);
     }
   }
 
@@ -287,7 +288,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
     return result;
   }
 
-  private String handleParamsToRequestBody(HttpPostRequest httpPostRequest) {
+  private String handleParamsToRequestBodyMVC(HttpPostRequest httpPostRequest) {
     Map<String, String> params = new HashMap<>();
     for (int i = 0; i < httpPostRequest.getKey().size(); i++) {
       params.put(httpPostRequest.getKey().get(i), httpPostRequest.getValue().get(i));
@@ -300,6 +301,15 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       requestBody.append(entry.getKey()).append("=").append(entry.getValue());
     }
     return requestBody.toString();
+  }
+
+  public String handleParamsToRequestBodyAPI(HttpPostRequest httpPostRequest) throws Exception {
+    Map<String, String> params = new HashMap<>();
+    for (int i = 0; i < httpPostRequest.getKey().size(); i++) {
+      params.put(httpPostRequest.getKey().get(i), httpPostRequest.getValue().get(i));
+    }
+    ObjectMapper objectMapper = new ObjectMapper();
+    return objectMapper.writeValueAsString(params);
   }
 
   public Map<String, String> loadTestThreadWithParamsMVC(
@@ -318,15 +328,14 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       connection.setDoOutput(true);
 
       connection.connect();
+      long connectEndTime = System.currentTimeMillis();
 
-      String requestBody = this.handleParamsToRequestBody(httpPostRequest);
+      String requestBody = this.handleParamsToRequestBodyMVC(httpPostRequest);
 
       try (OutputStream os = connection.getOutputStream();
           OutputStreamWriter writer = new OutputStreamWriter(os, StandardCharsets.UTF_8)) {
         writer.write(requestBody);
       }
-
-      long connectEndTime = System.currentTimeMillis();
 
       long loadStartTime = System.currentTimeMillis();
 
@@ -335,6 +344,9 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       if (inputStream != null) {
         responseTime = System.currentTimeMillis();
       }
+
+      result.put(CommonConstant.RESPONSE_BODY, this.getResponseBody(connection));
+      log.info(result.get(CommonConstant.RESPONSE_BODY));
 
       long loadEndTime = System.currentTimeMillis();
 
@@ -377,21 +389,26 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       HttpURLConnection connection = (HttpURLConnection) obj.openConnection();
       connection.setRequestMethod(method);
 
-      long connectStartTime = System.currentTimeMillis();
-
       connection.setDoInput(true);
       connection.setDoOutput(true);
+      connection.setRequestProperty("Content-Type", "application/json");
+      connection.setRequestProperty("Accept", "application/json");
 
-      connection.connect();
+      log.info(this.handleParamsToRequestBodyAPI(httpPostRequest));
+      String params = this.handleParamsToRequestBodyAPI(httpPostRequest);
 
-      String requestBody = this.handleParamsToRequestBody(httpPostRequest);
+      connection.setRequestProperty("Content-Length", String.valueOf(params.getBytes().length));
 
       try (OutputStream os = connection.getOutputStream();
-          OutputStreamWriter writer = new OutputStreamWriter(os, StandardCharsets.UTF_8)) {
-        writer.write(requestBody);
+           OutputStreamWriter writer = new OutputStreamWriter(os, StandardCharsets.UTF_8)) {
+        writer.write(params);
       }
 
+      long connectStartTime = System.currentTimeMillis();
+      connection.connect();
       long connectEndTime = System.currentTimeMillis();
+
+
 
       long loadStartTime = System.currentTimeMillis();
 
@@ -400,6 +417,9 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       if (inputStream != null) {
         responseTime = System.currentTimeMillis();
       }
+
+      result.put(CommonConstant.RESPONSE_BODY, this.getResponseBody(connection));
+      log.info(result.get(CommonConstant.RESPONSE_BODY));
 
       long loadEndTime = System.currentTimeMillis();
 
@@ -430,51 +450,5 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       log.error(ignored.getMessage());
     }
     return result;
-  }
-
-  public void sendPOST() throws IOException {
-    //    URL obj = new URL("https://api.superbad.store/auth/login");
-    //    HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-    //    con.setRequestMethod("POST");
-    //    con.setRequestProperty("User-Agent", "Mozilla/5.0");
-    //    con.setInstanceFollowRedirects(false);
-    //
-    //    String POST_PARAMS = "{\"email\":\"kinphan189@gmail.com\",\"password\":\"Phanhuy4\"}";
-    //    // For POST only - START
-    //    con.setDoOutput(true);
-    //    OutputStream os = con.getOutputStream();
-    //    os.write(POST_PARAMS.getBytes("UTF-8"));
-    //    os.flush();
-    //    os.close();
-    //    // For POST only - END
-    //    con.connect();
-    //    int responseCode = con.getResponseCode();
-    //    log.info("POST Response Code :: " + responseCode);
-    //
-    //    if (responseCode == HttpURLConnection.HTTP_OK) { // success
-    //      BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-    //      String inputLine;
-    //      StringBuffer response = new StringBuffer();
-    //
-    //      while ((inputLine = in.readLine()) != null) {
-    //        response.append(inputLine);
-    //      }
-    //      in.close();
-    //
-    //      // print result
-    //       System.out.println(response.toString());
-    //    } else {
-    //      System.out.println("POST request did not work.");
-    //    }
-    Webb webb = Webb.create();
-    JSONObject result =
-        webb.post("https://api.superbad.store/auth/login")
-            .param("email", "kinphan189@gmail.com")
-            .param("password", "Phanhuy4")
-            .ensureSuccess()
-            .asJsonObject()
-            .getBody();
-
-    System.out.println(result);
   }
 }
