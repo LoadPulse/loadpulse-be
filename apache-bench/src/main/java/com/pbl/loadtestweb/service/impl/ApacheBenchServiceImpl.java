@@ -12,6 +12,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
@@ -23,7 +24,7 @@ public class ApacheBenchServiceImpl implements ApacheBenchService {
   private final ApacheBenchMapper apacheBenchMapper;
   @Override
   public ApacheBenchResponse loadTestABDefaultWithParams(int request, int concurrent , String url) {
-    Map<String,String> result = this.loadTestThread();
+    Map<String,String> result = this.loadTestThread(request,concurrent,url);
     return buildApacheBenchResponse(result);
   }
   private void sleep() {
@@ -77,7 +78,26 @@ public class ApacheBenchServiceImpl implements ApacheBenchService {
     }
     return headersSize;
   }
+  public int calcNumberofNon2xxResponse(int concurrent, String url)
+  {
+    int non2xxResponseCount = 0;
+    for(int i = 0; i < concurrent; i++) {
+      try {
+        URL obj = new URL(url);
+        HttpURLConnection conn = (HttpURLConnection) obj.openConnection();
+        int responseCode = conn.getResponseCode();
+        if (responseCode/200 != 2)
+        {
+          non2xxResponseCount++;
+        }
+        conn.disconnect();
 
+      } catch (IOException e) {
+        non2xxResponseCount++;
+      }
+    }
+    return non2xxResponseCount;
+  }
   public Map<String, String> loadTestThread(int request, int concurrent,String url)  {
     Map<String, String> result = new HashMap<>();
     try{
