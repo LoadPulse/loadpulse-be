@@ -255,7 +255,6 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       }
 
       result.put(CommonConstant.RESPONSE_BODY, this.getResponseBody(connection));
-      log.info(result.get(CommonConstant.RESPONSE_BODY));
 
       long loadEndTime = System.currentTimeMillis();
 
@@ -346,7 +345,6 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       }
 
       result.put(CommonConstant.RESPONSE_BODY, this.getResponseBody(connection));
-      log.info(result.get(CommonConstant.RESPONSE_BODY));
 
       long loadEndTime = System.currentTimeMillis();
 
@@ -419,7 +417,6 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       }
 
       result.put(CommonConstant.RESPONSE_BODY, this.getResponseBody(connection));
-      log.info(result.get(CommonConstant.RESPONSE_BODY));
 
       long loadEndTime = System.currentTimeMillis();
 
