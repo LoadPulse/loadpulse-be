@@ -7,7 +7,6 @@ import org.mapstruct.Mapping;
 
 @Mapper(config = SpringMapStructConfig.class)
 public interface ApacheBenchMapper {
-//  @Mapping(source = "", target = "")
-//  @Mapping(source = "", target = "")
-//  ApacheBenchResponse toApacheBenchResponse();
+  @Mapping(source = "serverSoftware", target = "serverSoftware")
+  ApacheBenchResponse toApacheBenchResponse(String serverSoftware);
 }
