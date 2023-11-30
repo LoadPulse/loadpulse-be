@@ -1,7 +1,6 @@
 package com.pbl.loadtestweb.httprequest.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.goebl.david.Webb;
 import com.pbl.loadtestweb.common.common.CommonFunction;
 import com.pbl.loadtestweb.common.constant.CommonConstant;
 import com.pbl.loadtestweb.httprequest.mapper.HttpRequestMapper;
@@ -10,8 +9,6 @@ import com.pbl.loadtestweb.httprequest.payload.response.HttpDataResponse;
 import com.pbl.loadtestweb.httprequest.service.HttpRequestService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
