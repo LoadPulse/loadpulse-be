@@ -39,7 +39,7 @@ public class JdbcController {
             databaseUrl, jdbcDriverClass, username, password, sql, threads, iterations));
   }
 
-  @GetMapping(value = "/column")
+  @GetMapping(value = "/data")
   public ResponseEntity<SseEmitter> handleJdbcData(
       @RequestParam(name = "databaseUrl", defaultValue = " ") String databaseUrl,
       @RequestParam(name = "jdbcDriverClass", defaultValue = " ") String jdbcDriverClass,

@@ -191,12 +191,10 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
       long startConnectTime = System.currentTimeMillis();
       Class.forName(jdbcDriverClass);
 
-
       Connection connection = DriverManager.getConnection(databaseUrl, username, password);
       long endConnectTime = System.currentTimeMillis();
       long loadStartTime = System.currentTimeMillis();
-      long connectTime = endConnectTime  - startConnectTime;
-
+      long connectTime = endConnectTime - startConnectTime;
 
       Statement statement = connection.createStatement();
       ResultSet resultSet = statement.executeQuery(sql);

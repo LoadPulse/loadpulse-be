@@ -22,8 +22,8 @@ public class ApacheBenchController {
   public ResponseEntity<ApacheBenchResponse> loadTestABDefaultWithParams(
       @RequestParam(name = "requests", defaultValue = "1", required = true) int requests,
       @RequestParam(name = "concurrent", defaultValue = "1", required = true) int concurrent,
-      @RequestParam(name = "path", defaultValue = "") String path) {
+      @RequestParam(name = "url", defaultValue = "") String url) {
     return ResponseEntity.ok(
-        apacheBenchService.loadTestABDefaultWithParams(requests, concurrent, path));
+        apacheBenchService.loadTestABDefaultWithParams(requests, concurrent, url));
   }
 }
