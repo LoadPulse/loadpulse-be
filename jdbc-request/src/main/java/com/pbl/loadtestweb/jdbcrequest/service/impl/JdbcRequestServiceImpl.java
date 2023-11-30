@@ -55,56 +55,12 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
 
                 Map<String, String> result =
                     this.loadTestThread(databaseUrl, jdbcDriverClass, username, password, sql, j);
-                JdbcDataResponse jdbcDataResponse = this.buildJdbcDataResponse(result);
+                Map<String,List<JsonNode>> resultData = this.getJdbcData(databaseUrl, jdbcDriverClass, username, password, sql);
+                JdbcDataResponse jdbcDataResponse = this.buildJdbcDataResponse(result,resultData);
                 sseEmitter.send(jdbcDataResponse, MediaType.APPLICATION_JSON);
                 sleep();
               }
             } catch (IOException | ClassNotFoundException e) {
-              throw new RuntimeException(e);
-            } finally {
-              latch.countDown();
-            }
-          });
-    }
-
-    new Thread(
-            () -> {
-              try {
-                latch.await();
-                sseEmitter.complete();
-              } catch (InterruptedException e) {
-                e.printStackTrace();
-                Thread.currentThread().interrupt();
-                sseEmitter.completeWithError(e);
-              }
-            })
-        .start();
-
-    return sseEmitter;
-  }
-
-  public SseEmitter jdbcDataLoadTestWeb(
-      String databaseUrl,
-      String jdbcDriverClass,
-      String username,
-      String password,
-      String sql,
-      int threadCount,
-      int iterations) {
-    SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
-
-    CountDownLatch latch = new CountDownLatch(threadCount);
-    for (int i = 1; i <= threadCount; i++) {
-      executorService.execute(
-          () -> {
-            try {
-              for (int j = 1; j <= iterations; j++) {
-                List<JsonNode> result =
-                    this.handleJdbcData(databaseUrl, jdbcDriverClass, username, password, sql);
-                sseEmitter.send(result, MediaType.APPLICATION_JSON);
-                sleep();
-              }
-            } catch (ClassNotFoundException | IOException | SQLException e) {
               throw new RuntimeException(e);
             } finally {
               latch.countDown();
@@ -137,13 +93,7 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
     }
   }
 
-  public List<JsonNode> handleJdbcData(
-      String databaseUrl, String jdbcDriverClass, String username, String password, String sql)
-      throws ClassNotFoundException, SQLException, JsonProcessingException {
-    return this.getJdbcData(databaseUrl, jdbcDriverClass, username, password, sql);
-  }
-
-  private JdbcDataResponse buildJdbcDataResponse(Map<String, String> result) {
+  private JdbcDataResponse buildJdbcDataResponse(Map<String, String> result,Map<String,List<JsonNode>> resultdata) {
     return jdbcRequestMapper.toJdbcDataResponse(
         result.get(CommonConstant.THREAD_NAME),
         result.get(CommonConstant.ITERATIONS),
@@ -157,7 +107,8 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
         result.get(CommonConstant.CONNECT_TIME),
         result.get(CommonConstant.LATENCY),
         result.get(CommonConstant.HEADER_SIZE),
-        result.get(CommonConstant.BODY_SIZE));
+        result.get(CommonConstant.BODY_SIZE),
+        resultdata.get(CommonConstant.DATA));
   }
 
   private long calcBodySize(
@@ -209,6 +160,7 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
 
       long latency = responseTime - endConnectTime;
       long loadTime = loadEndTime - loadStartTime;
+
       result.put(CommonConstant.LOAD_TIME, String.valueOf(loadTime));
       result.put(CommonConstant.CONNECT_TIME, String.valueOf(connectTime));
       result.put(CommonConstant.LATENCY, String.valueOf(latency));
@@ -234,11 +186,11 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
     }
     return result;
   }
-
-  public List<JsonNode> getJdbcData(
+  public Map<String, List<JsonNode>> getJdbcData(
       String databaseUrl, String jdbcDriverClass, String username, String password, String sql)
       throws JsonProcessingException {
     List<JsonNode> jsonNodeList = new ArrayList<>();
+    Map<String,List<JsonNode>> result = new HashMap<>();
     JsonNode jsonNode = null;
     try {
       Class.forName(jdbcDriverClass);
@@ -258,6 +210,7 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
         jsonNode = objectMapper.readTree(jsonObject.toString());
         jsonNodeList.add(jsonNode);
       }
+      result.put(CommonConstant.DATA, jsonNodeList);
     } catch (SQLException | ClassNotFoundException ignored) {
       JsonObject jsonObject = new JsonObject();
       jsonObject.addProperty(CommonConstant.RESPONSE_MESSAGE, ignored.getMessage());
@@ -265,6 +218,6 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
       jsonNode = objectMapper.readTree(jsonObject.toString());
       jsonNodeList.add(jsonNode);
     }
-    return jsonNodeList;
+    return result;
   }
 }

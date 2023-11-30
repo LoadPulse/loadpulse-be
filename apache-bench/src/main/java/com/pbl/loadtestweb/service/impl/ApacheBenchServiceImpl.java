@@ -5,6 +5,7 @@ import com.pbl.loadtestweb.mapper.ApacheBenchMapper;
 import com.pbl.loadtestweb.payload.response.ApacheBenchResponse;
 import com.pbl.loadtestweb.service.ApacheBenchService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
@@ -21,6 +22,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ApacheBenchServiceImpl implements ApacheBenchService {
   private final ApacheBenchMapper apacheBenchMapper;
   private final ExecutorService executorService = Executors.newCachedThreadPool();
@@ -70,18 +72,20 @@ public class ApacheBenchServiceImpl implements ApacheBenchService {
     return headersSize + responseBodyStream.size();
   }
 
-  public long calcNumberofNon2xxResponse( HttpURLConnection conn) {
+  public long calcNumberofNon2xxResponse(HttpURLConnection conn) {
     long non2xxResponseCount = 0;
-      try {
-        int responseCode = conn.getResponseCode();
-        if (responseCode / 200 != 2) {
-          non2xxResponseCount = 1;
-        }
-        conn.disconnect();
-
-      } catch (IOException e) {
+    try {
+      int responseCode = conn.getResponseCode();
+      //        log.info(Integer.toString(responseCode));
+      if (responseCode / 100 != 2) {
         non2xxResponseCount = 1;
       }
+      conn.disconnect();
+
+    } catch (IOException e) {
+      non2xxResponseCount = 1;
+    }
+    //      log.info();
     return non2xxResponseCount;
   }
 
@@ -90,11 +94,11 @@ public class ApacheBenchServiceImpl implements ApacheBenchService {
   //  {
   //
   //  }
-  public long calcNumberofKeepAliveRequest( HttpURLConnection conn) {
+  public long calcNumberofKeepAliveRequest(HttpURLConnection conn) {
     long keepAliveRequest = 0;
-      if (conn.getHeaderField("Connection") == "keep-alive") {
-        keepAliveRequest=1;
-      }
+    if (conn.getHeaderField("Connection") == "keep-alive") {
+      keepAliveRequest = 1;
+    }
     return keepAliveRequest;
   }
 
@@ -129,25 +133,25 @@ public class ApacheBenchServiceImpl implements ApacheBenchService {
 
       int req = request;
       for (int i = 1; i <= n; i++) {
-        for(int j = 0; j < concurrent; j++) {
+        for (int j = 0; j < concurrent; j++) {
           executorService.execute(
-                  ()->{
-                    URL obj1 = null;
-                    try {
-                      obj1 = new URL(url);
-                    } catch (MalformedURLException e) {
-                      throw new RuntimeException(e);
-                    }
-                    HttpURLConnection conn1 = null;
-                    try {
-                      conn1 = (HttpURLConnection) obj1.openConnection();
-                    } catch (IOException e) {
-                      throw new RuntimeException(e);
-                    }
-                    non2xxResponse.addAndGet(calcNumberofNon2xxResponse(conn1));
-                    keepaliveRequest.addAndGet(calcNumberofKeepAliveRequest(conn1));
-                    //totalSize.addAndGet(calcTotalSize(conn1));
-                  });
+              () -> {
+                URL obj1 = null;
+                try {
+                  obj1 = new URL(url);
+                } catch (MalformedURLException e) {
+                  throw new RuntimeException(e);
+                }
+                HttpURLConnection conn1 = null;
+                try {
+                  conn1 = (HttpURLConnection) obj1.openConnection();
+                } catch (IOException e) {
+                  throw new RuntimeException(e);
+                }
+                non2xxResponse.addAndGet(calcNumberofNon2xxResponse(conn1));
+                keepaliveRequest.addAndGet(calcNumberofKeepAliveRequest(conn1));
+                // totalSize.addAndGet(calcTotalSize(conn1));
+              });
         }
         req -= concurrent;
         if (req < concurrent) {

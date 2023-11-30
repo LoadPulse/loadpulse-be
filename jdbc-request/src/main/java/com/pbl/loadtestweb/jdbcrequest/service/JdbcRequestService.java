@@ -20,13 +20,4 @@ public interface JdbcRequestService {
       String sql,
       int threadCount,
       int iterations);
-
-  SseEmitter jdbcDataLoadTestWeb(
-      String databaseUrl,
-      String jdbcDriverClass,
-      String username,
-      String password,
-      String sql,
-      int threadCount,
-      int iterrations);
 }
