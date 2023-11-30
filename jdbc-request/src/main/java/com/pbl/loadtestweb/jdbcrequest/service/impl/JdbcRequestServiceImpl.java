@@ -55,8 +55,9 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
 
                 Map<String, String> result =
                     this.loadTestThread(databaseUrl, jdbcDriverClass, username, password, sql, j);
-                Map<String,List<JsonNode>> resultData = this.getJdbcData(databaseUrl, jdbcDriverClass, username, password, sql);
-                JdbcDataResponse jdbcDataResponse = this.buildJdbcDataResponse(result,resultData);
+                Map<String, List<JsonNode>> resultData =
+                    this.getJdbcData(databaseUrl, jdbcDriverClass, username, password, sql);
+                JdbcDataResponse jdbcDataResponse = this.buildJdbcDataResponse(result, resultData);
                 sseEmitter.send(jdbcDataResponse, MediaType.APPLICATION_JSON);
                 sleep();
               }
@@ -93,7 +94,8 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
     }
   }
 
-  private JdbcDataResponse buildJdbcDataResponse(Map<String, String> result,Map<String,List<JsonNode>> resultdata) {
+  private JdbcDataResponse buildJdbcDataResponse(
+      Map<String, String> result, Map<String, List<JsonNode>> resultdata) {
     return jdbcRequestMapper.toJdbcDataResponse(
         result.get(CommonConstant.THREAD_NAME),
         result.get(CommonConstant.ITERATIONS),
@@ -186,11 +188,12 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
     }
     return result;
   }
+
   public Map<String, List<JsonNode>> getJdbcData(
       String databaseUrl, String jdbcDriverClass, String username, String password, String sql)
       throws JsonProcessingException {
     List<JsonNode> jsonNodeList = new ArrayList<>();
-    Map<String,List<JsonNode>> result = new HashMap<>();
+    Map<String, List<JsonNode>> result = new HashMap<>();
     JsonNode jsonNode = null;
     try {
       Class.forName(jdbcDriverClass);
