@@ -20,7 +20,6 @@
         <module>web</module>
         <module>http-request</module>
         <module>jdbc-request</module>
-        <module>burpsuite-script</module>
         <module>apache-bench</module>
     </modules>
 
