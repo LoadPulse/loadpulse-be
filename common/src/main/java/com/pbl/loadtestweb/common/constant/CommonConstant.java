@@ -22,6 +22,8 @@ public final class CommonConstant {
 
   public static final String HTTP_METHOD_PUT = "PUT";
 
+  public static final String SERVER = "Server";
+
   // Key
   public static final String LOAD_TIME = "loadTime";
 
@@ -59,15 +61,13 @@ public final class CommonConstant {
 
   public static final String CURRENT_LEVEL = "concurrentLevel";
 
-  public static final String TIME_TAKE_FOR_TEST = "timeTakenForTest";
-
   public static final String COMPLETE_REQUEST = "completeRequest";
 
   public static final String FAIL_REQUEST = "failRequest";
 
   public static final String NON2XX_REQUEST = "non2xxResponse";
 
-  public static final String KEEPALIVE_REQUEST = "keepAliveRequest";
+  public static final String KEEP_ALIVE = "keepAlive";
 
   public static final String TOTAL_TRANSFERRED = "totalTransferred";
 
