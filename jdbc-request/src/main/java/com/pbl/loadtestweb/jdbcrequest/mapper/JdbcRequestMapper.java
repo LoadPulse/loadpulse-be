@@ -1,9 +1,12 @@
 package com.pbl.loadtestweb.jdbcrequest.mapper;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.pbl.loadtestweb.common.config.SpringMapStructConfig;
 import com.pbl.loadtestweb.jdbcrequest.payload.response.JdbcDataResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+
+import java.util.List;
 
 @Mapper(config = SpringMapStructConfig.class)
 public interface JdbcRequestMapper {
@@ -19,6 +22,7 @@ public interface JdbcRequestMapper {
   @Mapping(source = "latency", target = "latency")
   @Mapping(source = "headerSize", target = "headerSize")
   @Mapping(source = "bodySize", target = "bodySize")
+  @Mapping(source = "data", target = "data")
   JdbcDataResponse toJdbcDataResponse(
       String threadName,
       String iterations,
@@ -31,5 +35,6 @@ public interface JdbcRequestMapper {
       String connectTime,
       String latency,
       String headerSize,
-      String bodySize);
+      String bodySize,
+      List<JsonNode> data);
 }

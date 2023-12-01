@@ -74,4 +74,5 @@ public final class CommonConstant {
   public static final String HTML_TRANSFERRED = "htmlTransferred";
 
   public static final String REQUEST_PER_SEC = "requestPerSec";
+  public static final String DATA = "data";
 }

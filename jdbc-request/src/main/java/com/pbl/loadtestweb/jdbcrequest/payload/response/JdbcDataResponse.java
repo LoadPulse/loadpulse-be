@@ -1,13 +1,15 @@
 package com.pbl.loadtestweb.jdbcrequest.payload.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.google.gson.JsonArray;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -41,5 +43,5 @@ public class JdbcDataResponse {
 
   private String dataEncoding;
 
-  private JsonArray dataJdbc;
+  private List<JsonNode> data;
 }

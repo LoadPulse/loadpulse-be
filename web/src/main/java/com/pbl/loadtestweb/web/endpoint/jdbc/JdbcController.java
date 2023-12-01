@@ -38,18 +38,4 @@ public class JdbcController {
         jdbcRequestService.jdbcLoadTestWeb(
             databaseUrl, jdbcDriverClass, username, password, sql, threads, iterations));
   }
-
-  @GetMapping(value = "/data")
-  public ResponseEntity<SseEmitter> handleJdbcData(
-      @RequestParam(name = "databaseUrl", defaultValue = " ") String databaseUrl,
-      @RequestParam(name = "jdbcDriverClass", defaultValue = " ") String jdbcDriverClass,
-      @RequestParam(name = "username", defaultValue = " ") String username,
-      @RequestParam(name = "password", defaultValue = " ") String password,
-      @RequestParam(name = "sqlStatement", defaultValue = " ") String sql,
-      @RequestParam(name = "threads", defaultValue = "1") int threads,
-      @RequestParam(name = "iterations", defaultValue = "1") int iterations) {
-    return ResponseEntity.ok(
-        jdbcRequestService.jdbcDataLoadTestWeb(
-            databaseUrl, jdbcDriverClass, username, password, sql, threads, iterations));
-  }
 }
