@@ -232,13 +232,12 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       HttpURLConnection connection = (HttpURLConnection) obj.openConnection();
       connection.setRequestMethod(method);
 
+      long loadStartTime = System.currentTimeMillis();
       long connectStartTime = System.currentTimeMillis();
 
       connection.connect();
 
       long connectEndTime = System.currentTimeMillis();
-
-      long loadStartTime = System.currentTimeMillis();
 
       InputStream inputStream = connection.getInputStream();
       long responseTime = 0;
@@ -247,11 +246,10 @@ public class HttpRequestServiceImpl implements HttpRequestService {
         responseTime = System.currentTimeMillis();
       }
       String responseBody = this.getResponseBody(connection);
+      long loadEndTime = System.currentTimeMillis();
       result.put(CommonConstant.RESPONSE_BODY, responseBody);
       long htmlTransferred = responseBody.getBytes().length;
       boolean isKeepAlive = this.isKeepAlive(connection);
-
-      long loadEndTime = System.currentTimeMillis();
 
       long latency = responseTime - connectStartTime;
       long connectTime = connectEndTime - connectStartTime;
@@ -320,6 +318,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       HttpURLConnection connection = (HttpURLConnection) obj.openConnection();
       connection.setRequestMethod(method);
 
+      long loadStartTime = System.currentTimeMillis();
       long connectStartTime = System.currentTimeMillis();
 
       connection.setDoInput(true);
@@ -335,8 +334,6 @@ public class HttpRequestServiceImpl implements HttpRequestService {
         writer.write(requestBody);
       }
 
-      long loadStartTime = System.currentTimeMillis();
-
       InputStream inputStream = connection.getInputStream();
       long responseTime = 0;
       if (inputStream != null) {
@@ -344,11 +341,10 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       }
 
       String responseBody = this.getResponseBody(connection);
+      long loadEndTime = System.currentTimeMillis();
       result.put(CommonConstant.RESPONSE_BODY, responseBody);
       long htmlTransferred = responseBody.getBytes().length;
       boolean isKeepAlive = this.isKeepAlive(connection);
-
-      long loadEndTime = System.currentTimeMillis();
 
       long latency = responseTime - connectStartTime;
       long connectTime = connectEndTime - connectStartTime;
@@ -408,11 +404,10 @@ public class HttpRequestServiceImpl implements HttpRequestService {
         writer.write(params);
       }
 
+      long loadStartTime = System.currentTimeMillis();
       long connectStartTime = System.currentTimeMillis();
       connection.connect();
       long connectEndTime = System.currentTimeMillis();
-
-      long loadStartTime = System.currentTimeMillis();
 
       InputStream inputStream = connection.getInputStream();
       long responseTime = 0;
@@ -421,11 +416,11 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       }
 
       String responseBody = this.getResponseBody(connection);
+      long loadEndTime = System.currentTimeMillis();
       result.put(CommonConstant.RESPONSE_BODY, responseBody);
       long htmlTransferred = responseBody.getBytes().length;
       boolean isKeepAlive = this.isKeepAlive(connection);
 
-      long loadEndTime = System.currentTimeMillis();
 
       long latency = responseTime - connectStartTime;
       long connectTime = connectEndTime - connectStartTime;
