@@ -1,7 +1,5 @@
 package com.pbl.loadtestweb.common.constant;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 
 public final class CommonConstant {
   private CommonConstant() {}
@@ -58,14 +56,6 @@ public final class CommonConstant {
   public static final String SERVER_HOST = "serverHost";
 
   public static final String SERVER_PORT = "serverPort";
-
-  public static final String CURRENT_LEVEL = "concurrentLevel";
-
-  public static final String COMPLETE_REQUEST = "completeRequest";
-
-  public static final String FAIL_REQUEST = "failRequest";
-
-  public static final String NON2XX_REQUEST = "non2xxResponse";
 
   public static final String KEEP_ALIVE = "keepAlive";
 
