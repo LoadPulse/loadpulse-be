@@ -17,33 +17,21 @@ public class HttpController {
 
   private final HttpRequestService httpRequestService;
 
-  @GetMapping(value = "/get/http")
-  public ResponseEntity<SseEmitter> handleMethodGetHttp(
+  @GetMapping(value = "/get")
+  public ResponseEntity<SseEmitter> handleMethodGet(
       @RequestParam(name = "threads", defaultValue = "1") int threadCount,
       @RequestParam(name = "iterations", defaultValue = "1") int iterations,
       @RequestParam(name = "url", defaultValue = "") String url) {
-    url = CommonConstant.HTTP + url;
     return ResponseEntity.ok(
         httpRequestService.httpGet(url, threadCount, iterations, CommonConstant.HTTP_METHOD_GET));
   }
 
-  @GetMapping("/get/https")
-  public ResponseEntity<SseEmitter> handleMethodGetHttps(
-      @RequestParam(name = "threads", defaultValue = "1") int threadCount,
-      @RequestParam(name = "iterations", defaultValue = "1") int iterations,
-      @RequestParam(name = "url", defaultValue = "") String url) {
-    url = CommonConstant.HTTPS + url;
-    return ResponseEntity.ok(
-        httpRequestService.httpGet(url, threadCount, iterations, CommonConstant.HTTP_METHOD_GET));
-  }
-
-  @PostMapping("/post/mvc/http")
-  public ResponseEntity<SseEmitter> handleMethodPostMVCHttp(
+  @PostMapping("/post/mvc")
+  public ResponseEntity<SseEmitter> handleMethodPostMVC(
       @RequestParam(name = "threads", defaultValue = "1") int threadCount,
       @RequestParam(name = "iterations", defaultValue = "1") int iterations,
       @RequestParam(name = "url", defaultValue = "") String url,
       @RequestBody HttpPostRequest httpPostRequest) {
-    url = CommonConstant.HTTP + url;
     if (httpPostRequest.getKey().isEmpty()) {
       return ResponseEntity.ok(
           httpRequestService.httpGet(
@@ -55,54 +43,12 @@ public class HttpController {
     }
   }
 
-  @PostMapping("/post/mvc/https")
-  public ResponseEntity<SseEmitter> handleMethodPostMVCHttps(
+  @PostMapping("/post/api")
+  public ResponseEntity<SseEmitter> handleMethodPostAPI(
       @RequestParam(name = "threads", defaultValue = "1") int threadCount,
       @RequestParam(name = "iterations", defaultValue = "1") int iterations,
       @RequestParam(name = "url", defaultValue = "") String url,
       @RequestBody HttpPostRequest httpPostRequest) {
-
-    url = CommonConstant.HTTPS + url;
-
-    if (httpPostRequest.getKey().isEmpty()) {
-      return ResponseEntity.ok(
-          httpRequestService.httpGet(
-              url, threadCount, iterations, CommonConstant.HTTP_METHOD_POST));
-    } else {
-      return ResponseEntity.ok(
-          httpRequestService.httpPostMVC(
-              url, threadCount, iterations, CommonConstant.HTTP_METHOD_POST, httpPostRequest));
-    }
-  }
-
-  @PostMapping("/post/api/http")
-  public ResponseEntity<SseEmitter> handleMethodPostAPIHttp(
-      @RequestParam(name = "threads", defaultValue = "1") int threadCount,
-      @RequestParam(name = "iterations", defaultValue = "1") int iterations,
-      @RequestParam(name = "url", defaultValue = "") String url,
-      @RequestBody HttpPostRequest httpPostRequest) {
-    url = CommonConstant.HTTP + url;
-
-    if (httpPostRequest.getKey().isEmpty()) {
-      return ResponseEntity.ok(
-          httpRequestService.httpGet(
-              url, threadCount, iterations, CommonConstant.HTTP_METHOD_POST));
-    } else {
-      return ResponseEntity.ok(
-          httpRequestService.httpPostAPI(
-              url, threadCount, iterations, CommonConstant.HTTP_METHOD_POST, httpPostRequest));
-    }
-  }
-
-  @PostMapping("/post/api/https")
-  public ResponseEntity<SseEmitter> handleMethodPostAPIHttps(
-      @RequestParam(name = "threads", defaultValue = "1") int threadCount,
-      @RequestParam(name = "iterations", defaultValue = "1") int iterations,
-      @RequestParam(name = "url", defaultValue = "") String url,
-      @RequestBody HttpPostRequest httpPostRequest) {
-
-    url = CommonConstant.HTTPS + url;
-
     if (httpPostRequest.getKey().isEmpty()) {
       return ResponseEntity.ok(
           httpRequestService.httpGet(

@@ -10,15 +10,9 @@ public final class CommonConstant {
 
   public static final String ERROR = "error";
 
-  public static final String HTTP = "http://";
-
-  public static final String HTTPS = "https://";
-
   public static final String HTTP_METHOD_GET = "GET";
 
   public static final String HTTP_METHOD_POST = "POST";
-
-  public static final String HTTP_METHOD_PUT = "PUT";
 
   public static final String SERVER = "Server";
 
@@ -59,10 +53,7 @@ public final class CommonConstant {
 
   public static final String KEEP_ALIVE = "keepAlive";
 
-  public static final String TOTAL_TRANSFERRED = "totalTransferred";
-
   public static final String HTML_TRANSFERRED = "htmlTransferred";
 
-  public static final String REQUEST_PER_SEC = "requestPerSec";
   public static final String DATA = "data";
 }
