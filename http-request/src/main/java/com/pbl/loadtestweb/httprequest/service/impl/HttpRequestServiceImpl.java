@@ -1,5 +1,6 @@
 package com.pbl.loadtestweb.httprequest.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pbl.loadtestweb.common.common.CommonFunction;
 import com.pbl.loadtestweb.common.constant.CommonConstant;
@@ -203,7 +204,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
     return headersSize;
   }
 
-  private String getResponseBody(HttpURLConnection connection) {
+  private String getResponseBodySuccess(HttpURLConnection connection) {
     BufferedReader br = null;
     StringBuilder body = null;
     String line = "";
@@ -215,7 +216,23 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       }
       return body.toString();
     } catch (Exception e) {
-      throw new RuntimeException("Unable to get response body", e);
+      throw new IllegalArgumentException("Unable to get response body", e);
+    }
+  }
+
+  private String getResponseBodyError(HttpURLConnection connection) {
+    BufferedReader br = null;
+    StringBuilder body = null;
+    String line = "";
+    try {
+      br = new BufferedReader(new InputStreamReader(connection.getErrorStream()));
+      body = new StringBuilder();
+      while ((line = br.readLine()) != null) {
+        body.append(line);
+      }
+      return body.toString();
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Unable to get response body", e);
     }
   }
 
@@ -230,56 +247,87 @@ public class HttpRequestServiceImpl implements HttpRequestService {
     try {
       URL obj = new URL(url);
       HttpURLConnection connection = (HttpURLConnection) obj.openConnection();
+      connection.setUseCaches(false);
+      connection.setDoInput(true);
       connection.setRequestMethod(method);
 
-      long loadStartTime = System.currentTimeMillis();
-      long connectStartTime = System.currentTimeMillis();
-
+      long startTime = System.currentTimeMillis();
       connection.connect();
+      long connectTime = System.currentTimeMillis() - startTime;
 
-      long connectEndTime = System.currentTimeMillis();
+      if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+        InputStream inputStream = connection.getInputStream();
+        long latency = 0;
+        if (inputStream != null) {
+          latency = System.currentTimeMillis() - startTime;
+        }
 
-      InputStream inputStream = connection.getInputStream();
-      long responseTime = 0;
+        String responseBody = this.getResponseBodySuccess(connection);
+        long loadTime = System.currentTimeMillis() - startTime;
+        result.put(CommonConstant.RESPONSE_BODY, responseBody);
+        long htmlTransferred = responseBody.getBytes().length;
+        boolean isKeepAlive = this.isKeepAlive(connection);
 
-      if (inputStream != null) {
-        responseTime = System.currentTimeMillis();
+        result.put(
+            CommonConstant.SERVER_SOFTWARE, connection.getHeaderField(CommonConstant.SERVER));
+        result.put(CommonConstant.SERVER_HOST, connection.getURL().getHost());
+        result.put(CommonConstant.SERVER_PORT, String.valueOf(obj.getDefaultPort()));
+        result.put(CommonConstant.LOAD_TIME, String.valueOf(loadTime));
+        result.put(CommonConstant.CONNECT_TIME, String.valueOf(connectTime));
+        result.put(CommonConstant.LATENCY, String.valueOf(latency));
+        result.put(CommonConstant.HEADER_SIZE, String.valueOf(this.calcHeaderSize(connection)));
+        result.put(
+            CommonConstant.START_AT,
+            CommonFunction.formatDateToString(CommonFunction.getCurrentDateTime()));
+        result.put(CommonConstant.THREAD_NAME, Thread.currentThread().getName());
+        result.put(CommonConstant.HTML_TRANSFERRED, String.valueOf(htmlTransferred));
+        result.put(CommonConstant.KEEP_ALIVE, String.valueOf(isKeepAlive));
+        result.put(CommonConstant.ITERATIONS, Integer.toString(iterations));
+        result.put(CommonConstant.RESPONSE_CODE, Integer.toString(connection.getResponseCode()));
+        result.put(CommonConstant.RESPONSE_MESSAGE, connection.getResponseMessage());
+        result.put(CommonConstant.CONTENT_TYPE, connection.getContentType());
+        result.put(CommonConstant.DATA_ENCODING, connection.getContentEncoding());
+        result.put(CommonConstant.REQUEST_METHOD, connection.getRequestMethod());
+      } else {
+        InputStream inputStream = connection.getErrorStream();
+        long latency = 0;
+        if (inputStream != null) {
+          latency = System.currentTimeMillis() - startTime;
+        }
+        log.error("Error: " + connection.getResponseCode() + " " + connection.getResponseMessage());
+        String responseBody = this.getResponseBodyError(connection);
+        long loadTime = System.currentTimeMillis() - startTime;
+        result.put(CommonConstant.RESPONSE_BODY, responseBody);
+        long htmlTransferred = responseBody.getBytes().length;
+        boolean isKeepAlive = this.isKeepAlive(connection);
+
+        result.put(
+                CommonConstant.SERVER_SOFTWARE, connection.getHeaderField(CommonConstant.SERVER));
+        result.put(CommonConstant.SERVER_HOST, connection.getURL().getHost());
+        result.put(CommonConstant.SERVER_PORT, String.valueOf(obj.getDefaultPort()));
+        result.put(CommonConstant.LOAD_TIME, String.valueOf(loadTime));
+        result.put(CommonConstant.CONNECT_TIME, String.valueOf(connectTime));
+        result.put(CommonConstant.LATENCY, String.valueOf(latency));
+        result.put(CommonConstant.HEADER_SIZE, String.valueOf(this.calcHeaderSize(connection)));
+        result.put(
+                CommonConstant.START_AT,
+                CommonFunction.formatDateToString(CommonFunction.getCurrentDateTime()));
+        result.put(CommonConstant.THREAD_NAME, Thread.currentThread().getName());
+        result.put(CommonConstant.HTML_TRANSFERRED, String.valueOf(htmlTransferred));
+        result.put(CommonConstant.KEEP_ALIVE, String.valueOf(isKeepAlive));
+        result.put(CommonConstant.ITERATIONS, Integer.toString(iterations));
+        result.put(CommonConstant.RESPONSE_CODE, Integer.toString(connection.getResponseCode()));
+        result.put(CommonConstant.RESPONSE_MESSAGE, connection.getResponseMessage());
+        result.put(CommonConstant.CONTENT_TYPE, connection.getContentType());
+        result.put(CommonConstant.DATA_ENCODING, connection.getContentEncoding());
+        result.put(CommonConstant.REQUEST_METHOD, connection.getRequestMethod());
       }
-      String responseBody = this.getResponseBody(connection);
-      long loadEndTime = System.currentTimeMillis();
-      result.put(CommonConstant.RESPONSE_BODY, responseBody);
-      long htmlTransferred = responseBody.getBytes().length;
-      boolean isKeepAlive = this.isKeepAlive(connection);
 
-      long latency = responseTime - connectStartTime;
-      long connectTime = connectEndTime - connectStartTime;
-      long loadTime = loadEndTime - loadStartTime;
-
-      result.put(CommonConstant.SERVER_SOFTWARE, connection.getHeaderField(CommonConstant.SERVER));
-      result.put(CommonConstant.SERVER_HOST, connection.getURL().getHost());
-      result.put(CommonConstant.SERVER_PORT, String.valueOf(obj.getDefaultPort()));
-      result.put(CommonConstant.LOAD_TIME, String.valueOf(loadTime));
-      result.put(CommonConstant.CONNECT_TIME, String.valueOf(connectTime));
-      result.put(CommonConstant.LATENCY, String.valueOf(latency));
-      result.put(CommonConstant.HEADER_SIZE, String.valueOf(this.calcHeaderSize(connection)));
-      result.put(
-          CommonConstant.START_AT,
-          CommonFunction.formatDateToString(CommonFunction.getCurrentDateTime()));
-      result.put(CommonConstant.THREAD_NAME, Thread.currentThread().getName());
-      result.put(CommonConstant.HTML_TRANSFERRED, String.valueOf(htmlTransferred));
-      result.put(CommonConstant.KEEP_ALIVE, String.valueOf(isKeepAlive));
-      result.put(CommonConstant.ITERATIONS, Integer.toString(iterations));
-      result.put(CommonConstant.RESPONSE_CODE, Integer.toString(connection.getResponseCode()));
-      result.put(CommonConstant.RESPONSE_MESSAGE, connection.getResponseMessage());
-      result.put(CommonConstant.CONTENT_TYPE, connection.getContentType());
-      result.put(CommonConstant.DATA_ENCODING, connection.getContentEncoding());
-      result.put(CommonConstant.REQUEST_METHOD, connection.getRequestMethod());
-
-    } catch (Exception ignored) {
+    } catch (IOException e) {
       result.put(CommonConstant.THREAD_NAME, Thread.currentThread().getName());
       result.put(CommonConstant.ITERATIONS, Integer.toString(iterations));
-      result.put(CommonConstant.RESPONSE_MESSAGE, ignored.getMessage());
-      log.error(ignored.getMessage());
+      result.put(CommonConstant.RESPONSE_MESSAGE, e.getMessage());
+      log.error(e.getMessage());
     }
     return result;
   }
@@ -299,13 +347,17 @@ public class HttpRequestServiceImpl implements HttpRequestService {
     return requestBody.toString();
   }
 
-  public String handleParamsToRequestBodyAPI(HttpPostRequest httpPostRequest) throws Exception {
+  public String handleParamsToRequestBodyAPI(HttpPostRequest httpPostRequest) {
     Map<String, String> params = new HashMap<>();
-    for (int i = 0; i < httpPostRequest.getKey().size(); i++) {
-      params.put(httpPostRequest.getKey().get(i), httpPostRequest.getValue().get(i));
+    try {
+      for (int i = 0; i < httpPostRequest.getKey().size(); i++) {
+        params.put(httpPostRequest.getKey().get(i), httpPostRequest.getValue().get(i));
+      }
+      ObjectMapper objectMapper = new ObjectMapper();
+      return objectMapper.writeValueAsString(params);
+    } catch (JsonProcessingException e) {
+      throw new IllegalArgumentException("Unable to convert params to request body", e);
     }
-    ObjectMapper objectMapper = new ObjectMapper();
-    return objectMapper.writeValueAsString(params);
   }
 
   public Map<String, String> loadTestThreadWithParamsMVC(
@@ -340,7 +392,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
         responseTime = System.currentTimeMillis();
       }
 
-      String responseBody = this.getResponseBody(connection);
+      String responseBody = this.getResponseBodySuccess(connection);
       long loadEndTime = System.currentTimeMillis();
       result.put(CommonConstant.RESPONSE_BODY, responseBody);
       long htmlTransferred = responseBody.getBytes().length;
@@ -415,12 +467,11 @@ public class HttpRequestServiceImpl implements HttpRequestService {
         responseTime = System.currentTimeMillis();
       }
 
-      String responseBody = this.getResponseBody(connection);
+      String responseBody = this.getResponseBodySuccess(connection);
       long loadEndTime = System.currentTimeMillis();
       result.put(CommonConstant.RESPONSE_BODY, responseBody);
       long htmlTransferred = responseBody.getBytes().length;
       boolean isKeepAlive = this.isKeepAlive(connection);
-
 
       long latency = responseTime - connectStartTime;
       long connectTime = connectEndTime - connectStartTime;
