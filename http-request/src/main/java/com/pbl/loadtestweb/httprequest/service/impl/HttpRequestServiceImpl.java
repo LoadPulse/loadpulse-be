@@ -251,6 +251,10 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       connection.setDoInput(true);
       connection.setRequestMethod(method);
 
+      result.put(
+              CommonConstant.START_AT,
+              CommonFunction.formatDateToString(CommonFunction.getCurrentDateTime()));
+
       long startTime = System.currentTimeMillis();
       connection.connect();
       long connectTime = System.currentTimeMillis() - startTime;
@@ -276,9 +280,6 @@ public class HttpRequestServiceImpl implements HttpRequestService {
         result.put(CommonConstant.CONNECT_TIME, String.valueOf(connectTime));
         result.put(CommonConstant.LATENCY, String.valueOf(latency));
         result.put(CommonConstant.HEADER_SIZE, String.valueOf(this.calcHeaderSize(connection)));
-        result.put(
-            CommonConstant.START_AT,
-            CommonFunction.formatDateToString(CommonFunction.getCurrentDateTime()));
         result.put(CommonConstant.THREAD_NAME, Thread.currentThread().getName());
         result.put(CommonConstant.HTML_TRANSFERRED, String.valueOf(htmlTransferred));
         result.put(CommonConstant.KEEP_ALIVE, String.valueOf(isKeepAlive));
@@ -294,7 +295,6 @@ public class HttpRequestServiceImpl implements HttpRequestService {
         if (inputStream != null) {
           latency = System.currentTimeMillis() - startTime;
         }
-        log.error("Error: " + connection.getResponseCode() + " " + connection.getResponseMessage());
         String responseBody = this.getResponseBodyError(connection);
         long loadTime = System.currentTimeMillis() - startTime;
         result.put(CommonConstant.RESPONSE_BODY, responseBody);
@@ -302,16 +302,13 @@ public class HttpRequestServiceImpl implements HttpRequestService {
         boolean isKeepAlive = this.isKeepAlive(connection);
 
         result.put(
-                CommonConstant.SERVER_SOFTWARE, connection.getHeaderField(CommonConstant.SERVER));
+            CommonConstant.SERVER_SOFTWARE, connection.getHeaderField(CommonConstant.SERVER));
         result.put(CommonConstant.SERVER_HOST, connection.getURL().getHost());
         result.put(CommonConstant.SERVER_PORT, String.valueOf(obj.getDefaultPort()));
         result.put(CommonConstant.LOAD_TIME, String.valueOf(loadTime));
         result.put(CommonConstant.CONNECT_TIME, String.valueOf(connectTime));
         result.put(CommonConstant.LATENCY, String.valueOf(latency));
         result.put(CommonConstant.HEADER_SIZE, String.valueOf(this.calcHeaderSize(connection)));
-        result.put(
-                CommonConstant.START_AT,
-                CommonFunction.formatDateToString(CommonFunction.getCurrentDateTime()));
         result.put(CommonConstant.THREAD_NAME, Thread.currentThread().getName());
         result.put(CommonConstant.HTML_TRANSFERRED, String.valueOf(htmlTransferred));
         result.put(CommonConstant.KEEP_ALIVE, String.valueOf(isKeepAlive));
