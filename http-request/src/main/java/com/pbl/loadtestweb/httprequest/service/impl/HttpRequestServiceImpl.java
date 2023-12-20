@@ -232,7 +232,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       }
 
       long loadEndTime = System.currentTimeMillis();
-
+  
       long latency = responseTime - connectStartTime;
       long connectTime = connectEndTime - connectStartTime;
       long loadTime = loadEndTime - loadStartTime;
