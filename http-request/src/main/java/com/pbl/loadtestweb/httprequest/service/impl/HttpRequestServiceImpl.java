@@ -41,7 +41,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
             try {
               for (int j = 1; j <= iterations; j++) {
                 Map<String, String> result;
-                result = this.loadTestThread(url, method, j);
+                result = this.sendHttpRequest(url, method, j);
                 HttpDataResponse jsonResponse = this.buildHttpDataResponse(result);
                 sseEmitter.send(jsonResponse, MediaType.APPLICATION_JSON);
                 sleep();
@@ -84,7 +84,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
             try {
               for (int j = 1; j <= iterations; j++) {
                 Map<String, String> result;
-                result = this.loadTestThreadWithParamsMVC(url, method, httpPostRequest, j);
+                result = this.sendHttpRequestWithFormURLEncoded(url, method, httpPostRequest, j);
                 HttpDataResponse jsonResponse = this.buildHttpDataResponse(result);
                 sseEmitter.send(jsonResponse, MediaType.APPLICATION_JSON);
                 sleep();
@@ -127,7 +127,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
             try {
               for (int j = 1; j <= iterations; j++) {
                 Map<String, String> result;
-                result = this.loadTestThreadWithParamsAPI(url, method, httpPostRequest, j);
+                result = this.sendHttpRequestWithJson(url, method, httpPostRequest, j);
                 HttpDataResponse jsonResponse = this.buildHttpDataResponse(result);
                 sseEmitter.send(jsonResponse, MediaType.APPLICATION_JSON);
                 sleep();
@@ -188,7 +188,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
         result.get(CommonConstant.KEEP_ALIVE));
   }
 
-  public Map<String, String> loadTestThread(String url, String method, int iterations) {
+  public Map<String, String> sendHttpRequest(String url, String method, int iterations) {
     Map<String, String> result = new HashMap<>();
 
     try {
@@ -276,7 +276,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
     return result;
   }
 
-  public Map<String, String> loadTestThreadWithParamsMVC(
+  public Map<String, String> sendHttpRequestWithFormURLEncoded(
       String url, String method, HttpPostRequest httpPostRequest, int iterations) {
     Map<String, String> result = new HashMap<>();
 
@@ -302,7 +302,6 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       result.put(
           CommonConstant.START_AT,
           CommonFunction.formatDateToString(CommonFunction.getCurrentDateTime()));
-
 
       if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
         InputStream inputStream = connection.getInputStream();
@@ -374,7 +373,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
     return result;
   }
 
-  public Map<String, String> loadTestThreadWithParamsAPI(
+  public Map<String, String> sendHttpRequestWithJson(
       String url, String method, HttpPostRequest httpPostRequest, int iterations) {
     Map<String, String> result = new HashMap<>();
 
