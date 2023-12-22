@@ -8,9 +8,13 @@
         <artifactId>load-test-web</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
-
     <groupId>com.pbl</groupId>
+
     <artifactId>http-request</artifactId>
+    <packaging>jar</packaging>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>http-request</name>
+    <description>http-request-service</description>
 
     <dependencies>
         <dependency>
