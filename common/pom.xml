@@ -9,7 +9,11 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <groupId>com.pbl</groupId>
     <artifactId>common</artifactId>
+    <packaging>jar</packaging>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>common</name>
+    <description>common-service</description>
+
 
 </project>
