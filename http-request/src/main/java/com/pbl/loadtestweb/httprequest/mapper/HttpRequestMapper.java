@@ -20,13 +20,22 @@ public interface HttpRequestMapper {
   @Mapping(source = "connectTime", target = "connectTime")
   @Mapping(source = "latency", target = "latency")
   @Mapping(source = "headerSize", target = "headerSize")
-  @Mapping(source = "bodySize", target = "bodySize")
+  @Mapping(source = "responseBody", target = "responseBody")
+  @Mapping(source = "serverSoftware", target = "serverSoftware")
+  @Mapping(source = "serverHost", target = "serverHost")
+  @Mapping(source = "serverPort", target = "serverPort")
+  @Mapping(source = "htmlTransferred", target = "htmlTransferred")
+  @Mapping(source = "keepAlive", target = "keepAlive")
   HttpDataResponse toHttpDataResponse(
+      String serverSoftware,
+      String serverHost,
+      String serverPort,
       String threadName,
       String iterations,
       String startAt,
       String responseCode,
       String responseMessage,
+      String responseBody,
       String contentType,
       String dataEncoding,
       String requestMethod,
@@ -34,5 +43,6 @@ public interface HttpRequestMapper {
       String connectTime,
       String latency,
       String headerSize,
-      String bodySize);
+      String htmlTransferred,
+      String keepAlive);
 }

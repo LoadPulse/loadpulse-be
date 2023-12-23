@@ -140,13 +140,14 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
       int iterations)
       throws ClassNotFoundException {
     Map<String, String> result = new HashMap<>();
+    long loadStartTime = System.currentTimeMillis();
     try {
-      long startConnectTime = System.currentTimeMillis();
-      Class.forName(jdbcDriverClass);
 
+      Class.forName(jdbcDriverClass);
+      long startConnectTime = System.currentTimeMillis();
       Connection connection = DriverManager.getConnection(databaseUrl, username, password);
       long endConnectTime = System.currentTimeMillis();
-      long loadStartTime = System.currentTimeMillis();
+
       long connectTime = endConnectTime - startConnectTime;
 
       Statement statement = connection.createStatement();
@@ -160,7 +161,7 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
 
       long loadEndTime = System.currentTimeMillis();
 
-      long latency = responseTime - endConnectTime;
+      long latency = responseTime - loadStartTime;
       long loadTime = loadEndTime - loadStartTime;
 
       result.put(CommonConstant.LOAD_TIME, String.valueOf(loadTime));

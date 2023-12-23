@@ -16,6 +16,12 @@ import lombok.Setter;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class HttpDataResponse {
 
+  private String serverSoftware;
+
+  private String serverHost;
+
+  private String serverPort;
+
   private String threadName;
 
   private String iterations;
@@ -30,8 +36,6 @@ public class HttpDataResponse {
 
   private String headerSize;
 
-  private String bodySize;
-
   private String responseCode;
 
   private String responseMessage;
@@ -40,5 +44,13 @@ public class HttpDataResponse {
 
   private String dataEncoding;
 
+  private String keepAlive;
+
+  private String totalTransferred;
+
+  private String htmlTransferred;
+
   private String requestMethod;
+
+  private String responseBody;
 }

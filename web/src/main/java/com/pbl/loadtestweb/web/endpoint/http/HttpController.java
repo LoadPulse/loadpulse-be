@@ -17,73 +17,45 @@ public class HttpController {
 
   private final HttpRequestService httpRequestService;
 
-  @GetMapping(value = "/get/http/{url}")
-  public ResponseEntity<SseEmitter> handleMethodGetHttp(
-      @PathVariable String url,
-      @RequestParam(name = "threads", defaultValue = "1") int threadCount,
-      @RequestParam(name = "iterations", defaultValue = "1") int iterations) {
-    url = CommonConstant.HTTP + url;
-    return ResponseEntity.ok(
-        httpRequestService.httpLoadTestWeb(
-            url, threadCount, iterations, CommonConstant.HTTP_METHOD_GET, null));
-  }
-
-  @GetMapping("/get/https/{url}")
-  public ResponseEntity<SseEmitter> handleMethodGetHttps(
-      @PathVariable String url,
-      @RequestParam(name = "threads", defaultValue = "1") int threadCount,
-      @RequestParam(name = "iterations", defaultValue = "1") int iterations) {
-    url = CommonConstant.HTTPS + url;
-    return ResponseEntity.ok(
-        httpRequestService.httpLoadTestWeb(
-            url, threadCount, iterations, CommonConstant.HTTP_METHOD_GET, null));
-  }
-
-  @PostMapping("/post/http/{url}")
-  public ResponseEntity<SseEmitter> handleMethodPostHttp(
-      @PathVariable String url,
+  @GetMapping(value = "/get")
+  public ResponseEntity<SseEmitter> handleMethodGet(
       @RequestParam(name = "threads", defaultValue = "1") int threadCount,
       @RequestParam(name = "iterations", defaultValue = "1") int iterations,
-      @RequestParam(name = "path", required = false) String path,
-      @RequestBody HttpPostRequest httpPostRequest) {
-    if (path == null || path.isEmpty()) {
-      url = CommonConstant.HTTP + url;
-    } else {
-      url = CommonConstant.HTTP + url + "/" + path;
-    }
+      @RequestParam(name = "url", defaultValue = "") String url) {
+    return ResponseEntity.ok(
+        httpRequestService.httpGet(url, threadCount, iterations, CommonConstant.HTTP_METHOD_GET));
+  }
 
+  @PostMapping("/post/mvc")
+  public ResponseEntity<SseEmitter> handleMethodPostMVC(
+      @RequestParam(name = "threads", defaultValue = "1") int threadCount,
+      @RequestParam(name = "iterations", defaultValue = "1") int iterations,
+      @RequestParam(name = "url", defaultValue = "") String url,
+      @RequestBody HttpPostRequest httpPostRequest) {
     if (httpPostRequest.getKey().isEmpty()) {
       return ResponseEntity.ok(
-          httpRequestService.httpLoadTestWeb(
-              url, threadCount, iterations, CommonConstant.HTTP_METHOD_POST, null));
+          httpRequestService.httpGet(
+              url, threadCount, iterations, CommonConstant.HTTP_METHOD_POST));
     } else {
       return ResponseEntity.ok(
-          httpRequestService.httpLoadTestWeb(
+          httpRequestService.httpPostMVC(
               url, threadCount, iterations, CommonConstant.HTTP_METHOD_POST, httpPostRequest));
     }
   }
 
-  @PostMapping("/post/https/{url}")
-  public ResponseEntity<SseEmitter> handleMethodPostHttps(
-      @PathVariable String url,
+  @PostMapping("/post/api")
+  public ResponseEntity<SseEmitter> handleMethodPostAPI(
       @RequestParam(name = "threads", defaultValue = "1") int threadCount,
       @RequestParam(name = "iterations", defaultValue = "1") int iterations,
-      @RequestParam(name = "path", required = false) String path,
+      @RequestParam(name = "url", defaultValue = "") String url,
       @RequestBody HttpPostRequest httpPostRequest) {
-
-    if (path == null || path.isEmpty()) {
-      url = CommonConstant.HTTPS + url;
-    } else {
-      url = CommonConstant.HTTPS + url + "/" + path;
-    }
-
     if (httpPostRequest.getKey().isEmpty()) {
       return ResponseEntity.ok(
-          httpRequestService.httpLoadTestWeb(
-              url, threadCount, iterations, CommonConstant.HTTP_METHOD_POST, null));
+          httpRequestService.httpGet(
+              url, threadCount, iterations, CommonConstant.HTTP_METHOD_POST));
     } else {
       return ResponseEntity.ok(
-          httpRequestService.httpLoadTestWeb(
+          httpRequestService.httpPostAPI(
               url, threadCount, iterations, CommonConstant.HTTP_METHOD_POST, httpPostRequest));
     }
   }
