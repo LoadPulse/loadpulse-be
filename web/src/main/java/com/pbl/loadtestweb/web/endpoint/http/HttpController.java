@@ -1,6 +1,5 @@
 package com.pbl.loadtestweb.web.endpoint.http;
 
-import com.pbl.loadtestweb.common.constant.CommonConstant;
 import com.pbl.loadtestweb.httprequest.payload.request.HttpPostRequest;
 import com.pbl.loadtestweb.httprequest.service.HttpRequestService;
 import io.swagger.annotations.Api;
@@ -24,12 +23,10 @@ public class HttpController {
       @RequestParam(name = "url", defaultValue = "") String url,
       @RequestParam(name = "ramp_up", required = false) int rampUp) {
     if (rampUp == 0) {
-      return ResponseEntity.ok(
-          httpRequestService.httpGet(url, threadCount, iterations, CommonConstant.HTTP_METHOD_GET));
+      return ResponseEntity.ok(httpRequestService.httpGet(url, threadCount, iterations));
     } else {
       return ResponseEntity.ok(
-          httpRequestService.httpGetWithRampUp(
-              url, threadCount, iterations, CommonConstant.HTTP_METHOD_GET, rampUp));
+          httpRequestService.httpGetWithRampUp(url, threadCount, iterations, rampUp));
     }
   }
 
@@ -40,13 +37,10 @@ public class HttpController {
       @RequestParam(name = "url", defaultValue = "") String url,
       @RequestBody HttpPostRequest httpPostRequest) {
     if (httpPostRequest.getKey().isEmpty()) {
-      return ResponseEntity.ok(
-          httpRequestService.httpGet(
-              url, threadCount, iterations, CommonConstant.HTTP_METHOD_POST));
+      return ResponseEntity.ok(httpRequestService.httpGet(url, threadCount, iterations));
     } else {
       return ResponseEntity.ok(
-          httpRequestService.httpPostMVC(
-              url, threadCount, iterations, CommonConstant.HTTP_METHOD_POST, httpPostRequest));
+          httpRequestService.httpPostMVC(url, threadCount, iterations, httpPostRequest));
     }
   }
 
@@ -57,13 +51,10 @@ public class HttpController {
       @RequestParam(name = "url", defaultValue = "") String url,
       @RequestBody HttpPostRequest httpPostRequest) {
     if (httpPostRequest.getKey().isEmpty()) {
-      return ResponseEntity.ok(
-          httpRequestService.httpGet(
-              url, threadCount, iterations, CommonConstant.HTTP_METHOD_POST));
+      return ResponseEntity.ok(httpRequestService.httpGet(url, threadCount, iterations));
     } else {
       return ResponseEntity.ok(
-          httpRequestService.httpPostAPI(
-              url, threadCount, iterations, CommonConstant.HTTP_METHOD_POST, httpPostRequest));
+          httpRequestService.httpPostAPI(url, threadCount, iterations, httpPostRequest));
     }
   }
 }

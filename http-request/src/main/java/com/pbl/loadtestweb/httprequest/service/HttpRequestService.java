@@ -4,13 +4,13 @@ import com.pbl.loadtestweb.httprequest.payload.request.HttpPostRequest;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 public interface HttpRequestService {
-  SseEmitter httpGet(String url, int threadCount, int iterations, String method);
+  SseEmitter httpGet(String url, int threadCount, int iterations);
 
-  SseEmitter httpGetWithRampUp(String url, int threadCount, int iterations, String method, int rampUp);
+  SseEmitter httpGetWithRampUp(String url, int threadCount, int iterations, int rampUp);
 
   SseEmitter httpPostMVC(
-      String url, int threadCount, int iterations, String method, HttpPostRequest httpPostRequest);
+      String url, int threadCount, int iterations, HttpPostRequest httpPostRequest);
 
   SseEmitter httpPostAPI(
-      String url, int threadCount, int iterations, String method, HttpPostRequest httpPostRequest);
+      String url, int threadCount, int iterations, HttpPostRequest httpPostRequest);
 }
