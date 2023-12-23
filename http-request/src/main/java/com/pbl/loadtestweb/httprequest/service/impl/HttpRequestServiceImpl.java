@@ -80,12 +80,12 @@ public class HttpRequestServiceImpl implements HttpRequestService {
 
     log.info(Long.toString(Utils.threadRunEachMillisecond(threadCount, rampUp)));
     log.info(Long.toString(Utils.calcThreadIncrement(threadCount, rampUp)));
-    int threadIncrement = Utils.calcThreadIncrement(threadCount, rampUp);
-    ScheduledThreadPoolExecutor scheduledThreadPoolExecutor =
-        new ScheduledThreadPoolExecutor(threadIncrement);
 
     for (int i = 1; i <= threadCount; i++) {
-      scheduledThreadPoolExecutor.scheduleAtFixedRate(
+      if (i != 1) {
+        Utils.sleepThread(Utils.threadRunEachMillisecond(threadCount, rampUp));
+      }
+      executorService.execute(
           () -> {
             try {
               for (int j = 1; j <= iterations; j++) {
@@ -100,10 +100,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
             } finally {
               latch.countDown();
             }
-          },
-          0,
-          Utils.threadRunEachMillisecond(threadCount, rampUp),
-          TimeUnit.MILLISECONDS);
+          });
     }
 
     new Thread(

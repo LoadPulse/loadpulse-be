@@ -101,4 +101,13 @@ public class Utils {
   public static int calcThreadIncrement(int targetThreadCount, int rampUpTimeInSeconds) {
     return Math.max(1, targetThreadCount / rampUpTimeInSeconds);
   }
+
+  public static void sleepThread(long time) {
+    try {
+      Thread.sleep(time);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+      Thread.currentThread().interrupt();
+    }
+  }
 }
