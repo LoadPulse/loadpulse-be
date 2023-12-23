@@ -30,7 +30,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
   private final ExecutorService executorService = Executors.newCachedThreadPool();
 
   @Override
-  public SseEmitter httpGet(String url, int threadCount, int iterations, String method) {
+  public SseEmitter httpGet(String url, int threadCount, int iterations) {
     SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
 
     CountDownLatch latch = new CountDownLatch(threadCount);
@@ -41,7 +41,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
             try {
               for (int j = 1; j <= iterations; j++) {
                 Map<String, String> result;
-                result = this.sendHttpRequest(url, method, j);
+                result = this.sendHttpRequest(url, CommonConstant.HTTP_METHOD_GET, j);
                 HttpDataResponse jsonResponse = this.buildHttpDataResponse(result);
                 sseEmitter.send(jsonResponse, MediaType.APPLICATION_JSON);
                 sleep();
@@ -72,8 +72,55 @@ public class HttpRequestServiceImpl implements HttpRequestService {
   }
 
   @Override
+  public SseEmitter httpGetWithRampUp(String url, int threadCount, int iterations, int rampUp) {
+    SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
+
+    CountDownLatch latch = new CountDownLatch(threadCount);
+
+    log.info(Long.toString(Utils.threadRunEachMillisecond(threadCount, rampUp)));
+    log.info(Long.toString(Utils.calcThreadIncrement(threadCount, rampUp)));
+
+    for (int i = 1; i <= threadCount; i++) {
+      if (i != 1) {
+        Utils.sleepThread(Utils.threadRunEachMillisecond(threadCount, rampUp));
+      }
+      executorService.execute(
+          () -> {
+            try {
+              for (int j = 1; j <= iterations; j++) {
+                Map<String, String> result;
+                result = this.sendHttpRequest(url, CommonConstant.HTTP_METHOD_GET, j);
+                HttpDataResponse jsonResponse = this.buildHttpDataResponse(result);
+                sseEmitter.send(jsonResponse, MediaType.APPLICATION_JSON);
+              }
+            } catch (IOException e) {
+              e.printStackTrace();
+              sseEmitter.completeWithError(e);
+            } finally {
+              latch.countDown();
+            }
+          });
+    }
+
+    new Thread(
+            () -> {
+              try {
+                latch.await();
+                sseEmitter.complete();
+              } catch (InterruptedException e) {
+                e.printStackTrace();
+                Thread.currentThread().interrupt();
+                sseEmitter.completeWithError(e);
+              }
+            })
+        .start();
+
+    return sseEmitter;
+  }
+
+  @Override
   public SseEmitter httpPostMVC(
-      String url, int threadCount, int iterations, String method, HttpPostRequest httpPostRequest) {
+      String url, int threadCount, int iterations, HttpPostRequest httpPostRequest) {
     SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
 
     CountDownLatch latch = new CountDownLatch(threadCount);
@@ -84,7 +131,9 @@ public class HttpRequestServiceImpl implements HttpRequestService {
             try {
               for (int j = 1; j <= iterations; j++) {
                 Map<String, String> result;
-                result = this.sendHttpRequestWithFormURLEncoded(url, method, httpPostRequest, j);
+                result =
+                    this.sendHttpRequestWithFormURLEncoded(
+                        url, CommonConstant.HTTP_METHOD_POST, httpPostRequest, j);
                 HttpDataResponse jsonResponse = this.buildHttpDataResponse(result);
                 sseEmitter.send(jsonResponse, MediaType.APPLICATION_JSON);
                 sleep();
@@ -116,7 +165,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
 
   @Override
   public SseEmitter httpPostAPI(
-      String url, int threadCount, int iterations, String method, HttpPostRequest httpPostRequest) {
+      String url, int threadCount, int iterations, HttpPostRequest httpPostRequest) {
     SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
 
     CountDownLatch latch = new CountDownLatch(threadCount);
@@ -127,7 +176,9 @@ public class HttpRequestServiceImpl implements HttpRequestService {
             try {
               for (int j = 1; j <= iterations; j++) {
                 Map<String, String> result;
-                result = this.sendHttpRequestWithJson(url, method, httpPostRequest, j);
+                result =
+                    this.sendHttpRequestWithJson(
+                        url, CommonConstant.HTTP_METHOD_POST, httpPostRequest, j);
                 HttpDataResponse jsonResponse = this.buildHttpDataResponse(result);
                 sseEmitter.send(jsonResponse, MediaType.APPLICATION_JSON);
                 sleep();
