@@ -21,9 +21,16 @@ public class HttpController {
   public ResponseEntity<SseEmitter> handleMethodGet(
       @RequestParam(name = "threads", defaultValue = "1") int threadCount,
       @RequestParam(name = "iterations", defaultValue = "1") int iterations,
-      @RequestParam(name = "url", defaultValue = "") String url) {
-    return ResponseEntity.ok(
-        httpRequestService.httpGet(url, threadCount, iterations, CommonConstant.HTTP_METHOD_GET));
+      @RequestParam(name = "url", defaultValue = "") String url,
+      @RequestParam(name = "ramp_up", required = false) int rampUp) {
+    if (rampUp == 0) {
+      return ResponseEntity.ok(
+          httpRequestService.httpGet(url, threadCount, iterations, CommonConstant.HTTP_METHOD_GET));
+    } else {
+      return ResponseEntity.ok(
+          httpRequestService.httpGetWithRampUp(
+              url, threadCount, iterations, CommonConstant.HTTP_METHOD_GET, rampUp));
+    }
   }
 
   @PostMapping("/post/mvc")

@@ -93,4 +93,12 @@ public class Utils {
       throw new IllegalArgumentException("Unable to convert params to request body", e);
     }
   }
+
+  public static long threadRunEachMillisecond(int threadCount, int rampUp) {
+    return (long) ((double) rampUp / threadCount * 1000);
+  }
+
+  public static int calcThreadIncrement(int targetThreadCount, int rampUpTimeInSeconds) {
+    return Math.max(1, targetThreadCount / rampUpTimeInSeconds);
+  }
 }

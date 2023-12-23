@@ -72,6 +72,57 @@ public class HttpRequestServiceImpl implements HttpRequestService {
   }
 
   @Override
+  public SseEmitter httpGetWithRampUp(
+      String url, int threadCount, int iterations, String method, int rampUp) {
+    SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
+
+    CountDownLatch latch = new CountDownLatch(threadCount);
+
+    log.info(Long.toString(Utils.threadRunEachMillisecond(threadCount, rampUp)));
+    log.info(Long.toString(Utils.calcThreadIncrement(threadCount, rampUp)));
+    int threadIncrement = Utils.calcThreadIncrement(threadCount, rampUp);
+    ScheduledThreadPoolExecutor scheduledThreadPoolExecutor =
+        new ScheduledThreadPoolExecutor(threadIncrement);
+
+    for (int i = 1; i <= threadCount; i++) {
+      scheduledThreadPoolExecutor.scheduleAtFixedRate(
+          () -> {
+            try {
+              for (int j = 1; j <= iterations; j++) {
+                Map<String, String> result;
+                result = this.sendHttpRequest(url, method, j);
+                HttpDataResponse jsonResponse = this.buildHttpDataResponse(result);
+                sseEmitter.send(jsonResponse, MediaType.APPLICATION_JSON);
+              }
+            } catch (IOException e) {
+              e.printStackTrace();
+              sseEmitter.completeWithError(e);
+            } finally {
+              latch.countDown();
+            }
+          },
+          0,
+          Utils.threadRunEachMillisecond(threadCount, rampUp),
+          TimeUnit.MILLISECONDS);
+    }
+
+    new Thread(
+            () -> {
+              try {
+                latch.await();
+                sseEmitter.complete();
+              } catch (InterruptedException e) {
+                e.printStackTrace();
+                Thread.currentThread().interrupt();
+                sseEmitter.completeWithError(e);
+              }
+            })
+        .start();
+
+    return sseEmitter;
+  }
+
+  @Override
   public SseEmitter httpPostMVC(
       String url, int threadCount, int iterations, String method, HttpPostRequest httpPostRequest) {
     SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
