@@ -11,6 +11,12 @@ public interface HttpRequestService {
   SseEmitter httpPostMVC(
       String url, int threadCount, int iterations, HttpPostRequest httpPostRequest);
 
+  SseEmitter httpPostMVCWithRampUp(
+      String url, int threadCount, int iterations, int rampUp, HttpPostRequest httpPostRequest);
+
   SseEmitter httpPostAPI(
       String url, int threadCount, int iterations, HttpPostRequest httpPostRequest);
+
+  SseEmitter  httpPostAPIWithRampUp(
+      String url, int threadCount, int iterations, int rampUp, HttpPostRequest httpPostRequest);
 }
