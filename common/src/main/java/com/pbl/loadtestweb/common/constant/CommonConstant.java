@@ -1,6 +1,5 @@
 package com.pbl.loadtestweb.common.constant;
 
-
 public final class CommonConstant {
   private CommonConstant() {}
 
@@ -53,7 +52,9 @@ public final class CommonConstant {
 
   public static final String KEEP_ALIVE = "keepAlive";
 
-  public static final String HTML_TRANSFERRED = "htmlTransferred";
+  public static final String DATA_RECEIVED = "dataReceived";
+
+  public static final String DATA_SENT = "dataSent";
 
   public static final String DATA = "data";
 }
