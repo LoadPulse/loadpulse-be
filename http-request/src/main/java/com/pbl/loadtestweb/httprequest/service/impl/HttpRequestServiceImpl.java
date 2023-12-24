@@ -77,12 +77,12 @@ public class HttpRequestServiceImpl implements HttpRequestService {
 
     CountDownLatch latch = new CountDownLatch(threadCount);
 
-    log.info(Long.toString(Utils.threadRunEachMillisecond(threadCount, rampUp)));
+    log.info(Long.toString(Utils.timeForCreationEachThread(threadCount, rampUp)));
     log.info(Long.toString(Utils.calcThreadIncrement(threadCount, rampUp)));
 
     for (int i = 1; i <= threadCount; i++) {
       if (i != 1) {
-        Utils.sleepThread(Utils.threadRunEachMillisecond(threadCount, rampUp));
+        Utils.sleepThread(Utils.timeForCreationEachThread(threadCount, rampUp));
       }
       executorService.execute(
           () -> {
@@ -170,12 +170,12 @@ public class HttpRequestServiceImpl implements HttpRequestService {
 
     CountDownLatch latch = new CountDownLatch(threadCount);
 
-    log.info(Long.toString(Utils.threadRunEachMillisecond(threadCount, rampUp)));
+    log.info(Long.toString(Utils.timeForCreationEachThread(threadCount, rampUp)));
     log.info(Long.toString(Utils.calcThreadIncrement(threadCount, rampUp)));
 
     for (int i = 1; i <= threadCount; i++) {
       if (i != 1) {
-        Utils.sleepThread(Utils.threadRunEachMillisecond(threadCount, rampUp));
+        Utils.sleepThread(Utils.timeForCreationEachThread(threadCount, rampUp));
       }
       executorService.execute(
           () -> {
@@ -265,12 +265,12 @@ public class HttpRequestServiceImpl implements HttpRequestService {
 
     CountDownLatch latch = new CountDownLatch(threadCount);
 
-    log.info(Long.toString(Utils.threadRunEachMillisecond(threadCount, rampUp)));
+    log.info(Long.toString(Utils.timeForCreationEachThread(threadCount, rampUp)));
     log.info(Long.toString(Utils.calcThreadIncrement(threadCount, rampUp)));
 
     for (int i = 1; i <= threadCount; i++) {
       if (i != 1) {
-        Utils.sleepThread(Utils.threadRunEachMillisecond(threadCount, rampUp));
+        Utils.sleepThread(Utils.timeForCreationEachThread(threadCount, rampUp));
       }
       executorService.execute(
           () -> {
@@ -335,7 +335,8 @@ public class HttpRequestServiceImpl implements HttpRequestService {
         result.get(CommonConstant.CONNECT_TIME),
         result.get(CommonConstant.LATENCY),
         result.get(CommonConstant.HEADER_SIZE),
-        result.get(CommonConstant.HTML_TRANSFERRED),
+        result.get(CommonConstant.DATA_RECEIVED),
+        result.get(CommonConstant.DATA_SENT),
         result.get(CommonConstant.KEEP_ALIVE));
   }
 
@@ -348,6 +349,8 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       connection.setUseCaches(false);
       connection.setDoInput(true);
       connection.setRequestMethod(method);
+
+      long dataSent = Utils.calcRequestHeaderSize(connection);
 
       result.put(
           CommonConstant.START_AT,
@@ -368,6 +371,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
         long loadTime = System.currentTimeMillis() - startTime;
         result.put(CommonConstant.RESPONSE_BODY, responseBody);
         long htmlTransferred = responseBody.getBytes().length;
+        long dataReceived = Utils.calcResponseHeaderSize(connection) + htmlTransferred;
         boolean isKeepAlive = Utils.isKeepAlive(connection);
 
         result.put(
@@ -377,9 +381,11 @@ public class HttpRequestServiceImpl implements HttpRequestService {
         result.put(CommonConstant.LOAD_TIME, String.valueOf(loadTime));
         result.put(CommonConstant.CONNECT_TIME, String.valueOf(connectTime));
         result.put(CommonConstant.LATENCY, String.valueOf(latency));
-        result.put(CommonConstant.HEADER_SIZE, String.valueOf(Utils.calcHeaderSize(connection)));
+        result.put(
+            CommonConstant.HEADER_SIZE, String.valueOf(Utils.calcResponseHeaderSize(connection)));
         result.put(CommonConstant.THREAD_NAME, Thread.currentThread().getName());
-        result.put(CommonConstant.HTML_TRANSFERRED, String.valueOf(htmlTransferred));
+        result.put(CommonConstant.DATA_RECEIVED, String.valueOf(dataReceived));
+        result.put(CommonConstant.DATA_SENT, String.valueOf(dataSent));
         result.put(CommonConstant.KEEP_ALIVE, String.valueOf(isKeepAlive));
         result.put(CommonConstant.ITERATIONS, Integer.toString(iterations));
         result.put(CommonConstant.RESPONSE_CODE, Integer.toString(connection.getResponseCode()));
@@ -397,6 +403,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
         long loadTime = System.currentTimeMillis() - startTime;
         result.put(CommonConstant.RESPONSE_BODY, responseBody);
         long htmlTransferred = responseBody.getBytes().length;
+        long dataReceived = Utils.calcResponseHeaderSize(connection) + htmlTransferred;
         boolean isKeepAlive = Utils.isKeepAlive(connection);
 
         result.put(
@@ -406,9 +413,11 @@ public class HttpRequestServiceImpl implements HttpRequestService {
         result.put(CommonConstant.LOAD_TIME, String.valueOf(loadTime));
         result.put(CommonConstant.CONNECT_TIME, String.valueOf(connectTime));
         result.put(CommonConstant.LATENCY, String.valueOf(latency));
-        result.put(CommonConstant.HEADER_SIZE, String.valueOf(Utils.calcHeaderSize(connection)));
+        result.put(
+            CommonConstant.HEADER_SIZE, String.valueOf(Utils.calcResponseHeaderSize(connection)));
         result.put(CommonConstant.THREAD_NAME, Thread.currentThread().getName());
-        result.put(CommonConstant.HTML_TRANSFERRED, String.valueOf(htmlTransferred));
+        result.put(CommonConstant.DATA_RECEIVED, String.valueOf(dataReceived));
+        result.put(CommonConstant.DATA_SENT, String.valueOf(dataSent));
         result.put(CommonConstant.KEEP_ALIVE, String.valueOf(isKeepAlive));
         result.put(CommonConstant.ITERATIONS, Integer.toString(iterations));
         result.put(CommonConstant.RESPONSE_CODE, Integer.toString(connection.getResponseCode()));
@@ -439,11 +448,14 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       connection.setDoInput(true);
       connection.setDoOutput(true);
 
+      long requestHeaderSize = Utils.calcRequestHeaderSize(connection);
+
       long startTime = System.currentTimeMillis();
       connection.connect();
       long connectTime = System.currentTimeMillis() - startTime;
 
       String requestBody = Utils.handleParamsToRequestBodyMVC(httpPostRequest);
+      long dataSent = requestBody.getBytes().length + requestHeaderSize;
 
       try (OutputStream os = connection.getOutputStream();
           OutputStreamWriter writer = new OutputStreamWriter(os, StandardCharsets.UTF_8)) {
@@ -465,6 +477,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
         long loadTime = System.currentTimeMillis() - startTime;
         result.put(CommonConstant.RESPONSE_BODY, responseBody);
         long htmlTransferred = responseBody.getBytes().length;
+        long dataReceived = Utils.calcResponseHeaderSize(connection) + htmlTransferred;
         boolean isKeepAlive = Utils.isKeepAlive(connection);
 
         result.put(
@@ -474,9 +487,11 @@ public class HttpRequestServiceImpl implements HttpRequestService {
         result.put(CommonConstant.LOAD_TIME, String.valueOf(loadTime));
         result.put(CommonConstant.CONNECT_TIME, String.valueOf(connectTime));
         result.put(CommonConstant.LATENCY, String.valueOf(latency));
-        result.put(CommonConstant.HEADER_SIZE, String.valueOf(Utils.calcHeaderSize(connection)));
+        result.put(
+            CommonConstant.HEADER_SIZE, String.valueOf(Utils.calcResponseHeaderSize(connection)));
         result.put(CommonConstant.THREAD_NAME, Thread.currentThread().getName());
-        result.put(CommonConstant.HTML_TRANSFERRED, String.valueOf(htmlTransferred));
+        result.put(CommonConstant.DATA_RECEIVED, String.valueOf(dataReceived));
+        result.put(CommonConstant.DATA_SENT, String.valueOf(dataSent));
         result.put(CommonConstant.KEEP_ALIVE, String.valueOf(isKeepAlive));
         result.put(CommonConstant.ITERATIONS, Integer.toString(iterations));
         result.put(CommonConstant.RESPONSE_CODE, Integer.toString(connection.getResponseCode()));
@@ -494,6 +509,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
         long loadTime = System.currentTimeMillis() - startTime;
         result.put(CommonConstant.RESPONSE_BODY, responseBody);
         long htmlTransferred = responseBody.getBytes().length;
+        long dataReceived = Utils.calcResponseHeaderSize(connection) + htmlTransferred;
         boolean isKeepAlive = Utils.isKeepAlive(connection);
 
         result.put(
@@ -503,9 +519,11 @@ public class HttpRequestServiceImpl implements HttpRequestService {
         result.put(CommonConstant.LOAD_TIME, String.valueOf(loadTime));
         result.put(CommonConstant.CONNECT_TIME, String.valueOf(connectTime));
         result.put(CommonConstant.LATENCY, String.valueOf(latency));
-        result.put(CommonConstant.HEADER_SIZE, String.valueOf(Utils.calcHeaderSize(connection)));
+        result.put(
+            CommonConstant.HEADER_SIZE, String.valueOf(Utils.calcResponseHeaderSize(connection)));
         result.put(CommonConstant.THREAD_NAME, Thread.currentThread().getName());
-        result.put(CommonConstant.HTML_TRANSFERRED, String.valueOf(htmlTransferred));
+        result.put(CommonConstant.DATA_RECEIVED, String.valueOf(dataReceived));
+        result.put(CommonConstant.DATA_SENT, String.valueOf(dataSent));
         result.put(CommonConstant.KEEP_ALIVE, String.valueOf(isKeepAlive));
         result.put(CommonConstant.ITERATIONS, Integer.toString(iterations));
         result.put(CommonConstant.RESPONSE_CODE, Integer.toString(connection.getResponseCode()));
@@ -540,6 +558,9 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       String params = Utils.handleParamsToRequestBodyAPI(httpPostRequest);
       connection.setRequestProperty("Content-Length", String.valueOf(params.getBytes().length));
 
+      long requestHeaderSize = Utils.calcRequestHeaderSize(connection);
+      long dataSent = params.getBytes().length + requestHeaderSize;
+
       long startTime = System.currentTimeMillis();
       connection.connect();
       long connectTime = System.currentTimeMillis() - startTime;
@@ -564,6 +585,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
         long loadTime = System.currentTimeMillis() - startTime;
         result.put(CommonConstant.RESPONSE_BODY, responseBody);
         long htmlTransferred = responseBody.getBytes().length;
+        long dataReceived = Utils.calcResponseHeaderSize(connection) + htmlTransferred;
         boolean isKeepAlive = Utils.isKeepAlive(connection);
 
         result.put(
@@ -573,9 +595,11 @@ public class HttpRequestServiceImpl implements HttpRequestService {
         result.put(CommonConstant.LOAD_TIME, String.valueOf(loadTime));
         result.put(CommonConstant.CONNECT_TIME, String.valueOf(connectTime));
         result.put(CommonConstant.LATENCY, String.valueOf(latency));
-        result.put(CommonConstant.HEADER_SIZE, String.valueOf(Utils.calcHeaderSize(connection)));
+        result.put(
+            CommonConstant.HEADER_SIZE, String.valueOf(Utils.calcResponseHeaderSize(connection)));
         result.put(CommonConstant.THREAD_NAME, Thread.currentThread().getName());
-        result.put(CommonConstant.HTML_TRANSFERRED, String.valueOf(htmlTransferred));
+        result.put(CommonConstant.DATA_RECEIVED, String.valueOf(dataReceived));
+        result.put(CommonConstant.DATA_SENT, String.valueOf(dataSent));
         result.put(CommonConstant.ITERATIONS, Integer.toString(iterations));
         result.put(CommonConstant.KEEP_ALIVE, String.valueOf(isKeepAlive));
         result.put(CommonConstant.RESPONSE_CODE, Integer.toString(connection.getResponseCode()));
@@ -593,6 +617,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
         long loadTime = System.currentTimeMillis() - startTime;
         result.put(CommonConstant.RESPONSE_BODY, responseBody);
         long htmlTransferred = responseBody.getBytes().length;
+        long dataReceived = Utils.calcResponseHeaderSize(connection) + htmlTransferred;
         boolean isKeepAlive = Utils.isKeepAlive(connection);
 
         result.put(
@@ -602,9 +627,11 @@ public class HttpRequestServiceImpl implements HttpRequestService {
         result.put(CommonConstant.LOAD_TIME, String.valueOf(loadTime));
         result.put(CommonConstant.CONNECT_TIME, String.valueOf(connectTime));
         result.put(CommonConstant.LATENCY, String.valueOf(latency));
-        result.put(CommonConstant.HEADER_SIZE, String.valueOf(Utils.calcHeaderSize(connection)));
+        result.put(
+            CommonConstant.HEADER_SIZE, String.valueOf(Utils.calcResponseHeaderSize(connection)));
         result.put(CommonConstant.THREAD_NAME, Thread.currentThread().getName());
-        result.put(CommonConstant.HTML_TRANSFERRED, String.valueOf(htmlTransferred));
+        result.put(CommonConstant.DATA_RECEIVED, String.valueOf(dataReceived));
+        result.put(CommonConstant.DATA_SENT, String.valueOf(dataSent));
         result.put(CommonConstant.KEEP_ALIVE, String.valueOf(isKeepAlive));
         result.put(CommonConstant.ITERATIONS, Integer.toString(iterations));
         result.put(CommonConstant.RESPONSE_CODE, Integer.toString(connection.getResponseCode()));

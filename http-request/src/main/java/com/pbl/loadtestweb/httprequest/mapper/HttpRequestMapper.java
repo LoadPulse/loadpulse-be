@@ -24,8 +24,9 @@ public interface HttpRequestMapper {
   @Mapping(source = "serverSoftware", target = "serverSoftware")
   @Mapping(source = "serverHost", target = "serverHost")
   @Mapping(source = "serverPort", target = "serverPort")
-  @Mapping(source = "htmlTransferred", target = "htmlTransferred")
   @Mapping(source = "keepAlive", target = "keepAlive")
+  @Mapping(source = "dataReceived", target = "dataReceived")
+  @Mapping(source = "dataSent", target = "dataSent")
   HttpDataResponse toHttpDataResponse(
       String serverSoftware,
       String serverHost,
@@ -43,6 +44,7 @@ public interface HttpRequestMapper {
       String connectTime,
       String latency,
       String headerSize,
-      String htmlTransferred,
+      String dataReceived,
+      String dataSent,
       String keepAlive);
 }

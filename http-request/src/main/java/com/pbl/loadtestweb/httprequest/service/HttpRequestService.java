@@ -17,6 +17,6 @@ public interface HttpRequestService {
   SseEmitter httpPostAPI(
       String url, int threadCount, int iterations, HttpPostRequest httpPostRequest);
 
-  SseEmitter  httpPostAPIWithRampUp(
+  SseEmitter httpPostAPIWithRampUp(
       String url, int threadCount, int iterations, int rampUp, HttpPostRequest httpPostRequest);
 }

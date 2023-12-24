@@ -36,6 +36,10 @@ public class HttpDataResponse {
 
   private String headerSize;
 
+  private String dataReceived;
+
+  private String dataSent;
+
   private String responseCode;
 
   private String responseMessage;
@@ -45,10 +49,6 @@ public class HttpDataResponse {
   private String dataEncoding;
 
   private String keepAlive;
-
-  private String totalTransferred;
-
-  private String htmlTransferred;
 
   private String requestMethod;
 

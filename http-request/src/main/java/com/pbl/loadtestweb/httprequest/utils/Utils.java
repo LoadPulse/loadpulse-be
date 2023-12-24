@@ -14,8 +14,23 @@ import java.util.Map;
 public class Utils {
   Utils() {}
 
-  public static long calcHeaderSize(HttpURLConnection connection) {
+  public static long calcResponseHeaderSize(HttpURLConnection connection) {
     Map<String, List<String>> responseHeaders = connection.getHeaderFields();
+    long headersSize = 0;
+
+    for (Map.Entry<String, List<String>> entry : responseHeaders.entrySet()) {
+      String headerName = entry.getKey();
+      List<String> headerValues = entry.getValue();
+
+      for (String headerValue : headerValues) {
+        headersSize += (headerName + ": " + headerValue + "\r\n").getBytes().length;
+      }
+    }
+    return headersSize;
+  }
+
+  public static long calcRequestHeaderSize(HttpURLConnection connection) {
+    Map<String, List<String>> responseHeaders = connection.getRequestProperties();
     long headersSize = 0;
 
     for (Map.Entry<String, List<String>> entry : responseHeaders.entrySet()) {
@@ -94,7 +109,7 @@ public class Utils {
     }
   }
 
-  public static long threadRunEachMillisecond(int threadCount, int rampUp) {
+  public static long timeForCreationEachThread(int threadCount, int rampUp) {
     return (long) ((double) rampUp / threadCount * 1000);
   }
 
