@@ -21,7 +21,7 @@ public class HttpController {
       @RequestParam(name = "threads", defaultValue = "1") int threadCount,
       @RequestParam(name = "iterations", defaultValue = "1") int iterations,
       @RequestParam(name = "url", defaultValue = "") String url,
-      @RequestParam(name = "ramp_up", required = false) int rampUp) {
+      @RequestParam(name = "ramp_up", defaultValue = "0") int rampUp) {
     if (rampUp == 0) {
       return ResponseEntity.ok(httpRequestService.httpGet(url, threadCount, iterations));
     } else {
@@ -35,6 +35,7 @@ public class HttpController {
       @RequestParam(name = "threads", defaultValue = "1") int threadCount,
       @RequestParam(name = "iterations", defaultValue = "1") int iterations,
       @RequestParam(name = "url", defaultValue = "") String url,
+      @RequestParam(name = "ramp_up", required = false) int rampUp,
       @RequestBody HttpPostRequest httpPostRequest) {
     if (httpPostRequest.getKey().isEmpty()) {
       return ResponseEntity.ok(httpRequestService.httpGet(url, threadCount, iterations));
@@ -49,6 +50,7 @@ public class HttpController {
       @RequestParam(name = "threads", defaultValue = "1") int threadCount,
       @RequestParam(name = "iterations", defaultValue = "1") int iterations,
       @RequestParam(name = "url", defaultValue = "") String url,
+      @RequestParam(name = "ramp_up", required = false) int rampUp,
       @RequestBody HttpPostRequest httpPostRequest) {
     if (httpPostRequest.getKey().isEmpty()) {
       return ResponseEntity.ok(httpRequestService.httpGet(url, threadCount, iterations));
