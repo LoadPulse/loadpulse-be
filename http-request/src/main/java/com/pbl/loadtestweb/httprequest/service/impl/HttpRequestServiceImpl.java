@@ -30,7 +30,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
   private final ExecutorService executorService = Executors.newCachedThreadPool();
 
   @Override
-  public SseEmitter httpGet(String url, int threadCount, int iterations) {
+  public SseEmitter httpGet(String url, int threadCount, int iterations, String token) {
     SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
 
     CountDownLatch latch = new CountDownLatch(threadCount);
@@ -41,7 +41,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
             try {
               for (int j = 1; j <= iterations; j++) {
                 Map<String, String> result;
-                result = this.sendHttpRequest(url, CommonConstant.HTTP_METHOD_GET, j);
+                result = this.sendHttpRequest(url, CommonConstant.HTTP_METHOD_GET, j, token);
                 HttpDataResponse jsonResponse = this.buildHttpDataResponse(result);
                 sseEmitter.send(jsonResponse, MediaType.APPLICATION_JSON);
                 sleep();
@@ -72,7 +72,8 @@ public class HttpRequestServiceImpl implements HttpRequestService {
   }
 
   @Override
-  public SseEmitter httpGetWithRampUp(String url, int threadCount, int iterations, int rampUp) {
+  public SseEmitter httpGetWithRampUp(
+      String url, int threadCount, int iterations, int rampUp, String token) {
     SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
 
     CountDownLatch latch = new CountDownLatch(threadCount);
@@ -89,7 +90,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
             try {
               for (int j = 1; j <= iterations; j++) {
                 Map<String, String> result;
-                result = this.sendHttpRequest(url, CommonConstant.HTTP_METHOD_GET, j);
+                result = this.sendHttpRequest(url, CommonConstant.HTTP_METHOD_GET, j, token);
                 HttpDataResponse jsonResponse = this.buildHttpDataResponse(result);
                 sseEmitter.send(jsonResponse, MediaType.APPLICATION_JSON);
               }
@@ -340,7 +341,8 @@ public class HttpRequestServiceImpl implements HttpRequestService {
         result.get(CommonConstant.KEEP_ALIVE));
   }
 
-  public Map<String, String> sendHttpRequest(String url, String method, int iterations) {
+  public Map<String, String> sendHttpRequest(
+      String url, String method, int iterations, String token) {
     Map<String, String> result = new HashMap<>();
 
     try {
@@ -349,6 +351,11 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       connection.setUseCaches(false);
       connection.setDoInput(true);
       connection.setRequestMethod(method);
+      if (!token.isEmpty()) {
+        connection.setRequestProperty(CommonConstant.AUTHORIZATION, CommonConstant.BEARER + token);
+      }
+
+      long dataSent = Utils.calcRequestHeaderSize(connection);
 
       long dataSent = Utils.calcRequestHeaderSize(connection);
 

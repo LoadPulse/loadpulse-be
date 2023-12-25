@@ -57,4 +57,9 @@ public final class CommonConstant {
   public static final String DATA_SENT = "dataSent";
 
   public static final String DATA = "data";
+
+  // Auth
+
+  public static final String AUTHORIZATION = "Authorization";
+  public static final String BEARER = "Bearer ";
 }
