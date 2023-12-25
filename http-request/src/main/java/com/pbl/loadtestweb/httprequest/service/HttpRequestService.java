@@ -4,9 +4,9 @@ import com.pbl.loadtestweb.httprequest.payload.request.HttpPostRequest;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 public interface HttpRequestService {
-  SseEmitter httpGet(String url, int threadCount, int iterations);
+  SseEmitter httpGet(String url, int threadCount, int iterations, String token);
 
-  SseEmitter httpGetWithRampUp(String url, int threadCount, int iterations, int rampUp);
+  SseEmitter httpGetWithRampUp(String url, int threadCount, int iterations, int rampUp, String token);
 
   SseEmitter httpPostMVC(
       String url, int threadCount, int iterations, HttpPostRequest httpPostRequest);

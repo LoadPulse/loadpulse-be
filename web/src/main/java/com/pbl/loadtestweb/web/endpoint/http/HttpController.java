@@ -21,12 +21,13 @@ public class HttpController {
       @RequestParam(name = "threads", defaultValue = "1") int threadCount,
       @RequestParam(name = "iterations", defaultValue = "1") int iterations,
       @RequestParam(name = "url", defaultValue = "") String url,
-      @RequestParam(name = "ramp_up", defaultValue = "0") int rampUp) {
+      @RequestParam(name = "ramp_up", defaultValue = "0") int rampUp,
+      @RequestParam(name = "token", defaultValue = "") String token) {
     if (rampUp == 0) {
-      return ResponseEntity.ok(httpRequestService.httpGet(url, threadCount, iterations));
+      return ResponseEntity.ok(httpRequestService.httpGet(url, threadCount, iterations, token));
     } else {
       return ResponseEntity.ok(
-          httpRequestService.httpGetWithRampUp(url, threadCount, iterations, rampUp));
+          httpRequestService.httpGetWithRampUp(url, threadCount, iterations, rampUp, token));
     }
   }
 
