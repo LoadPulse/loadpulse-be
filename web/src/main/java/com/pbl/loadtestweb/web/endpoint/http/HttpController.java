@@ -17,7 +17,7 @@ public class HttpController {
   private final HttpRequestService httpRequestService;
 
   @GetMapping(value = "/get")
-  public ResponseEntity<SseEmitter> handleMethodGet(
+  public ResponseEntity<SseEmitter> sendHttpRequest(
       @RequestParam(name = "threads", defaultValue = "1") int threadCount,
       @RequestParam(name = "iterations", defaultValue = "1") int iterations,
       @RequestParam(name = "url", defaultValue = "") String url,
@@ -31,37 +31,42 @@ public class HttpController {
     }
   }
 
-  @PostMapping("/post/mvc")
-  public ResponseEntity<SseEmitter> handleMethodPostMVC(
+  @PostMapping("/{method}/mvc")
+  public ResponseEntity<SseEmitter> sendHttpRequestWithEncodedFormBody(
       @RequestParam(name = "threads", defaultValue = "1") int threadCount,
       @RequestParam(name = "iterations", defaultValue = "1") int iterations,
       @RequestParam(name = "url", defaultValue = "") String url,
       @RequestParam(name = "ramp_up", defaultValue = "0") int rampUp,
+      @PathVariable String method,
       @RequestBody HttpPostRequest httpPostRequest) {
     if (rampUp == 0) {
       return ResponseEntity.ok(
-          httpRequestService.httpPostMVC(url, threadCount, iterations, httpPostRequest));
+          httpRequestService.sendHttpRequestEncodedFormBody(
+              url, threadCount, iterations, httpPostRequest, method));
     } else {
       return ResponseEntity.ok(
-          httpRequestService.httpPostMVCWithRampUp(
-              url, threadCount, iterations, rampUp, httpPostRequest));
+          httpRequestService.sendHttpRequestEncodedFormBodyWithRampUp(
+              url, threadCount, iterations, rampUp, httpPostRequest, method));
     }
   }
 
-  @PostMapping("/post/api")
-  public ResponseEntity<SseEmitter> handleMethodPostAPI(
+  @PostMapping("/{method}/api")
+  public ResponseEntity<SseEmitter> sendHttpRequestWithJsonBody(
       @RequestParam(name = "threads", defaultValue = "1") int threadCount,
       @RequestParam(name = "iterations", defaultValue = "1") int iterations,
       @RequestParam(name = "url", defaultValue = "") String url,
       @RequestParam(name = "ramp_up", defaultValue = "0") int rampUp,
+      @RequestParam(name = "token", defaultValue = "") String token,
+      @PathVariable String method,
       @RequestBody HttpPostRequest httpPostRequest) {
     if (rampUp == 0) {
       return ResponseEntity.ok(
-          httpRequestService.httpPostAPI(url, threadCount, iterations, httpPostRequest));
+          httpRequestService.sendHttpRequestJsonBody(
+              url, threadCount, iterations, httpPostRequest, token, method));
     } else {
       return ResponseEntity.ok(
-          httpRequestService.httpPostAPIWithRampUp(
-              url, threadCount, iterations, rampUp, httpPostRequest));
+          httpRequestService.sendHttpRequestJsonBodyWithRampUp(
+              url, threadCount, iterations, rampUp, httpPostRequest, token, method));
     }
   }
 }

@@ -120,8 +120,8 @@ public class HttpRequestServiceImpl implements HttpRequestService {
   }
 
   @Override
-  public SseEmitter httpPostMVC(
-      String url, int threadCount, int iterations, HttpPostRequest httpPostRequest) {
+  public SseEmitter sendHttpRequestEncodedFormBody(
+      String url, int threadCount, int iterations, HttpPostRequest httpPostRequest, String method) {
     SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
 
     CountDownLatch latch = new CountDownLatch(threadCount);
@@ -134,7 +134,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
                 Map<String, String> result;
                 result =
                     this.sendHttpRequestWithFormURLEncoded(
-                        url, CommonConstant.HTTP_METHOD_POST, httpPostRequest, j);
+                        url, method.toUpperCase(), httpPostRequest, j);
                 HttpDataResponse jsonResponse = this.buildHttpDataResponse(result);
                 sseEmitter.send(jsonResponse, MediaType.APPLICATION_JSON);
                 sleep();
@@ -165,8 +165,13 @@ public class HttpRequestServiceImpl implements HttpRequestService {
   }
 
   @Override
-  public SseEmitter httpPostMVCWithRampUp(
-      String url, int threadCount, int iterations, int rampUp, HttpPostRequest httpPostRequest) {
+  public SseEmitter sendHttpRequestEncodedFormBodyWithRampUp(
+      String url,
+      int threadCount,
+      int iterations,
+      int rampUp,
+      HttpPostRequest httpPostRequest,
+      String method) {
     SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
 
     CountDownLatch latch = new CountDownLatch(threadCount);
@@ -185,7 +190,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
                 Map<String, String> result;
                 result =
                     this.sendHttpRequestWithFormURLEncoded(
-                        url, CommonConstant.HTTP_METHOD_POST, httpPostRequest, j);
+                        url, method.toUpperCase(), httpPostRequest, j);
                 HttpDataResponse jsonResponse = this.buildHttpDataResponse(result);
                 sseEmitter.send(jsonResponse, MediaType.APPLICATION_JSON);
               }
@@ -215,8 +220,13 @@ public class HttpRequestServiceImpl implements HttpRequestService {
   }
 
   @Override
-  public SseEmitter httpPostAPI(
-      String url, int threadCount, int iterations, HttpPostRequest httpPostRequest) {
+  public SseEmitter sendHttpRequestJsonBody(
+      String url,
+      int threadCount,
+      int iterations,
+      HttpPostRequest httpPostRequest,
+      String token,
+      String method) {
     SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
 
     CountDownLatch latch = new CountDownLatch(threadCount);
@@ -229,7 +239,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
                 Map<String, String> result;
                 result =
                     this.sendHttpRequestWithJson(
-                        url, CommonConstant.HTTP_METHOD_POST, httpPostRequest, j);
+                        url, method.toUpperCase(), httpPostRequest, j, token);
                 HttpDataResponse jsonResponse = this.buildHttpDataResponse(result);
                 sseEmitter.send(jsonResponse, MediaType.APPLICATION_JSON);
                 sleep();
@@ -260,8 +270,14 @@ public class HttpRequestServiceImpl implements HttpRequestService {
   }
 
   @Override
-  public SseEmitter httpPostAPIWithRampUp(
-      String url, int threadCount, int iterations, int rampUp, HttpPostRequest httpPostRequest) {
+  public SseEmitter sendHttpRequestJsonBodyWithRampUp(
+      String url,
+      int threadCount,
+      int iterations,
+      int rampUp,
+      HttpPostRequest httpPostRequest,
+      String token,
+      String method) {
     SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
 
     CountDownLatch latch = new CountDownLatch(threadCount);
@@ -280,7 +296,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
                 Map<String, String> result;
                 result =
                     this.sendHttpRequestWithJson(
-                        url, CommonConstant.HTTP_METHOD_POST, httpPostRequest, j);
+                        url, method.toUpperCase(), httpPostRequest, j, token);
                 HttpDataResponse jsonResponse = this.buildHttpDataResponse(result);
                 sseEmitter.send(jsonResponse, MediaType.APPLICATION_JSON);
               }
@@ -548,7 +564,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
   }
 
   public Map<String, String> sendHttpRequestWithJson(
-      String url, String method, HttpPostRequest httpPostRequest, int iterations) {
+      String url, String method, HttpPostRequest httpPostRequest, int iterations, String token) {
     Map<String, String> result = new HashMap<>();
 
     try {
@@ -560,6 +576,11 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       connection.setDoOutput(true);
       connection.setRequestProperty("Content-Type", "application/json");
       connection.setRequestProperty("Accept", "application/json");
+
+      if (!token.isEmpty()) {
+        connection.setRequestProperty(CommonConstant.AUTHORIZATION, CommonConstant.BEARER + token);
+      }
+
       String params = Utils.handleParamsToRequestBodyAPI(httpPostRequest);
       connection.setRequestProperty("Content-Length", String.valueOf(params.getBytes().length));
 
