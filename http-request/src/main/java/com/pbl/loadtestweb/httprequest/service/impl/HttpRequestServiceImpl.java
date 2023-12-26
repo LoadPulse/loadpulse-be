@@ -3,7 +3,7 @@ package com.pbl.loadtestweb.httprequest.service.impl;
 import com.pbl.loadtestweb.common.common.CommonFunction;
 import com.pbl.loadtestweb.common.constant.CommonConstant;
 import com.pbl.loadtestweb.httprequest.mapper.HttpRequestMapper;
-import com.pbl.loadtestweb.httprequest.payload.request.HttpPostRequest;
+import com.pbl.loadtestweb.httprequest.payload.request.HttpRequest;
 import com.pbl.loadtestweb.httprequest.payload.response.HttpDataResponse;
 import com.pbl.loadtestweb.httprequest.service.HttpRequestService;
 import com.pbl.loadtestweb.httprequest.utils.Utils;
@@ -30,7 +30,8 @@ public class HttpRequestServiceImpl implements HttpRequestService {
   private final ExecutorService executorService = Executors.newCachedThreadPool();
 
   @Override
-  public SseEmitter httpGet(String url, int threadCount, int iterations, String token) {
+  public SseEmitter sendHttpRequest(
+      String url, int threadCount, int iterations, HttpRequest httpRequest, String method) {
     SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
 
     CountDownLatch latch = new CountDownLatch(threadCount);
@@ -41,7 +42,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
             try {
               for (int j = 1; j <= iterations; j++) {
                 Map<String, String> result;
-                result = this.sendHttpRequest(url, CommonConstant.HTTP_METHOD_GET, j, token);
+                result = this.sendHttpRequest(url, method.toUpperCase(), j, httpRequest);
                 HttpDataResponse jsonResponse = this.buildHttpDataResponse(result);
                 sseEmitter.send(jsonResponse, MediaType.APPLICATION_JSON);
                 sleep();
@@ -72,8 +73,13 @@ public class HttpRequestServiceImpl implements HttpRequestService {
   }
 
   @Override
-  public SseEmitter httpGetWithRampUp(
-      String url, int threadCount, int iterations, int rampUp, String token) {
+  public SseEmitter sendHttpRequestWithRampUp(
+      String url,
+      int threadCount,
+      int iterations,
+      int rampUp,
+      HttpRequest httpRequest,
+      String method) {
     SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
 
     CountDownLatch latch = new CountDownLatch(threadCount);
@@ -90,7 +96,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
             try {
               for (int j = 1; j <= iterations; j++) {
                 Map<String, String> result;
-                result = this.sendHttpRequest(url, CommonConstant.HTTP_METHOD_GET, j, token);
+                result = this.sendHttpRequest(url, method.toUpperCase(), j, httpRequest);
                 HttpDataResponse jsonResponse = this.buildHttpDataResponse(result);
                 sseEmitter.send(jsonResponse, MediaType.APPLICATION_JSON);
               }
@@ -121,7 +127,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
 
   @Override
   public SseEmitter sendHttpRequestEncodedFormBody(
-      String url, int threadCount, int iterations, HttpPostRequest httpPostRequest, String method) {
+      String url, int threadCount, int iterations, HttpRequest httpRequest, String method) {
     SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
 
     CountDownLatch latch = new CountDownLatch(threadCount);
@@ -134,7 +140,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
                 Map<String, String> result;
                 result =
                     this.sendHttpRequestWithFormURLEncoded(
-                        url, method.toUpperCase(), httpPostRequest, j);
+                        url, method.toUpperCase(), httpRequest, j);
                 HttpDataResponse jsonResponse = this.buildHttpDataResponse(result);
                 sseEmitter.send(jsonResponse, MediaType.APPLICATION_JSON);
                 sleep();
@@ -170,7 +176,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       int threadCount,
       int iterations,
       int rampUp,
-      HttpPostRequest httpPostRequest,
+      HttpRequest httpRequest,
       String method) {
     SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
 
@@ -190,7 +196,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
                 Map<String, String> result;
                 result =
                     this.sendHttpRequestWithFormURLEncoded(
-                        url, method.toUpperCase(), httpPostRequest, j);
+                        url, method.toUpperCase(), httpRequest, j);
                 HttpDataResponse jsonResponse = this.buildHttpDataResponse(result);
                 sseEmitter.send(jsonResponse, MediaType.APPLICATION_JSON);
               }
@@ -221,12 +227,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
 
   @Override
   public SseEmitter sendHttpRequestJsonBody(
-      String url,
-      int threadCount,
-      int iterations,
-      HttpPostRequest httpPostRequest,
-      String token,
-      String method) {
+      String url, int threadCount, int iterations, HttpRequest httpRequest, String method) {
     SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
 
     CountDownLatch latch = new CountDownLatch(threadCount);
@@ -237,9 +238,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
             try {
               for (int j = 1; j <= iterations; j++) {
                 Map<String, String> result;
-                result =
-                    this.sendHttpRequestWithJson(
-                        url, method.toUpperCase(), httpPostRequest, j, token);
+                result = this.sendHttpRequestWithJson(url, method.toUpperCase(), httpRequest, j);
                 HttpDataResponse jsonResponse = this.buildHttpDataResponse(result);
                 sseEmitter.send(jsonResponse, MediaType.APPLICATION_JSON);
                 sleep();
@@ -275,8 +274,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       int threadCount,
       int iterations,
       int rampUp,
-      HttpPostRequest httpPostRequest,
-      String token,
+      HttpRequest httpRequest,
       String method) {
     SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
 
@@ -294,9 +292,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
             try {
               for (int j = 1; j <= iterations; j++) {
                 Map<String, String> result;
-                result =
-                    this.sendHttpRequestWithJson(
-                        url, method.toUpperCase(), httpPostRequest, j, token);
+                result = this.sendHttpRequestWithJson(url, method.toUpperCase(), httpRequest, j);
                 HttpDataResponse jsonResponse = this.buildHttpDataResponse(result);
                 sseEmitter.send(jsonResponse, MediaType.APPLICATION_JSON);
               }
@@ -344,6 +340,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
         result.get(CommonConstant.START_AT),
         result.get(CommonConstant.RESPONSE_CODE),
         result.get(CommonConstant.RESPONSE_MESSAGE),
+        result.get(CommonConstant.RESPONSE_HEADER),
         result.get(CommonConstant.RESPONSE_BODY),
         result.get(CommonConstant.CONTENT_TYPE),
         result.get(CommonConstant.DATA_ENCODING),
@@ -351,14 +348,13 @@ public class HttpRequestServiceImpl implements HttpRequestService {
         result.get(CommonConstant.LOAD_TIME),
         result.get(CommonConstant.CONNECT_TIME),
         result.get(CommonConstant.LATENCY),
-        result.get(CommonConstant.HEADER_SIZE),
         result.get(CommonConstant.DATA_RECEIVED),
         result.get(CommonConstant.DATA_SENT),
         result.get(CommonConstant.KEEP_ALIVE));
   }
 
   public Map<String, String> sendHttpRequest(
-      String url, String method, int iterations, String token) {
+      String url, String method, int iterations, HttpRequest httpRequest) {
     Map<String, String> result = new HashMap<>();
 
     try {
@@ -367,8 +363,10 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       connection.setUseCaches(false);
       connection.setDoInput(true);
       connection.setRequestMethod(method);
-      if (!token.isEmpty()) {
-        connection.setRequestProperty(CommonConstant.AUTHORIZATION, CommonConstant.BEARER + token);
+
+      for (int i = 0; i < httpRequest.getKeyHeaders().size(); i++) {
+        connection.setRequestProperty(
+            httpRequest.getKeyHeaders().get(i), httpRequest.getValueHeaders().get(i));
       }
 
       long dataSent = Utils.calcRequestHeaderSize(connection);
@@ -391,6 +389,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
         String responseBody = Utils.getResponseBodySuccess(connection);
         long loadTime = System.currentTimeMillis() - startTime;
         result.put(CommonConstant.RESPONSE_BODY, responseBody);
+        result.put(CommonConstant.RESPONSE_HEADER, Utils.getResponseHeaders(connection));
         long htmlTransferred = responseBody.getBytes().length;
         long dataReceived = Utils.calcResponseHeaderSize(connection) + htmlTransferred;
         boolean isKeepAlive = Utils.isKeepAlive(connection);
@@ -402,8 +401,6 @@ public class HttpRequestServiceImpl implements HttpRequestService {
         result.put(CommonConstant.LOAD_TIME, String.valueOf(loadTime));
         result.put(CommonConstant.CONNECT_TIME, String.valueOf(connectTime));
         result.put(CommonConstant.LATENCY, String.valueOf(latency));
-        result.put(
-            CommonConstant.HEADER_SIZE, String.valueOf(Utils.calcResponseHeaderSize(connection)));
         result.put(CommonConstant.THREAD_NAME, Thread.currentThread().getName());
         result.put(CommonConstant.DATA_RECEIVED, String.valueOf(dataReceived));
         result.put(CommonConstant.DATA_SENT, String.valueOf(dataSent));
@@ -434,8 +431,6 @@ public class HttpRequestServiceImpl implements HttpRequestService {
         result.put(CommonConstant.LOAD_TIME, String.valueOf(loadTime));
         result.put(CommonConstant.CONNECT_TIME, String.valueOf(connectTime));
         result.put(CommonConstant.LATENCY, String.valueOf(latency));
-        result.put(
-            CommonConstant.HEADER_SIZE, String.valueOf(Utils.calcResponseHeaderSize(connection)));
         result.put(CommonConstant.THREAD_NAME, Thread.currentThread().getName());
         result.put(CommonConstant.DATA_RECEIVED, String.valueOf(dataReceived));
         result.put(CommonConstant.DATA_SENT, String.valueOf(dataSent));
@@ -458,7 +453,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
   }
 
   public Map<String, String> sendHttpRequestWithFormURLEncoded(
-      String url, String method, HttpPostRequest httpPostRequest, int iterations) {
+      String url, String method, HttpRequest httpRequest, int iterations) {
     Map<String, String> result = new HashMap<>();
 
     try {
@@ -469,13 +464,18 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       connection.setDoInput(true);
       connection.setDoOutput(true);
 
+      for (int i = 0; i < httpRequest.getKeyHeaders().size(); i++) {
+        connection.setRequestProperty(
+            httpRequest.getKeyHeaders().get(i), httpRequest.getValueHeaders().get(i));
+      }
+
       long requestHeaderSize = Utils.calcRequestHeaderSize(connection);
 
       long startTime = System.currentTimeMillis();
       connection.connect();
       long connectTime = System.currentTimeMillis() - startTime;
 
-      String requestBody = Utils.handleParamsToRequestBodyMVC(httpPostRequest);
+      String requestBody = Utils.handleParamsToRequestBodyMVC(httpRequest);
       long dataSent = requestBody.getBytes().length + requestHeaderSize;
 
       try (OutputStream os = connection.getOutputStream();
@@ -497,6 +497,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
         String responseBody = Utils.getResponseBodySuccess(connection);
         long loadTime = System.currentTimeMillis() - startTime;
         result.put(CommonConstant.RESPONSE_BODY, responseBody);
+        result.put(CommonConstant.RESPONSE_HEADER, Utils.getResponseHeaders(connection));
         long htmlTransferred = responseBody.getBytes().length;
         long dataReceived = Utils.calcResponseHeaderSize(connection) + htmlTransferred;
         boolean isKeepAlive = Utils.isKeepAlive(connection);
@@ -508,8 +509,6 @@ public class HttpRequestServiceImpl implements HttpRequestService {
         result.put(CommonConstant.LOAD_TIME, String.valueOf(loadTime));
         result.put(CommonConstant.CONNECT_TIME, String.valueOf(connectTime));
         result.put(CommonConstant.LATENCY, String.valueOf(latency));
-        result.put(
-            CommonConstant.HEADER_SIZE, String.valueOf(Utils.calcResponseHeaderSize(connection)));
         result.put(CommonConstant.THREAD_NAME, Thread.currentThread().getName());
         result.put(CommonConstant.DATA_RECEIVED, String.valueOf(dataReceived));
         result.put(CommonConstant.DATA_SENT, String.valueOf(dataSent));
@@ -529,6 +528,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
         String responseBody = Utils.getResponseBodyError(connection);
         long loadTime = System.currentTimeMillis() - startTime;
         result.put(CommonConstant.RESPONSE_BODY, responseBody);
+        result.put(CommonConstant.RESPONSE_HEADER, Utils.getResponseHeaders(connection));
         long htmlTransferred = responseBody.getBytes().length;
         long dataReceived = Utils.calcResponseHeaderSize(connection) + htmlTransferred;
         boolean isKeepAlive = Utils.isKeepAlive(connection);
@@ -540,8 +540,6 @@ public class HttpRequestServiceImpl implements HttpRequestService {
         result.put(CommonConstant.LOAD_TIME, String.valueOf(loadTime));
         result.put(CommonConstant.CONNECT_TIME, String.valueOf(connectTime));
         result.put(CommonConstant.LATENCY, String.valueOf(latency));
-        result.put(
-            CommonConstant.HEADER_SIZE, String.valueOf(Utils.calcResponseHeaderSize(connection)));
         result.put(CommonConstant.THREAD_NAME, Thread.currentThread().getName());
         result.put(CommonConstant.DATA_RECEIVED, String.valueOf(dataReceived));
         result.put(CommonConstant.DATA_SENT, String.valueOf(dataSent));
@@ -564,7 +562,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
   }
 
   public Map<String, String> sendHttpRequestWithJson(
-      String url, String method, HttpPostRequest httpPostRequest, int iterations, String token) {
+      String url, String method, HttpRequest httpRequest, int iterations) {
     Map<String, String> result = new HashMap<>();
 
     try {
@@ -577,11 +575,12 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       connection.setRequestProperty("Content-Type", "application/json");
       connection.setRequestProperty("Accept", "application/json");
 
-      if (!token.isEmpty()) {
-        connection.setRequestProperty(CommonConstant.AUTHORIZATION, CommonConstant.BEARER + token);
+      for (int i = 0; i < httpRequest.getKeyHeaders().size(); i++) {
+        connection.setRequestProperty(
+            httpRequest.getKeyHeaders().get(i), httpRequest.getValueHeaders().get(i));
       }
 
-      String params = Utils.handleParamsToRequestBodyAPI(httpPostRequest);
+      String params = Utils.handleParamsToRequestBodyAPI(httpRequest);
       connection.setRequestProperty("Content-Length", String.valueOf(params.getBytes().length));
 
       long requestHeaderSize = Utils.calcRequestHeaderSize(connection);
@@ -621,8 +620,6 @@ public class HttpRequestServiceImpl implements HttpRequestService {
         result.put(CommonConstant.LOAD_TIME, String.valueOf(loadTime));
         result.put(CommonConstant.CONNECT_TIME, String.valueOf(connectTime));
         result.put(CommonConstant.LATENCY, String.valueOf(latency));
-        result.put(
-            CommonConstant.HEADER_SIZE, String.valueOf(Utils.calcResponseHeaderSize(connection)));
         result.put(CommonConstant.THREAD_NAME, Thread.currentThread().getName());
         result.put(CommonConstant.DATA_RECEIVED, String.valueOf(dataReceived));
         result.put(CommonConstant.DATA_SENT, String.valueOf(dataSent));
@@ -653,8 +650,6 @@ public class HttpRequestServiceImpl implements HttpRequestService {
         result.put(CommonConstant.LOAD_TIME, String.valueOf(loadTime));
         result.put(CommonConstant.CONNECT_TIME, String.valueOf(connectTime));
         result.put(CommonConstant.LATENCY, String.valueOf(latency));
-        result.put(
-            CommonConstant.HEADER_SIZE, String.valueOf(Utils.calcResponseHeaderSize(connection)));
         result.put(CommonConstant.THREAD_NAME, Thread.currentThread().getName());
         result.put(CommonConstant.DATA_RECEIVED, String.valueOf(dataReceived));
         result.put(CommonConstant.DATA_SENT, String.valueOf(dataSent));

@@ -2,7 +2,7 @@ package com.pbl.loadtestweb.httprequest.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.pbl.loadtestweb.httprequest.payload.request.HttpPostRequest;
+import com.pbl.loadtestweb.httprequest.payload.request.HttpRequest;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -27,6 +27,22 @@ public class Utils {
       }
     }
     return headersSize;
+  }
+
+  public static String getResponseHeaders(HttpURLConnection connection) {
+    Map<String, List<String>> responseHeaders = connection.getHeaderFields();
+    StringBuilder headersStringBuilder = new StringBuilder();
+
+    for (Map.Entry<String, List<String>> entry : responseHeaders.entrySet()) {
+      String headerName = entry.getKey();
+      List<String> headerValues = entry.getValue();
+
+      for (String headerValue : headerValues) {
+        headersStringBuilder.append(headerName).append(": ").append(headerValue).append("\r\n");
+      }
+    }
+
+    return headersStringBuilder.toString();
   }
 
   public static long calcRequestHeaderSize(HttpURLConnection connection) {
@@ -81,10 +97,10 @@ public class Utils {
     return "keep-alive".equalsIgnoreCase(connectionHeader);
   }
 
-  public static String handleParamsToRequestBodyMVC(HttpPostRequest httpPostRequest) {
+  public static String handleParamsToRequestBodyMVC(HttpRequest httpPostRequest) {
     Map<String, String> params = new HashMap<>();
-    for (int i = 0; i < httpPostRequest.getKey().size(); i++) {
-      params.put(httpPostRequest.getKey().get(i), httpPostRequest.getValue().get(i));
+    for (int i = 0; i < httpPostRequest.getKeyBodies().size(); i++) {
+      params.put(httpPostRequest.getKeyBodies().get(i), httpPostRequest.getValueBodies().get(i));
     }
     StringBuilder requestBody = new StringBuilder();
     for (Map.Entry<String, String> entry : params.entrySet()) {
@@ -96,11 +112,11 @@ public class Utils {
     return requestBody.toString();
   }
 
-  public static String handleParamsToRequestBodyAPI(HttpPostRequest httpPostRequest) {
+  public static String handleParamsToRequestBodyAPI(HttpRequest httpPostRequest) {
     Map<String, String> params = new HashMap<>();
     try {
-      for (int i = 0; i < httpPostRequest.getKey().size(); i++) {
-        params.put(httpPostRequest.getKey().get(i), httpPostRequest.getValue().get(i));
+      for (int i = 0; i < httpPostRequest.getKeyBodies().size(); i++) {
+        params.put(httpPostRequest.getKeyBodies().get(i), httpPostRequest.getValueBodies().get(i));
       }
       ObjectMapper objectMapper = new ObjectMapper();
       return objectMapper.writeValueAsString(params);

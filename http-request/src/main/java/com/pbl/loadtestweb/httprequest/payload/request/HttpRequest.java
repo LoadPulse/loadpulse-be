@@ -10,9 +10,13 @@ import java.util.List;
 @Getter
 @Setter
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class HttpPostRequest {
+public class HttpRequest {
 
-  private List<String> key;
+  private List<String> keyBodies;
 
-  private List<String> value;
+  private List<String> valueBodies;
+
+  private List<String> keyHeaders;
+
+  private List<String> valueHeaders;
 }
