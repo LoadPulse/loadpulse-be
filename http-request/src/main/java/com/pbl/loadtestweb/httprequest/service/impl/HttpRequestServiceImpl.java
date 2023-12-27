@@ -30,7 +30,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
   private final ExecutorService executorService = Executors.newCachedThreadPool();
 
   @Override
-  public SseEmitter httpGet(String url, int threadCount, int iterations, String method) {
+  public SseEmitter httpGet(String url, int threadCount, int iterations) {
     SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
 
     CountDownLatch latch = new CountDownLatch(threadCount);
@@ -41,10 +41,57 @@ public class HttpRequestServiceImpl implements HttpRequestService {
             try {
               for (int j = 1; j <= iterations; j++) {
                 Map<String, String> result;
-                result = this.loadTestThread(url, method, j);
+                result = this.sendHttpRequest(url, CommonConstant.HTTP_METHOD_GET, j);
                 HttpDataResponse jsonResponse = this.buildHttpDataResponse(result);
                 sseEmitter.send(jsonResponse, MediaType.APPLICATION_JSON);
                 sleep();
+              }
+            } catch (IOException e) {
+              e.printStackTrace();
+              sseEmitter.completeWithError(e);
+            } finally {
+              latch.countDown();
+            }
+          });
+    }
+
+    new Thread(
+            () -> {
+              try {
+                latch.await();
+                sseEmitter.complete();
+              } catch (InterruptedException e) {
+                e.printStackTrace();
+                Thread.currentThread().interrupt();
+                sseEmitter.completeWithError(e);
+              }
+            })
+        .start();
+
+    return sseEmitter;
+  }
+
+  @Override
+  public SseEmitter httpGetWithRampUp(String url, int threadCount, int iterations, int rampUp) {
+    SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
+
+    CountDownLatch latch = new CountDownLatch(threadCount);
+
+    log.info(Long.toString(Utils.threadRunEachMillisecond(threadCount, rampUp)));
+    log.info(Long.toString(Utils.calcThreadIncrement(threadCount, rampUp)));
+
+    for (int i = 1; i <= threadCount; i++) {
+      if (i != 1) {
+        Utils.sleepThread(Utils.threadRunEachMillisecond(threadCount, rampUp));
+      }
+      executorService.execute(
+          () -> {
+            try {
+              for (int j = 1; j <= iterations; j++) {
+                Map<String, String> result;
+                result = this.sendHttpRequest(url, CommonConstant.HTTP_METHOD_GET, j);
+                HttpDataResponse jsonResponse = this.buildHttpDataResponse(result);
+                sseEmitter.send(jsonResponse, MediaType.APPLICATION_JSON);
               }
             } catch (IOException e) {
               e.printStackTrace();
@@ -73,7 +120,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
 
   @Override
   public SseEmitter httpPostMVC(
-      String url, int threadCount, int iterations, String method, HttpPostRequest httpPostRequest) {
+      String url, int threadCount, int iterations, HttpPostRequest httpPostRequest) {
     SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
 
     CountDownLatch latch = new CountDownLatch(threadCount);
@@ -84,7 +131,9 @@ public class HttpRequestServiceImpl implements HttpRequestService {
             try {
               for (int j = 1; j <= iterations; j++) {
                 Map<String, String> result;
-                result = this.loadTestThreadWithParamsMVC(url, method, httpPostRequest, j);
+                result =
+                    this.sendHttpRequestWithFormURLEncoded(
+                        url, CommonConstant.HTTP_METHOD_POST, httpPostRequest, j);
                 HttpDataResponse jsonResponse = this.buildHttpDataResponse(result);
                 sseEmitter.send(jsonResponse, MediaType.APPLICATION_JSON);
                 sleep();
@@ -115,8 +164,58 @@ public class HttpRequestServiceImpl implements HttpRequestService {
   }
 
   @Override
+  public SseEmitter httpPostMVCWithRampUp(
+      String url, int threadCount, int iterations, int rampUp, HttpPostRequest httpPostRequest) {
+    SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
+
+    CountDownLatch latch = new CountDownLatch(threadCount);
+
+    log.info(Long.toString(Utils.threadRunEachMillisecond(threadCount, rampUp)));
+    log.info(Long.toString(Utils.calcThreadIncrement(threadCount, rampUp)));
+
+    for (int i = 1; i <= threadCount; i++) {
+      if (i != 1) {
+        Utils.sleepThread(Utils.threadRunEachMillisecond(threadCount, rampUp));
+      }
+      executorService.execute(
+          () -> {
+            try {
+              for (int j = 1; j <= iterations; j++) {
+                Map<String, String> result;
+                result =
+                    this.sendHttpRequestWithFormURLEncoded(
+                        url, CommonConstant.HTTP_METHOD_POST, httpPostRequest, j);
+                HttpDataResponse jsonResponse = this.buildHttpDataResponse(result);
+                sseEmitter.send(jsonResponse, MediaType.APPLICATION_JSON);
+              }
+            } catch (IOException e) {
+              e.printStackTrace();
+              sseEmitter.completeWithError(e);
+            } finally {
+              latch.countDown();
+            }
+          });
+    }
+
+    new Thread(
+            () -> {
+              try {
+                latch.await();
+                sseEmitter.complete();
+              } catch (InterruptedException e) {
+                e.printStackTrace();
+                Thread.currentThread().interrupt();
+                sseEmitter.completeWithError(e);
+              }
+            })
+        .start();
+
+    return sseEmitter;
+  }
+
+  @Override
   public SseEmitter httpPostAPI(
-      String url, int threadCount, int iterations, String method, HttpPostRequest httpPostRequest) {
+      String url, int threadCount, int iterations, HttpPostRequest httpPostRequest) {
     SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
 
     CountDownLatch latch = new CountDownLatch(threadCount);
@@ -127,10 +226,62 @@ public class HttpRequestServiceImpl implements HttpRequestService {
             try {
               for (int j = 1; j <= iterations; j++) {
                 Map<String, String> result;
-                result = this.loadTestThreadWithParamsAPI(url, method, httpPostRequest, j);
+                result =
+                    this.sendHttpRequestWithJson(
+                        url, CommonConstant.HTTP_METHOD_POST, httpPostRequest, j);
                 HttpDataResponse jsonResponse = this.buildHttpDataResponse(result);
                 sseEmitter.send(jsonResponse, MediaType.APPLICATION_JSON);
                 sleep();
+              }
+            } catch (IOException e) {
+              e.printStackTrace();
+              sseEmitter.completeWithError(e);
+            } finally {
+              latch.countDown();
+            }
+          });
+    }
+
+    new Thread(
+            () -> {
+              try {
+                latch.await();
+                sseEmitter.complete();
+              } catch (InterruptedException e) {
+                e.printStackTrace();
+                Thread.currentThread().interrupt();
+                sseEmitter.completeWithError(e);
+              }
+            })
+        .start();
+
+    return sseEmitter;
+  }
+
+  @Override
+  public SseEmitter httpPostAPIWithRampUp(
+      String url, int threadCount, int iterations, int rampUp, HttpPostRequest httpPostRequest) {
+    SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
+
+    CountDownLatch latch = new CountDownLatch(threadCount);
+
+    log.info(Long.toString(Utils.threadRunEachMillisecond(threadCount, rampUp)));
+    log.info(Long.toString(Utils.calcThreadIncrement(threadCount, rampUp)));
+
+    for (int i = 1; i <= threadCount; i++) {
+      if (i != 1) {
+        Utils.sleepThread(Utils.threadRunEachMillisecond(threadCount, rampUp));
+      }
+      executorService.execute(
+          () -> {
+            try {
+              for (int j = 1; j <= iterations; j++) {
+                Map<String, String> result;
+                result =
+                    this.sendHttpRequestWithJson(
+                        url, CommonConstant.HTTP_METHOD_POST, httpPostRequest, j);
+                HttpDataResponse jsonResponse = this.buildHttpDataResponse(result);
+                sseEmitter.send(jsonResponse, MediaType.APPLICATION_JSON);
               }
             } catch (IOException e) {
               e.printStackTrace();
@@ -188,7 +339,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
         result.get(CommonConstant.KEEP_ALIVE));
   }
 
-  public Map<String, String> loadTestThread(String url, String method, int iterations) {
+  public Map<String, String> sendHttpRequest(String url, String method, int iterations) {
     Map<String, String> result = new HashMap<>();
 
     try {
@@ -199,8 +350,8 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       connection.setRequestMethod(method);
 
       result.put(
-              CommonConstant.START_AT,
-              CommonFunction.formatDateToString(CommonFunction.getCurrentDateTime()));
+          CommonConstant.START_AT,
+          CommonFunction.formatDateToString(CommonFunction.getCurrentDateTime()));
 
       long startTime = System.currentTimeMillis();
       connection.connect();
@@ -276,7 +427,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
     return result;
   }
 
-  public Map<String, String> loadTestThreadWithParamsMVC(
+  public Map<String, String> sendHttpRequestWithFormURLEncoded(
       String url, String method, HttpPostRequest httpPostRequest, int iterations) {
     Map<String, String> result = new HashMap<>();
 
@@ -285,15 +436,12 @@ public class HttpRequestServiceImpl implements HttpRequestService {
 
       HttpURLConnection connection = (HttpURLConnection) obj.openConnection();
       connection.setRequestMethod(method);
-
-      long loadStartTime = System.currentTimeMillis();
-      long connectStartTime = System.currentTimeMillis();
-
       connection.setDoInput(true);
       connection.setDoOutput(true);
 
+      long startTime = System.currentTimeMillis();
       connection.connect();
-      long connectEndTime = System.currentTimeMillis();
+      long connectTime = System.currentTimeMillis() - startTime;
 
       String requestBody = Utils.handleParamsToRequestBodyMVC(httpPostRequest);
 
@@ -302,52 +450,81 @@ public class HttpRequestServiceImpl implements HttpRequestService {
         writer.write(requestBody);
       }
 
-      InputStream inputStream = connection.getInputStream();
-      long responseTime = 0;
-      if (inputStream != null) {
-        responseTime = System.currentTimeMillis();
-      }
-
-      String responseBody = Utils.getResponseBodySuccess(connection);
-      long loadEndTime = System.currentTimeMillis();
-      result.put(CommonConstant.RESPONSE_BODY, responseBody);
-      long htmlTransferred = responseBody.getBytes().length;
-      boolean isKeepAlive = Utils.isKeepAlive(connection);
-
-      long latency = responseTime - connectStartTime;
-      long connectTime = connectEndTime - connectStartTime;
-      long loadTime = loadEndTime - loadStartTime;
-
-      result.put(CommonConstant.SERVER_SOFTWARE, connection.getHeaderField(CommonConstant.SERVER));
-      result.put(CommonConstant.SERVER_HOST, connection.getURL().getHost());
-      result.put(CommonConstant.SERVER_PORT, String.valueOf(obj.getDefaultPort()));
-      result.put(CommonConstant.LOAD_TIME, String.valueOf(loadTime));
-      result.put(CommonConstant.CONNECT_TIME, String.valueOf(connectTime));
-      result.put(CommonConstant.LATENCY, String.valueOf(latency));
-      result.put(CommonConstant.HEADER_SIZE, String.valueOf(Utils.calcHeaderSize(connection)));
       result.put(
           CommonConstant.START_AT,
           CommonFunction.formatDateToString(CommonFunction.getCurrentDateTime()));
-      result.put(CommonConstant.THREAD_NAME, Thread.currentThread().getName());
-      result.put(CommonConstant.HTML_TRANSFERRED, String.valueOf(htmlTransferred));
-      result.put(CommonConstant.KEEP_ALIVE, String.valueOf(isKeepAlive));
-      result.put(CommonConstant.ITERATIONS, Integer.toString(iterations));
-      result.put(CommonConstant.RESPONSE_CODE, Integer.toString(connection.getResponseCode()));
-      result.put(CommonConstant.RESPONSE_MESSAGE, connection.getResponseMessage());
-      result.put(CommonConstant.CONTENT_TYPE, connection.getContentType());
-      result.put(CommonConstant.DATA_ENCODING, connection.getContentEncoding());
-      result.put(CommonConstant.REQUEST_METHOD, connection.getRequestMethod());
 
-    } catch (Exception ignored) {
+      if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+        InputStream inputStream = connection.getInputStream();
+        long latency = 0;
+        if (inputStream != null) {
+          latency = System.currentTimeMillis() - startTime;
+        }
+
+        String responseBody = Utils.getResponseBodySuccess(connection);
+        long loadTime = System.currentTimeMillis() - startTime;
+        result.put(CommonConstant.RESPONSE_BODY, responseBody);
+        long htmlTransferred = responseBody.getBytes().length;
+        boolean isKeepAlive = Utils.isKeepAlive(connection);
+
+        result.put(
+            CommonConstant.SERVER_SOFTWARE, connection.getHeaderField(CommonConstant.SERVER));
+        result.put(CommonConstant.SERVER_HOST, connection.getURL().getHost());
+        result.put(CommonConstant.SERVER_PORT, String.valueOf(obj.getDefaultPort()));
+        result.put(CommonConstant.LOAD_TIME, String.valueOf(loadTime));
+        result.put(CommonConstant.CONNECT_TIME, String.valueOf(connectTime));
+        result.put(CommonConstant.LATENCY, String.valueOf(latency));
+        result.put(CommonConstant.HEADER_SIZE, String.valueOf(Utils.calcHeaderSize(connection)));
+        result.put(CommonConstant.THREAD_NAME, Thread.currentThread().getName());
+        result.put(CommonConstant.HTML_TRANSFERRED, String.valueOf(htmlTransferred));
+        result.put(CommonConstant.KEEP_ALIVE, String.valueOf(isKeepAlive));
+        result.put(CommonConstant.ITERATIONS, Integer.toString(iterations));
+        result.put(CommonConstant.RESPONSE_CODE, Integer.toString(connection.getResponseCode()));
+        result.put(CommonConstant.RESPONSE_MESSAGE, connection.getResponseMessage());
+        result.put(CommonConstant.CONTENT_TYPE, connection.getContentType());
+        result.put(CommonConstant.DATA_ENCODING, connection.getContentEncoding());
+        result.put(CommonConstant.REQUEST_METHOD, connection.getRequestMethod());
+      } else {
+        InputStream inputStream = connection.getErrorStream();
+        long latency = 0;
+        if (inputStream != null) {
+          latency = System.currentTimeMillis() - startTime;
+        }
+        String responseBody = Utils.getResponseBodyError(connection);
+        long loadTime = System.currentTimeMillis() - startTime;
+        result.put(CommonConstant.RESPONSE_BODY, responseBody);
+        long htmlTransferred = responseBody.getBytes().length;
+        boolean isKeepAlive = Utils.isKeepAlive(connection);
+
+        result.put(
+            CommonConstant.SERVER_SOFTWARE, connection.getHeaderField(CommonConstant.SERVER));
+        result.put(CommonConstant.SERVER_HOST, connection.getURL().getHost());
+        result.put(CommonConstant.SERVER_PORT, String.valueOf(obj.getDefaultPort()));
+        result.put(CommonConstant.LOAD_TIME, String.valueOf(loadTime));
+        result.put(CommonConstant.CONNECT_TIME, String.valueOf(connectTime));
+        result.put(CommonConstant.LATENCY, String.valueOf(latency));
+        result.put(CommonConstant.HEADER_SIZE, String.valueOf(Utils.calcHeaderSize(connection)));
+        result.put(CommonConstant.THREAD_NAME, Thread.currentThread().getName());
+        result.put(CommonConstant.HTML_TRANSFERRED, String.valueOf(htmlTransferred));
+        result.put(CommonConstant.KEEP_ALIVE, String.valueOf(isKeepAlive));
+        result.put(CommonConstant.ITERATIONS, Integer.toString(iterations));
+        result.put(CommonConstant.RESPONSE_CODE, Integer.toString(connection.getResponseCode()));
+        result.put(CommonConstant.RESPONSE_MESSAGE, connection.getResponseMessage());
+        result.put(CommonConstant.CONTENT_TYPE, connection.getContentType());
+        result.put(CommonConstant.DATA_ENCODING, connection.getContentEncoding());
+        result.put(CommonConstant.REQUEST_METHOD, connection.getRequestMethod());
+      }
+
+    } catch (Exception e) {
       result.put(CommonConstant.THREAD_NAME, Thread.currentThread().getName());
       result.put(CommonConstant.ITERATIONS, Integer.toString(iterations));
-      result.put(CommonConstant.RESPONSE_MESSAGE, ignored.getMessage());
-      log.error(ignored.getMessage());
+      result.put(CommonConstant.RESPONSE_MESSAGE, e.getMessage());
+      log.error(e.getMessage());
     }
     return result;
   }
 
-  public Map<String, String> loadTestThreadWithParamsAPI(
+  public Map<String, String> sendHttpRequestWithJson(
       String url, String method, HttpPostRequest httpPostRequest, int iterations) {
     Map<String, String> result = new HashMap<>();
 
@@ -356,67 +533,91 @@ public class HttpRequestServiceImpl implements HttpRequestService {
 
       HttpURLConnection connection = (HttpURLConnection) obj.openConnection();
       connection.setRequestMethod(method);
-
       connection.setDoInput(true);
       connection.setDoOutput(true);
       connection.setRequestProperty("Content-Type", "application/json");
       connection.setRequestProperty("Accept", "application/json");
-
-      log.info(Utils.handleParamsToRequestBodyAPI(httpPostRequest));
       String params = Utils.handleParamsToRequestBodyAPI(httpPostRequest);
-
       connection.setRequestProperty("Content-Length", String.valueOf(params.getBytes().length));
+
+      long startTime = System.currentTimeMillis();
+      connection.connect();
+      long connectTime = System.currentTimeMillis() - startTime;
 
       try (OutputStream os = connection.getOutputStream();
           OutputStreamWriter writer = new OutputStreamWriter(os, StandardCharsets.UTF_8)) {
         writer.write(params);
       }
-
-      long loadStartTime = System.currentTimeMillis();
-      long connectStartTime = System.currentTimeMillis();
-      connection.connect();
-      long connectEndTime = System.currentTimeMillis();
-
-      InputStream inputStream = connection.getInputStream();
-      long responseTime = 0;
-      if (inputStream != null) {
-        responseTime = System.currentTimeMillis();
-      }
-
-      String responseBody = Utils.getResponseBodySuccess(connection);
-      long loadEndTime = System.currentTimeMillis();
-      result.put(CommonConstant.RESPONSE_BODY, responseBody);
-      long htmlTransferred = responseBody.getBytes().length;
-      boolean isKeepAlive = Utils.isKeepAlive(connection);
-      long latency = responseTime - connectStartTime;
-      long connectTime = connectEndTime - connectStartTime;
-      long loadTime = loadEndTime - loadStartTime;
-
-      result.put(CommonConstant.SERVER_SOFTWARE, connection.getHeaderField(CommonConstant.SERVER));
-      result.put(CommonConstant.SERVER_HOST, connection.getURL().getHost());
-      result.put(CommonConstant.SERVER_PORT, String.valueOf(obj.getDefaultPort()));
-      result.put(CommonConstant.LOAD_TIME, String.valueOf(loadTime));
-      result.put(CommonConstant.CONNECT_TIME, String.valueOf(connectTime));
-      result.put(CommonConstant.LATENCY, String.valueOf(latency));
-      result.put(CommonConstant.HEADER_SIZE, String.valueOf(Utils.calcHeaderSize(connection)));
       result.put(
           CommonConstant.START_AT,
           CommonFunction.formatDateToString(CommonFunction.getCurrentDateTime()));
-      result.put(CommonConstant.THREAD_NAME, Thread.currentThread().getName());
-      result.put(CommonConstant.HTML_TRANSFERRED, String.valueOf(htmlTransferred));
-      result.put(CommonConstant.ITERATIONS, Integer.toString(iterations));
-      result.put(CommonConstant.KEEP_ALIVE, String.valueOf(isKeepAlive));
-      result.put(CommonConstant.RESPONSE_CODE, Integer.toString(connection.getResponseCode()));
-      result.put(CommonConstant.RESPONSE_MESSAGE, connection.getResponseMessage());
-      result.put(CommonConstant.CONTENT_TYPE, connection.getContentType());
-      result.put(CommonConstant.DATA_ENCODING, connection.getContentEncoding());
-      result.put(CommonConstant.REQUEST_METHOD, connection.getRequestMethod());
 
-    } catch (Exception ignored) {
+      if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+        InputStream inputStream = connection.getInputStream();
+        long latency = 0;
+        if (inputStream != null) {
+          latency = System.currentTimeMillis() - startTime;
+        }
+
+        String responseBody = Utils.getResponseBodySuccess(connection);
+        long loadTime = System.currentTimeMillis() - startTime;
+        result.put(CommonConstant.RESPONSE_BODY, responseBody);
+        long htmlTransferred = responseBody.getBytes().length;
+        boolean isKeepAlive = Utils.isKeepAlive(connection);
+
+        result.put(
+            CommonConstant.SERVER_SOFTWARE, connection.getHeaderField(CommonConstant.SERVER));
+        result.put(CommonConstant.SERVER_HOST, connection.getURL().getHost());
+        result.put(CommonConstant.SERVER_PORT, String.valueOf(obj.getDefaultPort()));
+        result.put(CommonConstant.LOAD_TIME, String.valueOf(loadTime));
+        result.put(CommonConstant.CONNECT_TIME, String.valueOf(connectTime));
+        result.put(CommonConstant.LATENCY, String.valueOf(latency));
+        result.put(CommonConstant.HEADER_SIZE, String.valueOf(Utils.calcHeaderSize(connection)));
+        result.put(CommonConstant.THREAD_NAME, Thread.currentThread().getName());
+        result.put(CommonConstant.HTML_TRANSFERRED, String.valueOf(htmlTransferred));
+        result.put(CommonConstant.ITERATIONS, Integer.toString(iterations));
+        result.put(CommonConstant.KEEP_ALIVE, String.valueOf(isKeepAlive));
+        result.put(CommonConstant.RESPONSE_CODE, Integer.toString(connection.getResponseCode()));
+        result.put(CommonConstant.RESPONSE_MESSAGE, connection.getResponseMessage());
+        result.put(CommonConstant.CONTENT_TYPE, connection.getContentType());
+        result.put(CommonConstant.DATA_ENCODING, connection.getContentEncoding());
+        result.put(CommonConstant.REQUEST_METHOD, connection.getRequestMethod());
+      } else {
+        InputStream inputStream = connection.getErrorStream();
+        long latency = 0;
+        if (inputStream != null) {
+          latency = System.currentTimeMillis() - startTime;
+        }
+        String responseBody = Utils.getResponseBodyError(connection);
+        long loadTime = System.currentTimeMillis() - startTime;
+        result.put(CommonConstant.RESPONSE_BODY, responseBody);
+        long htmlTransferred = responseBody.getBytes().length;
+        boolean isKeepAlive = Utils.isKeepAlive(connection);
+
+        result.put(
+            CommonConstant.SERVER_SOFTWARE, connection.getHeaderField(CommonConstant.SERVER));
+        result.put(CommonConstant.SERVER_HOST, connection.getURL().getHost());
+        result.put(CommonConstant.SERVER_PORT, String.valueOf(obj.getDefaultPort()));
+        result.put(CommonConstant.LOAD_TIME, String.valueOf(loadTime));
+        result.put(CommonConstant.CONNECT_TIME, String.valueOf(connectTime));
+        result.put(CommonConstant.LATENCY, String.valueOf(latency));
+        result.put(CommonConstant.HEADER_SIZE, String.valueOf(Utils.calcHeaderSize(connection)));
+        result.put(CommonConstant.THREAD_NAME, Thread.currentThread().getName());
+        result.put(CommonConstant.HTML_TRANSFERRED, String.valueOf(htmlTransferred));
+        result.put(CommonConstant.KEEP_ALIVE, String.valueOf(isKeepAlive));
+        result.put(CommonConstant.ITERATIONS, Integer.toString(iterations));
+        result.put(CommonConstant.RESPONSE_CODE, Integer.toString(connection.getResponseCode()));
+        result.put(CommonConstant.RESPONSE_MESSAGE, connection.getResponseMessage());
+        result.put(CommonConstant.CONTENT_TYPE, connection.getContentType());
+        result.put(CommonConstant.DATA_ENCODING, connection.getContentEncoding());
+        result.put(CommonConstant.REQUEST_METHOD, connection.getRequestMethod());
+      }
+
+    } catch (Exception e) {
       result.put(CommonConstant.THREAD_NAME, Thread.currentThread().getName());
       result.put(CommonConstant.ITERATIONS, Integer.toString(iterations));
-      result.put(CommonConstant.RESPONSE_MESSAGE, ignored.getMessage());
-      log.error(ignored.getMessage());
+      result.put(CommonConstant.RESPONSE_MESSAGE, e.getMessage());
+      log.error(e.getMessage());
     }
     return result;
   }

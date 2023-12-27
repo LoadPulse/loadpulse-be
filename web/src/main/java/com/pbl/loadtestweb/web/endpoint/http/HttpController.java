@@ -1,6 +1,5 @@
 package com.pbl.loadtestweb.web.endpoint.http;
 
-import com.pbl.loadtestweb.common.constant.CommonConstant;
 import com.pbl.loadtestweb.httprequest.payload.request.HttpPostRequest;
 import com.pbl.loadtestweb.httprequest.service.HttpRequestService;
 import io.swagger.annotations.Api;
@@ -21,9 +20,14 @@ public class HttpController {
   public ResponseEntity<SseEmitter> handleMethodGet(
       @RequestParam(name = "threads", defaultValue = "1") int threadCount,
       @RequestParam(name = "iterations", defaultValue = "1") int iterations,
-      @RequestParam(name = "url", defaultValue = "") String url) {
-    return ResponseEntity.ok(
-        httpRequestService.httpGet(url, threadCount, iterations, CommonConstant.HTTP_METHOD_GET));
+      @RequestParam(name = "url", defaultValue = "") String url,
+      @RequestParam(name = "ramp_up", defaultValue = "0") int rampUp) {
+    if (rampUp == 0) {
+      return ResponseEntity.ok(httpRequestService.httpGet(url, threadCount, iterations));
+    } else {
+      return ResponseEntity.ok(
+          httpRequestService.httpGetWithRampUp(url, threadCount, iterations, rampUp));
+    }
   }
 
   @PostMapping("/post/mvc")
@@ -31,15 +35,15 @@ public class HttpController {
       @RequestParam(name = "threads", defaultValue = "1") int threadCount,
       @RequestParam(name = "iterations", defaultValue = "1") int iterations,
       @RequestParam(name = "url", defaultValue = "") String url,
+      @RequestParam(name = "ramp_up", defaultValue = "0") int rampUp,
       @RequestBody HttpPostRequest httpPostRequest) {
-    if (httpPostRequest.getKey().isEmpty()) {
+    if (rampUp == 0) {
       return ResponseEntity.ok(
-          httpRequestService.httpGet(
-              url, threadCount, iterations, CommonConstant.HTTP_METHOD_POST));
+          httpRequestService.httpPostMVC(url, threadCount, iterations, httpPostRequest));
     } else {
       return ResponseEntity.ok(
-          httpRequestService.httpPostMVC(
-              url, threadCount, iterations, CommonConstant.HTTP_METHOD_POST, httpPostRequest));
+          httpRequestService.httpPostMVCWithRampUp(
+              url, threadCount, iterations, rampUp, httpPostRequest));
     }
   }
 
@@ -48,15 +52,15 @@ public class HttpController {
       @RequestParam(name = "threads", defaultValue = "1") int threadCount,
       @RequestParam(name = "iterations", defaultValue = "1") int iterations,
       @RequestParam(name = "url", defaultValue = "") String url,
+      @RequestParam(name = "ramp_up", defaultValue = "0") int rampUp,
       @RequestBody HttpPostRequest httpPostRequest) {
-    if (httpPostRequest.getKey().isEmpty()) {
+    if (rampUp == 0) {
       return ResponseEntity.ok(
-          httpRequestService.httpGet(
-              url, threadCount, iterations, CommonConstant.HTTP_METHOD_POST));
+          httpRequestService.httpPostAPI(url, threadCount, iterations, httpPostRequest));
     } else {
       return ResponseEntity.ok(
-          httpRequestService.httpPostAPI(
-              url, threadCount, iterations, CommonConstant.HTTP_METHOD_POST, httpPostRequest));
+          httpRequestService.httpPostAPIWithRampUp(
+              url, threadCount, iterations, rampUp, httpPostRequest));
     }
   }
 }
