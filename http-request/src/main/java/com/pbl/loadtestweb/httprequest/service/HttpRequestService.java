@@ -1,22 +1,39 @@
 package com.pbl.loadtestweb.httprequest.service;
 
-import com.pbl.loadtestweb.httprequest.payload.request.HttpPostRequest;
+import com.pbl.loadtestweb.httprequest.payload.request.HttpRequest;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 public interface HttpRequestService {
-  SseEmitter httpGet(String url, int threadCount, int iterations);
+  SseEmitter sendHttpRequest(
+      String url, int threadCount, int iterations, HttpRequest httpRequest, String method);
 
-  SseEmitter httpGetWithRampUp(String url, int threadCount, int iterations, int rampUp);
+  SseEmitter sendHttpRequestWithRampUp(
+      String url,
+      int threadCount,
+      int iterations,
+      int rampUp,
+      HttpRequest httpRequest,
+      String method);
 
-  SseEmitter httpPostMVC(
-      String url, int threadCount, int iterations, HttpPostRequest httpPostRequest);
+  SseEmitter sendHttpRequestEncodedFormBody(
+      String url, int threadCount, int iterations, HttpRequest httpRequest, String method);
 
-  SseEmitter httpPostMVCWithRampUp(
-      String url, int threadCount, int iterations, int rampUp, HttpPostRequest httpPostRequest);
+  SseEmitter sendHttpRequestEncodedFormBodyWithRampUp(
+      String url,
+      int threadCount,
+      int iterations,
+      int rampUp,
+      HttpRequest httpRequest,
+      String method);
 
-  SseEmitter httpPostAPI(
-      String url, int threadCount, int iterations, HttpPostRequest httpPostRequest);
+  SseEmitter sendHttpRequestJsonBody(
+      String url, int threadCount, int iterations, HttpRequest httpRequest, String method);
 
-  SseEmitter  httpPostAPIWithRampUp(
-      String url, int threadCount, int iterations, int rampUp, HttpPostRequest httpPostRequest);
+  SseEmitter sendHttpRequestJsonBodyWithRampUp(
+      String url,
+      int threadCount,
+      int iterations,
+      int rampUp,
+      HttpRequest httpRequest,
+      String method);
 }

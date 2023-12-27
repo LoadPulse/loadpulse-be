@@ -34,7 +34,9 @@ public class HttpDataResponse {
 
   private String latency;
 
-  private String headerSize;
+  private String dataReceived;
+
+  private String dataSent;
 
   private String responseCode;
 
@@ -46,11 +48,9 @@ public class HttpDataResponse {
 
   private String keepAlive;
 
-  private String totalTransferred;
-
-  private String htmlTransferred;
-
   private String requestMethod;
+
+  private String responseHeader;
 
   private String responseBody;
 }
