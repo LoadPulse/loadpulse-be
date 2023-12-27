@@ -35,6 +35,18 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
 
   private final ExecutorService executorService = Executors.newCachedThreadPool();
 
+  public static long threadRunEachMillisecond(int threadCount, int rampUp) {
+    return (long) ((double) rampUp / threadCount * 1000);
+  }
+
+  public static void sleepThread(long time) {
+    try {
+      Thread.sleep(time);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+      Thread.currentThread().interrupt();
+    }
+  }
   @Override
   public SseEmitter jdbcLoadTestWeb(
       String databaseUrl,
@@ -43,11 +55,16 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
       String password,
       String sql,
       int threadCount,
-      int iterations) {
+      int iterations,
+      int rampUp) {
     SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
 
     CountDownLatch latch = new CountDownLatch(threadCount);
+
     for (int i = 1; i <= threadCount; i++) {
+      if (i != 1) {
+        sleepThread(threadRunEachMillisecond(threadCount, rampUp));
+      }
       executorService.execute(
           () -> {
             try {
@@ -140,13 +157,16 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
       int iterations)
       throws ClassNotFoundException {
     Map<String, String> result = new HashMap<>();
+    long loadStartTime = System.currentTimeMillis();
     try {
-      long startConnectTime = System.currentTimeMillis();
+      result.put(
+              CommonConstant.START_AT,
+              CommonFunction.formatDateToString(CommonFunction.getCurrentDateTime()));
       Class.forName(jdbcDriverClass);
-
+      long startConnectTime = System.currentTimeMillis();
       Connection connection = DriverManager.getConnection(databaseUrl, username, password);
       long endConnectTime = System.currentTimeMillis();
-      long loadStartTime = System.currentTimeMillis();
+
       long connectTime = endConnectTime - startConnectTime;
 
       Statement statement = connection.createStatement();
@@ -160,7 +180,7 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
 
       long loadEndTime = System.currentTimeMillis();
 
-      long latency = responseTime - endConnectTime;
+      long latency = responseTime - loadStartTime;
       long loadTime = loadEndTime - loadStartTime;
 
       result.put(CommonConstant.LOAD_TIME, String.valueOf(loadTime));
@@ -170,9 +190,7 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
       result.put(
           CommonConstant.BODY_SIZE,
           String.valueOf(this.calcBodySize(databaseUrl, jdbcDriverClass, username, password, sql)));
-      result.put(
-          CommonConstant.START_AT,
-          CommonFunction.formatDateToString(CommonFunction.getCurrentDateTime()));
+
       result.put(CommonConstant.THREAD_NAME, Thread.currentThread().getName());
       result.put(CommonConstant.ITERATIONS, Integer.toString(iterations));
       result.put(CommonConstant.RESPONSE_CODE, "200");

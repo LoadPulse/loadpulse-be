@@ -22,9 +22,10 @@ public class JdbcController {
       @RequestParam(name = "password", defaultValue = " ") String password,
       @RequestParam(name = "sqlStatement", defaultValue = " ") String sql,
       @RequestParam(name = "threads", defaultValue = "1") int threads,
-      @RequestParam(name = "iterations", defaultValue = "1") int iterations) {
+      @RequestParam(name = "iterations", defaultValue = "1") int iterations,
+      @RequestParam(name = "ramp up", defaultValue = "1") int rampUp) {
     return ResponseEntity.ok(
         jdbcRequestService.jdbcLoadTestWeb(
-            databaseUrl, jdbcDriverClass, username, password, sql, threads, iterations));
+            databaseUrl, jdbcDriverClass, username, password, sql, threads, iterations,rampUp));
   }
 }

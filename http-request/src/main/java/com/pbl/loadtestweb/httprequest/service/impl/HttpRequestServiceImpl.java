@@ -594,7 +594,6 @@ public class HttpRequestServiceImpl implements HttpRequestService {
           OutputStreamWriter writer = new OutputStreamWriter(os, StandardCharsets.UTF_8)) {
         writer.write(params);
       }
-
       result.put(
           CommonConstant.START_AT,
           CommonFunction.formatDateToString(CommonFunction.getCurrentDateTime()));
