@@ -16,14 +16,14 @@ public class JdbcController {
 
   @GetMapping(value = "/")
   public ResponseEntity<SseEmitter> handleJdbcResponse(
-      @RequestParam(name = "databaseUrl", defaultValue = " ") String databaseUrl,
-      @RequestParam(name = "jdbcDriverClass", defaultValue = " ") String jdbcDriverClass,
+      @RequestParam(name = "database_url", defaultValue = " ") String databaseUrl,
+      @RequestParam(name = "jdbc_driver_class", defaultValue = " ") String jdbcDriverClass,
       @RequestParam(name = "username", defaultValue = " ") String username,
       @RequestParam(name = "password", defaultValue = " ") String password,
-      @RequestParam(name = "sqlStatement", defaultValue = " ") String sql,
+      @RequestParam(name = "sql_statement", defaultValue = " ") String sql,
       @RequestParam(name = "threads", defaultValue = "1") int threads,
       @RequestParam(name = "iterations", defaultValue = "1") int iterations,
-      @RequestParam(name = "ramp up", defaultValue = "1") int rampUp) {
+      @RequestParam(name = "ramp_up", defaultValue = "1") int rampUp) {
     return ResponseEntity.ok(
         jdbcRequestService.jdbcLoadTestWeb(
             databaseUrl, jdbcDriverClass, username, password, sql, threads, iterations,rampUp));
