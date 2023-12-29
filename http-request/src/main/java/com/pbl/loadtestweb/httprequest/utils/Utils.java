@@ -97,7 +97,7 @@ public class Utils {
     return "keep-alive".equalsIgnoreCase(connectionHeader);
   }
 
-  public static String handleParamsToRequestBodyMVC(HttpRequest httpPostRequest) {
+  public static String handleParamsToEncodedFormBody(HttpRequest httpPostRequest) {
     Map<String, String> params = new HashMap<>();
     for (int i = 0; i < httpPostRequest.getKeyBodies().size(); i++) {
       params.put(httpPostRequest.getKeyBodies().get(i), httpPostRequest.getValueBodies().get(i));
@@ -112,7 +112,7 @@ public class Utils {
     return requestBody.toString();
   }
 
-  public static String handleParamsToRequestBodyAPI(HttpRequest httpPostRequest) {
+  public static String handleParamsToJsonBody(HttpRequest httpPostRequest) {
     Map<String, String> params = new HashMap<>();
     try {
       for (int i = 0; i < httpPostRequest.getKeyBodies().size(); i++) {

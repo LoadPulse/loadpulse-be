@@ -475,7 +475,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       connection.connect();
       long connectTime = System.currentTimeMillis() - startTime;
 
-      String requestBody = Utils.handleParamsToRequestBodyMVC(httpRequest);
+      String requestBody = Utils.handleParamsToEncodedFormBody(httpRequest);
       long dataSent = requestBody.getBytes().length + requestHeaderSize;
 
       try (OutputStream os = connection.getOutputStream();
@@ -580,7 +580,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
             httpRequest.getKeyHeaders().get(i), httpRequest.getValueHeaders().get(i));
       }
 
-      String params = Utils.handleParamsToRequestBodyAPI(httpRequest);
+      String params = Utils.handleParamsToJsonBody(httpRequest);
       connection.setRequestProperty("Content-Length", String.valueOf(params.getBytes().length));
 
       long requestHeaderSize = Utils.calcRequestHeaderSize(connection);
