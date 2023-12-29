@@ -25,19 +25,21 @@ public class JdbcDataResponse {
 
   private String startAt;
 
+  private String nameDBMS;
+
+  private String versionDBMS;
+
   private String loadTime;
 
   private String connectTime;
 
   private String latency;
 
-  private String headerSize;
-
   private String bodySize;
 
-  private String responseCode;
+  private String errorCode;
 
-  private String responseMessage;
+  private String errorMessage;
 
   private String contentType;
 
