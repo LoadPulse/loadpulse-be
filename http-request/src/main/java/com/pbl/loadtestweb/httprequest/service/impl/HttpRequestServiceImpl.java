@@ -31,12 +31,12 @@ public class HttpRequestServiceImpl implements HttpRequestService {
 
   @Override
   public SseEmitter sendHttpRequest(
-      String url, int threadCount, int iterations, HttpRequest httpRequest, String method) {
+      String url, int virtualUsers, int iterations, HttpRequest httpRequest, String method) {
     SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
 
-    CountDownLatch latch = new CountDownLatch(threadCount);
+    CountDownLatch latch = new CountDownLatch(virtualUsers);
 
-    for (int i = 1; i <= threadCount; i++) {
+    for (int i = 1; i <= virtualUsers; i++) {
       executorService.execute(
           () -> {
             try {
@@ -75,21 +75,21 @@ public class HttpRequestServiceImpl implements HttpRequestService {
   @Override
   public SseEmitter sendHttpRequestWithRampUp(
       String url,
-      int threadCount,
+      int virtualUsers,
       int iterations,
       int rampUp,
       HttpRequest httpRequest,
       String method) {
     SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
 
-    CountDownLatch latch = new CountDownLatch(threadCount);
+    CountDownLatch latch = new CountDownLatch(virtualUsers);
 
-    log.info(Long.toString(Utils.timeForCreationEachThread(threadCount, rampUp)));
-    log.info(Long.toString(Utils.calcThreadIncrement(threadCount, rampUp)));
+    log.info(Long.toString(Utils.timeForCreationEachThread(virtualUsers, rampUp)));
+    log.info(Long.toString(Utils.calcThreadIncrement(virtualUsers, rampUp)));
 
-    for (int i = 1; i <= threadCount; i++) {
+    for (int i = 1; i <= virtualUsers; i++) {
       if (i != 1) {
-        Utils.sleepThread(Utils.timeForCreationEachThread(threadCount, rampUp));
+        Utils.sleepThread(Utils.timeForCreationEachThread(virtualUsers, rampUp));
       }
       executorService.execute(
           () -> {
@@ -127,12 +127,12 @@ public class HttpRequestServiceImpl implements HttpRequestService {
 
   @Override
   public SseEmitter sendHttpRequestEncodedFormBody(
-      String url, int threadCount, int iterations, HttpRequest httpRequest, String method) {
+      String url, int virtualUsers, int iterations, HttpRequest httpRequest, String method) {
     SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
 
-    CountDownLatch latch = new CountDownLatch(threadCount);
+    CountDownLatch latch = new CountDownLatch(virtualUsers);
 
-    for (int i = 1; i <= threadCount; i++) {
+    for (int i = 1; i <= virtualUsers; i++) {
       executorService.execute(
           () -> {
             try {
@@ -173,21 +173,21 @@ public class HttpRequestServiceImpl implements HttpRequestService {
   @Override
   public SseEmitter sendHttpRequestEncodedFormBodyWithRampUp(
       String url,
-      int threadCount,
+      int virtualUsers,
       int iterations,
       int rampUp,
       HttpRequest httpRequest,
       String method) {
     SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
 
-    CountDownLatch latch = new CountDownLatch(threadCount);
+    CountDownLatch latch = new CountDownLatch(virtualUsers);
 
-    log.info(Long.toString(Utils.timeForCreationEachThread(threadCount, rampUp)));
-    log.info(Long.toString(Utils.calcThreadIncrement(threadCount, rampUp)));
+    log.info(Long.toString(Utils.timeForCreationEachThread(virtualUsers, rampUp)));
+    log.info(Long.toString(Utils.calcThreadIncrement(virtualUsers, rampUp)));
 
-    for (int i = 1; i <= threadCount; i++) {
+    for (int i = 1; i <= virtualUsers; i++) {
       if (i != 1) {
-        Utils.sleepThread(Utils.timeForCreationEachThread(threadCount, rampUp));
+        Utils.sleepThread(Utils.timeForCreationEachThread(virtualUsers, rampUp));
       }
       executorService.execute(
           () -> {
@@ -227,12 +227,12 @@ public class HttpRequestServiceImpl implements HttpRequestService {
 
   @Override
   public SseEmitter sendHttpRequestJsonBody(
-      String url, int threadCount, int iterations, HttpRequest httpRequest, String method) {
+      String url, int virtualUsers, int iterations, HttpRequest httpRequest, String method) {
     SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
 
-    CountDownLatch latch = new CountDownLatch(threadCount);
+    CountDownLatch latch = new CountDownLatch(virtualUsers);
 
-    for (int i = 1; i <= threadCount; i++) {
+    for (int i = 1; i <= virtualUsers; i++) {
       executorService.execute(
           () -> {
             try {
@@ -271,21 +271,21 @@ public class HttpRequestServiceImpl implements HttpRequestService {
   @Override
   public SseEmitter sendHttpRequestJsonBodyWithRampUp(
       String url,
-      int threadCount,
+      int virtualUsers,
       int iterations,
       int rampUp,
       HttpRequest httpRequest,
       String method) {
     SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
 
-    CountDownLatch latch = new CountDownLatch(threadCount);
+    CountDownLatch latch = new CountDownLatch(virtualUsers);
 
-    log.info(Long.toString(Utils.timeForCreationEachThread(threadCount, rampUp)));
-    log.info(Long.toString(Utils.calcThreadIncrement(threadCount, rampUp)));
+    log.info(Long.toString(Utils.timeForCreationEachThread(virtualUsers, rampUp)));
+    log.info(Long.toString(Utils.calcThreadIncrement(virtualUsers, rampUp)));
 
-    for (int i = 1; i <= threadCount; i++) {
+    for (int i = 1; i <= virtualUsers; i++) {
       if (i != 1) {
-        Utils.sleepThread(Utils.timeForCreationEachThread(threadCount, rampUp));
+        Utils.sleepThread(Utils.timeForCreationEachThread(virtualUsers, rampUp));
       }
       executorService.execute(
           () -> {

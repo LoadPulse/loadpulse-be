@@ -20,7 +20,7 @@ public class HttpController {
   @PostMapping(value = "/{method}")
   @ApiOperation("Api send http request")
   public ResponseEntity<SseEmitter> sendHttpRequest(
-      @RequestParam(name = "threads", defaultValue = "1") int threadCount,
+      @RequestParam(name = "virtual_users", defaultValue = "1") int virtualUsers,
       @RequestParam(name = "iterations", defaultValue = "1") int iterations,
       @RequestParam(name = "url", defaultValue = "") String url,
       @RequestParam(name = "ramp_up", defaultValue = "0") int rampUp,
@@ -28,18 +28,18 @@ public class HttpController {
       @PathVariable String method) {
     if (rampUp == 0) {
       return ResponseEntity.ok(
-          httpRequestService.sendHttpRequest(url, threadCount, iterations, httpRequest, method));
+          httpRequestService.sendHttpRequest(url, virtualUsers, iterations, httpRequest, method));
     } else {
       return ResponseEntity.ok(
           httpRequestService.sendHttpRequestWithRampUp(
-              url, threadCount, iterations, rampUp, httpRequest, method));
+              url, virtualUsers, iterations, rampUp, httpRequest, method));
     }
   }
 
   @PostMapping("/{method}/encoded-form-body")
   @ApiOperation("Api send http request with encoded form body")
   public ResponseEntity<SseEmitter> sendHttpRequestWithEncodedFormBody(
-      @RequestParam(name = "threads", defaultValue = "1") int threadCount,
+      @RequestParam(name = "virtual_users", defaultValue = "1") int virtualUsers,
       @RequestParam(name = "iterations", defaultValue = "1") int iterations,
       @RequestParam(name = "url", defaultValue = "") String url,
       @RequestParam(name = "ramp_up", defaultValue = "0") int rampUp,
@@ -48,18 +48,18 @@ public class HttpController {
     if (rampUp == 0) {
       return ResponseEntity.ok(
           httpRequestService.sendHttpRequestEncodedFormBody(
-              url, threadCount, iterations, httpRequest, method));
+              url, virtualUsers, iterations, httpRequest, method));
     } else {
       return ResponseEntity.ok(
           httpRequestService.sendHttpRequestEncodedFormBodyWithRampUp(
-              url, threadCount, iterations, rampUp, httpRequest, method));
+              url, virtualUsers, iterations, rampUp, httpRequest, method));
     }
   }
 
   @PostMapping("/{method}/json-body")
   @ApiOperation("Api send http request with json body")
   public ResponseEntity<SseEmitter> sendHttpRequestWithJsonBody(
-      @RequestParam(name = "threads", defaultValue = "1") int threadCount,
+      @RequestParam(name = "virtual_users", defaultValue = "1") int virtualUsers,
       @RequestParam(name = "iterations", defaultValue = "1") int iterations,
       @RequestParam(name = "url", defaultValue = "") String url,
       @RequestParam(name = "ramp_up", defaultValue = "0") int rampUp,
@@ -68,12 +68,11 @@ public class HttpController {
     if (rampUp == 0) {
       return ResponseEntity.ok(
           httpRequestService.sendHttpRequestJsonBody(
-              url, threadCount, iterations, httpRequest, method));
+              url, virtualUsers, iterations, httpRequest, method));
     } else {
       return ResponseEntity.ok(
           httpRequestService.sendHttpRequestJsonBodyWithRampUp(
-              url, threadCount, iterations, rampUp, httpRequest, method));
+              url, virtualUsers, iterations, rampUp, httpRequest, method));
     }
   }
 }
-
