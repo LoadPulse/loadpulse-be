@@ -26,26 +26,15 @@ public class HttpController {
       @RequestParam(name = "ramp_up", defaultValue = "0") int rampUp,
       @RequestParam(name = "durations", defaultValue = "0") int durations,
       @RequestBody HttpRequest httpRequest,
-      @PathVariable String method){
-    if (rampUp == 0) {
-      if (iterations == 0) {
-        return ResponseEntity.ok(
-            httpRequestService.sendHttpRequestWithDurations(
-                url, virtualUsers, durations, httpRequest, method));
-      } else {
-        return ResponseEntity.ok(
-            httpRequestService.sendHttpRequest(url, virtualUsers, iterations, httpRequest, method));
-      }
+      @PathVariable String method) {
+    if (iterations == 0) {
+      return ResponseEntity.ok(
+          httpRequestService.sendHttpRequestWithDurations(
+              url, virtualUsers, durations, rampUp, httpRequest, method));
     } else {
-      if (iterations == 0) {
-        return ResponseEntity.ok(
-            httpRequestService.sendHttpRequestWithDurationsAndRampUp(
-                url, virtualUsers, durations, rampUp, httpRequest, method));
-      } else {
-        return ResponseEntity.ok(
-            httpRequestService.sendHttpRequestWithRampUp(
-                url, virtualUsers, iterations, rampUp, httpRequest, method));
-      }
+      return ResponseEntity.ok(
+          httpRequestService.sendHttpRequest(
+              url, virtualUsers, iterations, rampUp, httpRequest, method));
     }
   }
 
@@ -56,15 +45,16 @@ public class HttpController {
       @RequestParam(name = "iterations", defaultValue = "1") int iterations,
       @RequestParam(name = "url", defaultValue = "") String url,
       @RequestParam(name = "ramp_up", defaultValue = "0") int rampUp,
+      @RequestParam(name = "durations", defaultValue = "0") int durations,
       @PathVariable String method,
       @RequestBody HttpRequest httpRequest) {
-    if (rampUp == 0) {
+    if (iterations == 0) {
       return ResponseEntity.ok(
-          httpRequestService.sendHttpRequestEncodedFormBody(
-              url, virtualUsers, iterations, httpRequest, method));
+          httpRequestService.sendHttpRequestEncodedFormBodyWithDurations(
+              url, virtualUsers, durations, rampUp, httpRequest, method));
     } else {
       return ResponseEntity.ok(
-          httpRequestService.sendHttpRequestEncodedFormBodyWithRampUp(
+          httpRequestService.sendHttpRequestEncodedFormBody(
               url, virtualUsers, iterations, rampUp, httpRequest, method));
     }
   }
@@ -76,15 +66,16 @@ public class HttpController {
       @RequestParam(name = "iterations", defaultValue = "1") int iterations,
       @RequestParam(name = "url", defaultValue = "") String url,
       @RequestParam(name = "ramp_up", defaultValue = "0") int rampUp,
+      @RequestParam(name = "durations", defaultValue = "0") int durations,
       @PathVariable String method,
       @RequestBody HttpRequest httpRequest) {
-    if (rampUp == 0) {
+    if (iterations == 0) {
       return ResponseEntity.ok(
-          httpRequestService.sendHttpRequestJsonBody(
-              url, virtualUsers, iterations, httpRequest, method));
+          httpRequestService.sendHttpRequestJsonBodyWithDurations(
+              url, virtualUsers, durations, rampUp, httpRequest, method));
     } else {
       return ResponseEntity.ok(
-          httpRequestService.sendHttpRequestJsonBodyWithRampUp(
+          httpRequestService.sendHttpRequestJsonBody(
               url, virtualUsers, iterations, rampUp, httpRequest, method));
     }
   }
