@@ -55,4 +55,12 @@ public final class CommonConstant {
   public static final String DATA_SENT = "dataSent";
 
   public static final String DATA = "data";
+
+  public static final String NAME_DBMS = "nameDBMS";
+
+  public static final String VERSION_DBMS = "versionDBMS";
+
+  public static final String ERROR_CODE = "errorCode";
+
+  public static final String ERROR_MESSAGE = "errorMessage";
 }

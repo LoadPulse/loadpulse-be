@@ -26,7 +26,7 @@ public class HttpController {
       @RequestParam(name = "ramp_up", defaultValue = "0") int rampUp,
       @RequestParam(name = "durations", defaultValue = "0") int durations,
       @RequestBody HttpRequest httpRequest,
-      @PathVariable String method) {
+      @PathVariable String method){
     if (rampUp == 0) {
       if (iterations == 0) {
         return ResponseEntity.ok(

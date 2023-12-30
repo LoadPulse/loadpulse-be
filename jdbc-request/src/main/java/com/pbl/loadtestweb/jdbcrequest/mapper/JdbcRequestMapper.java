@@ -13,28 +13,30 @@ public interface JdbcRequestMapper {
   @Mapping(source = "threadName", target = "threadName")
   @Mapping(source = "iterations", target = "iterations")
   @Mapping(source = "startAt", target = "startAt")
-  @Mapping(source = "responseCode", target = "responseCode")
-  @Mapping(source = "responseMessage", target = "responseMessage")
+  @Mapping(source = "nameDBMS", target = "nameDBMS")
+  @Mapping(source = "versionDBMS", target = "versionDBMS")
+  @Mapping(source = "errorCode", target = "errorCode")
+  @Mapping(source = "errorMessage", target = "errorMessage")
   @Mapping(source = "contentType", target = "contentType")
   @Mapping(source = "dataEncoding", target = "dataEncoding")
   @Mapping(source = "loadTime", target = "loadTime")
   @Mapping(source = "connectTime", target = "connectTime")
   @Mapping(source = "latency", target = "latency")
-  @Mapping(source = "headerSize", target = "headerSize")
   @Mapping(source = "bodySize", target = "bodySize")
   @Mapping(source = "data", target = "data")
   JdbcDataResponse toJdbcDataResponse(
       String threadName,
       String iterations,
       String startAt,
-      String responseCode,
-      String responseMessage,
+      String nameDBMS,
+      String versionDBMS,
+      String errorCode,
+      String errorMessage,
       String contentType,
       String dataEncoding,
       String loadTime,
       String connectTime,
       String latency,
-      String headerSize,
       String bodySize,
       List<JsonNode> data);
 }

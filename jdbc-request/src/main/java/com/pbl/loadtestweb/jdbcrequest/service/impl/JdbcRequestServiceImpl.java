@@ -35,6 +35,18 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
 
   private final ExecutorService executorService = Executors.newCachedThreadPool();
 
+  public static long threadRunEachMillisecond(int threadCount, int rampUp) {
+    return (long) ((double) rampUp / threadCount * 1000);
+  }
+
+  public static void sleepThread(long time) {
+    try {
+      Thread.sleep(time);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+      Thread.currentThread().interrupt();
+    }
+  }
   @Override
   public SseEmitter jdbcLoadTestWeb(
       String databaseUrl,
@@ -43,11 +55,16 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
       String password,
       String sql,
       int threadCount,
-      int iterations) {
+      int iterations,
+      int rampUp) {
     SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
 
     CountDownLatch latch = new CountDownLatch(threadCount);
+
     for (int i = 1; i <= threadCount; i++) {
+      if (i != 1) {
+        sleepThread(threadRunEachMillisecond(threadCount, rampUp));
+      }
       executorService.execute(
           () -> {
             try {
@@ -100,15 +117,15 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
         result.get(CommonConstant.THREAD_NAME),
         result.get(CommonConstant.ITERATIONS),
         result.get(CommonConstant.START_AT),
-        result.get(CommonConstant.RESPONSE_CODE),
-        result.get(CommonConstant.RESPONSE_MESSAGE),
+        result.get(CommonConstant.NAME_DBMS),
+        result.get(CommonConstant.VERSION_DBMS),
+        result.get(CommonConstant.ERROR_CODE),
+        result.get(CommonConstant.ERROR_MESSAGE),
         result.get(CommonConstant.CONTENT_TYPE),
         result.get(CommonConstant.DATA_ENCODING),
-        // result.get(CommonConstant.REQUEST_METHOD),
         result.get(CommonConstant.LOAD_TIME),
         result.get(CommonConstant.CONNECT_TIME),
         result.get(CommonConstant.LATENCY),
-        result.get(CommonConstant.HEADER_SIZE),
         result.get(CommonConstant.BODY_SIZE),
         resultdata.get(CommonConstant.DATA));
   }
@@ -140,14 +157,21 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
       int iterations)
       throws ClassNotFoundException {
     Map<String, String> result = new HashMap<>();
+    long loadStartTime = System.currentTimeMillis();
     try {
-      long startConnectTime = System.currentTimeMillis();
+      result.put(
+              CommonConstant.START_AT,
+              CommonFunction.formatDateToString(CommonFunction.getCurrentDateTime()));
       Class.forName(jdbcDriverClass);
-
+      long startConnectTime = System.currentTimeMillis();
       Connection connection = DriverManager.getConnection(databaseUrl, username, password);
       long endConnectTime = System.currentTimeMillis();
-      long loadStartTime = System.currentTimeMillis();
+
       long connectTime = endConnectTime - startConnectTime;
+
+      DatabaseMetaData dbmd = connection.getMetaData();
+      result.put(CommonConstant.NAME_DBMS,dbmd.getDatabaseProductName());
+      result.put(CommonConstant.VERSION_DBMS,dbmd.getDatabaseProductVersion());
 
       Statement statement = connection.createStatement();
       ResultSet resultSet = statement.executeQuery(sql);
@@ -160,9 +184,8 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
 
       long loadEndTime = System.currentTimeMillis();
 
-      long latency = responseTime - endConnectTime;
+      long latency = responseTime - loadStartTime;
       long loadTime = loadEndTime - loadStartTime;
-
       result.put(CommonConstant.LOAD_TIME, String.valueOf(loadTime));
       result.put(CommonConstant.CONNECT_TIME, String.valueOf(connectTime));
       result.put(CommonConstant.LATENCY, String.valueOf(latency));
@@ -170,21 +193,16 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
       result.put(
           CommonConstant.BODY_SIZE,
           String.valueOf(this.calcBodySize(databaseUrl, jdbcDriverClass, username, password, sql)));
-      result.put(
-          CommonConstant.START_AT,
-          CommonFunction.formatDateToString(CommonFunction.getCurrentDateTime()));
+
       result.put(CommonConstant.THREAD_NAME, Thread.currentThread().getName());
       result.put(CommonConstant.ITERATIONS, Integer.toString(iterations));
-      result.put(CommonConstant.RESPONSE_CODE, "200");
-
-      result.put(CommonConstant.RESPONSE_MESSAGE, "OK");
     } catch (SQLException ignored) {
       result.put(CommonConstant.THREAD_NAME, Thread.currentThread().getName());
       result.put(
           CommonConstant.START_AT,
           CommonFunction.formatDateToString(CommonFunction.getCurrentDateTime()));
-      result.put(CommonConstant.RESPONSE_CODE, String.valueOf(ignored.getErrorCode()));
-      result.put(CommonConstant.RESPONSE_MESSAGE, ignored.getMessage());
+      result.put(CommonConstant.ERROR_CODE, String.valueOf(ignored.getErrorCode()));
+      result.put(CommonConstant.ERROR_MESSAGE, ignored.getMessage());
     }
     return result;
   }
@@ -216,7 +234,7 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
       result.put(CommonConstant.DATA, jsonNodeList);
     } catch (SQLException | ClassNotFoundException ignored) {
       JsonObject jsonObject = new JsonObject();
-      jsonObject.addProperty(CommonConstant.RESPONSE_MESSAGE, ignored.getMessage());
+      jsonObject.addProperty(CommonConstant.ERROR_MESSAGE, ignored.getMessage());
       ObjectMapper objectMapper = new ObjectMapper();
       jsonNode = objectMapper.readTree(jsonObject.toString());
       jsonNodeList.add(jsonNode);

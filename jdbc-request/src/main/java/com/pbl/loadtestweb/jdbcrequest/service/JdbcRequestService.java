@@ -19,5 +19,6 @@ public interface JdbcRequestService {
       String password,
       String sql,
       int threadCount,
-      int iterations);
+      int iterations,
+      int ramUp);
 }
