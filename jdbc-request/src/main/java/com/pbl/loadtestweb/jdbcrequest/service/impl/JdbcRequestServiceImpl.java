@@ -35,8 +35,8 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
 
   private final ExecutorService executorService = Executors.newCachedThreadPool();
 
-  public static long threadRunEachMillisecond(int threadCount, int rampUp) {
-    return (long) ((double) rampUp / threadCount * 1000);
+  public static long threadRunEachMillisecond(int virtualUsers, int rampUp) {
+    return (long) ((double) rampUp / virtualUsers * 1000);
   }
 
   public static void sleepThread(long time) {
@@ -54,16 +54,16 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
       String username,
       String password,
       String sql,
-      int threadCount,
+      int virtualUsers,
       int iterations,
       int rampUp) {
     SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
 
-    CountDownLatch latch = new CountDownLatch(threadCount);
+    CountDownLatch latch = new CountDownLatch(virtualUsers);
 
-    for (int i = 1; i <= threadCount; i++) {
+    for (int i = 1; i <= virtualUsers; i++) {
       if (i != 1) {
-        sleepThread(threadRunEachMillisecond(threadCount, rampUp));
+        sleepThread(threadRunEachMillisecond(virtualUsers, rampUp));
       }
       executorService.execute(
           () -> {
@@ -101,7 +101,67 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
 
     return sseEmitter;
   }
+  @Override
+  public SseEmitter jdbcLoadTestWebWithDuration(
+          String databaseUrl,
+          String jdbcDriverClass,
+          String username,
+          String password,
+          String sql,
+          int virtualUsers,
+          int iterations,
+          int rampUp, long durationTime) {
+    SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
 
+    CountDownLatch latch = new CountDownLatch(virtualUsers);
+    for (int i = 1; i <= virtualUsers; i++) {
+      if (i != 1) {
+        sleepThread(threadRunEachMillisecond(virtualUsers, rampUp));
+      }
+      long startTime = System.currentTimeMillis();
+
+
+      executorService.execute(
+              () -> {
+                try {
+                  long timeElapsed = 0;
+                  do {
+
+                    Map<String, String> result =
+                            this.loadTestThread(databaseUrl, jdbcDriverClass, username, password, sql,0);
+                    Map<String, List<JsonNode>> resultData =
+                            this.getJdbcData(databaseUrl, jdbcDriverClass, username, password, sql);
+                    JdbcDataResponse jdbcDataResponse = this.buildJdbcDataResponse(result, resultData);
+                    sseEmitter.send(jdbcDataResponse, MediaType.APPLICATION_JSON);
+                    sleep();
+                    long endTime = System.currentTimeMillis();
+                    timeElapsed = endTime - startTime;
+                  } while (timeElapsed < durationTime * 1000L);
+                } catch (IOException | ClassNotFoundException e) {
+                  throw new RuntimeException(e);
+                } finally {
+                  latch.countDown();
+                }
+              });
+
+
+
+    }
+    new Thread(
+            () -> {
+              try {
+                latch.await();
+                sseEmitter.complete();
+              } catch (InterruptedException e) {
+                e.printStackTrace();
+                Thread.currentThread().interrupt();
+                sseEmitter.completeWithError(e);
+              }
+            })
+            .start();
+
+    return sseEmitter;
+  }
   private void sleep() {
     try {
       Thread.sleep(1000);
@@ -173,14 +233,9 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
       result.put(CommonConstant.NAME_DBMS,dbmd.getDatabaseProductName());
       result.put(CommonConstant.VERSION_DBMS,dbmd.getDatabaseProductVersion());
 
+      long responseTime = System.currentTimeMillis();
       Statement statement = connection.createStatement();
       ResultSet resultSet = statement.executeQuery(sql);
-
-      InputStream inputStream = connection.createNClob().getAsciiStream();
-      long responseTime = 0;
-      if (inputStream != null) {
-        responseTime = System.currentTimeMillis();
-      }
 
       long loadEndTime = System.currentTimeMillis();
 
