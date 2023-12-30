@@ -15,32 +15,39 @@ public class JdbcController {
   private final JdbcRequestService jdbcRequestService;
 
   @GetMapping(value = "/")
-  public ResponseEntity<SseEmitter> handleJdbcResponse(
+  public ResponseEntity<SseEmitter> handleJdbcResponseDuration(
       @RequestParam(name = "database_url", defaultValue = " ") String databaseUrl,
       @RequestParam(name = "jdbc_driver_class", defaultValue = " ") String jdbcDriverClass,
       @RequestParam(name = "username", defaultValue = " ") String username,
       @RequestParam(name = "password", defaultValue = " ") String password,
       @RequestParam(name = "sql_statement", defaultValue = " ") String sql,
-      @RequestParam(name = "virtual_users", defaultValue = "1") int threads,
-      @RequestParam(name = "iterations", defaultValue = "1") int iterations,
-      @RequestParam(name = "ramp_up", defaultValue = "0") int rampUp) {
-    return ResponseEntity.ok(
-        jdbcRequestService.jdbcLoadTestWeb(
-            databaseUrl, jdbcDriverClass, username, password, sql, threads, iterations,rampUp));
-  }
-  @GetMapping(value = "/duration")
-  public ResponseEntity<SseEmitter> handleJdbcResponseDuration(
-          @RequestParam(name = "database_url", defaultValue = " ") String databaseUrl,
-          @RequestParam(name = "jdbc_driver_class", defaultValue = " ") String jdbcDriverClass,
-          @RequestParam(name = "username", defaultValue = " ") String username,
-          @RequestParam(name = "password", defaultValue = " ") String password,
-          @RequestParam(name = "sql_statement", defaultValue = " ") String sql,
-          @RequestParam(name = "virtual_users", defaultValue = "1") int threads,
-          @RequestParam(name = "iterations", defaultValue = "1") int iterations,
-          @RequestParam(name = "ramp_up", defaultValue = "0") int rampUp,
-          @RequestParam(name = "duration", defaultValue = "10000") long duration) {
-    return ResponseEntity.ok(
-            jdbcRequestService.jdbcLoadTestWebWithDuration(
-                    databaseUrl, jdbcDriverClass, username, password, sql, threads, iterations,rampUp,duration));
+      @RequestParam(name = "virtual_users", defaultValue = "1") int virtualUsers,
+      @RequestParam(name = "iterations", defaultValue = "0") int iterations,
+      @RequestParam(name = "ramp_up", defaultValue = "0") int rampUp,
+      @RequestParam(name = "duration", defaultValue = "0") long duration) {
+    if (iterations == 0) {
+      return ResponseEntity.ok(
+          jdbcRequestService.jdbcLoadTestWebWithDuration(
+              databaseUrl,
+              jdbcDriverClass,
+              username,
+              password,
+              sql,
+              virtualUsers,
+              rampUp,
+              duration));
+
+    } else {
+      return ResponseEntity.ok(
+          jdbcRequestService.jdbcLoadTestWeb(
+              databaseUrl,
+              jdbcDriverClass,
+              username,
+              password,
+              sql,
+              virtualUsers,
+              iterations,
+              rampUp));
+    }
   }
 }
