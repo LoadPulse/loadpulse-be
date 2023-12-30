@@ -31,4 +31,5 @@ public interface JdbcRequestService {
       int virtualUsers,
       int rampUp,
       long durationTime);
+
 }

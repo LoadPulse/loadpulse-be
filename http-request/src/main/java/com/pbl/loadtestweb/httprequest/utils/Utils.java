@@ -126,6 +126,9 @@ public class Utils {
   }
 
   public static long timeForCreationEachThread(int threadCount, int rampUp) {
+    if (rampUp == 0) {
+      return 0;
+    }
     return (long) ((double) rampUp / threadCount * 1000);
   }
 

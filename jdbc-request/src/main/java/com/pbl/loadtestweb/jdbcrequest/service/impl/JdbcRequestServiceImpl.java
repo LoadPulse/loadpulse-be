@@ -102,7 +102,6 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
 
     return sseEmitter;
   }
-
   @Override
   public SseEmitter jdbcLoadTestWebWithDuration(
       String databaseUrl,
@@ -114,36 +113,34 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
       int rampUp,
       long durationTime) {
     SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
-
     CountDownLatch latch = new CountDownLatch(virtualUsers);
     for (int i = 1; i <= virtualUsers; i++) {
       if (i != 1) {
         sleepThread(threadRunEachMillisecond(virtualUsers, rampUp));
       }
       long startTime = System.currentTimeMillis();
-
       executorService.execute(
-          () -> {
-            try {
-              long timeElapsed = 0;
-              do {
+              () -> {
+                try {
+                  long timeElapsed = 0;
+                  do {
 
-                Map<String, String> result =
-                    this.loadTestThread(databaseUrl, jdbcDriverClass, username, password, sql, 0);
-                Map<String, List<JsonNode>> resultData =
-                    this.getJdbcData(databaseUrl, jdbcDriverClass, username, password, sql);
-                JdbcDataResponse jdbcDataResponse = this.buildJdbcDataResponse(result, resultData);
-                sseEmitter.send(jdbcDataResponse, MediaType.APPLICATION_JSON);
-                sleep();
-                long endTime = System.currentTimeMillis();
-                timeElapsed = endTime - startTime;
-              } while (timeElapsed < durationTime * 1000L);
-            } catch (IOException | ClassNotFoundException e) {
-              throw new RuntimeException(e);
-            } finally {
-              latch.countDown();
-            }
-          });
+                    Map<String, String> result =
+                            this.loadTestThread(databaseUrl, jdbcDriverClass, username, password, sql,0);
+                    Map<String, List<JsonNode>> resultData =
+                            this.getJdbcData(databaseUrl, jdbcDriverClass, username, password, sql);
+                    JdbcDataResponse jdbcDataResponse = this.buildJdbcDataResponse(result, resultData);
+                    sseEmitter.send(jdbcDataResponse, MediaType.APPLICATION_JSON);
+                    sleep();
+                    long endTime = System.currentTimeMillis();
+                    timeElapsed = endTime - startTime;
+                  } while (timeElapsed < durationTime * 1000L);
+                } catch (IOException | ClassNotFoundException e) {
+                  throw new RuntimeException(e);
+                } finally {
+                  latch.countDown();
+                }
+              });
     }
     new Thread(
             () -> {
