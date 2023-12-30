@@ -101,7 +101,65 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
 
     return sseEmitter;
   }
+  @Override
+  public SseEmitter jdbcLoadTestWebWithDuration(
+          String databaseUrl,
+          String jdbcDriverClass,
+          String username,
+          String password,
+          String sql,
+          int threadCount,
+          int iterations,
+          int rampUp, long durationTime) {
+    SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
 
+    CountDownLatch latch = new CountDownLatch(threadCount);
+    for (int i = 1; i <= threadCount; i++) {
+      if (i != 1) {
+        sleepThread(threadRunEachMillisecond(threadCount, rampUp));
+      }
+      long startTime = System.currentTimeMillis();
+      long timeElapsed = 0;
+      do {
+      executorService.execute(
+              () -> {
+                try {
+                  for (int j = 1; j <= iterations; j++) {
+
+                    Map<String, String> result =
+                            this.loadTestThread(databaseUrl, jdbcDriverClass, username, password, sql, j);
+                    Map<String, List<JsonNode>> resultData =
+                            this.getJdbcData(databaseUrl, jdbcDriverClass, username, password, sql);
+                    JdbcDataResponse jdbcDataResponse = this.buildJdbcDataResponse(result, resultData);
+                    sseEmitter.send(jdbcDataResponse, MediaType.APPLICATION_JSON);
+                    sleep();
+                  }
+                } catch (IOException | ClassNotFoundException e) {
+                  throw new RuntimeException(e);
+                } finally {
+                  latch.countDown();
+                }
+              });
+        long endTime = System.currentTimeMillis();
+        timeElapsed = endTime - startTime;
+      } while (timeElapsed < durationTime);
+
+    }
+    new Thread(
+            () -> {
+              try {
+                latch.await();
+                sseEmitter.complete();
+              } catch (InterruptedException e) {
+                e.printStackTrace();
+                Thread.currentThread().interrupt();
+                sseEmitter.completeWithError(e);
+              }
+            })
+            .start();
+
+    return sseEmitter;
+  }
   private void sleep() {
     try {
       Thread.sleep(1000);
@@ -173,14 +231,9 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
       result.put(CommonConstant.NAME_DBMS,dbmd.getDatabaseProductName());
       result.put(CommonConstant.VERSION_DBMS,dbmd.getDatabaseProductVersion());
 
+      long responseTime = System.currentTimeMillis();
       Statement statement = connection.createStatement();
       ResultSet resultSet = statement.executeQuery(sql);
-
-      InputStream inputStream = connection.createNClob().getAsciiStream();
-      long responseTime = 0;
-      if (inputStream != null) {
-        responseTime = System.currentTimeMillis();
-      }
 
       long loadEndTime = System.currentTimeMillis();
 

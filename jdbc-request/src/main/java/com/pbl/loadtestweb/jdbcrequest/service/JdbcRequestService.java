@@ -21,4 +21,13 @@ public interface JdbcRequestService {
       int threadCount,
       int iterations,
       int ramUp);
+  SseEmitter jdbcLoadTestWebWithDuration(
+          String databaseUrl,
+          String jdbcDriverClass,
+          String username,
+          String password,
+          String sql,
+          int threadCount,
+          int iterations,
+          int rampUp, long durationTime);
 }
