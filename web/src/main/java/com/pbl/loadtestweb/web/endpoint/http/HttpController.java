@@ -24,15 +24,28 @@ public class HttpController {
       @RequestParam(name = "iterations", defaultValue = "1") int iterations,
       @RequestParam(name = "url", defaultValue = "") String url,
       @RequestParam(name = "ramp_up", defaultValue = "0") int rampUp,
+      @RequestParam(name = "durations", defaultValue = "0") int durations,
       @RequestBody HttpRequest httpRequest,
       @PathVariable String method) {
     if (rampUp == 0) {
-      return ResponseEntity.ok(
-          httpRequestService.sendHttpRequest(url, virtualUsers, iterations, httpRequest, method));
+      if (iterations == 0) {
+        return ResponseEntity.ok(
+            httpRequestService.sendHttpRequestWithDurations(
+                url, virtualUsers, durations, httpRequest, method));
+      } else {
+        return ResponseEntity.ok(
+            httpRequestService.sendHttpRequest(url, virtualUsers, iterations, httpRequest, method));
+      }
     } else {
-      return ResponseEntity.ok(
-          httpRequestService.sendHttpRequestWithRampUp(
-              url, virtualUsers, iterations, rampUp, httpRequest, method));
+      if (iterations == 0) {
+        return ResponseEntity.ok(
+            httpRequestService.sendHttpRequestWithDurationsAndRampUp(
+                url, virtualUsers, durations, rampUp, httpRequest, method));
+      } else {
+        return ResponseEntity.ok(
+            httpRequestService.sendHttpRequestWithRampUp(
+                url, virtualUsers, iterations, rampUp, httpRequest, method));
+      }
     }
   }
 
