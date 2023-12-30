@@ -4,10 +4,8 @@ import com.pbl.loadtestweb.httprequest.payload.request.HttpRequest;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 public interface HttpRequestService {
-  SseEmitter sendHttpRequest(
-      String url, int virtualUsers, int iterations, HttpRequest httpRequest, String method);
 
-  SseEmitter sendHttpRequestWithRampUp(
+  SseEmitter sendHttpRequest(
       String url,
       int virtualUsers,
       int iterations,
@@ -16,9 +14,6 @@ public interface HttpRequestService {
       String method);
 
   SseEmitter sendHttpRequestWithDurations(
-      String url, int virtualUsers, int durations, HttpRequest httpRequest, String method);
-
-  SseEmitter sendHttpRequestWithDurationsAndRampUp(
       String url,
       int virtualUsers,
       int durations,
@@ -27,9 +22,6 @@ public interface HttpRequestService {
       String method);
 
   SseEmitter sendHttpRequestEncodedFormBody(
-      String url, int virtualUsers, int iterations, HttpRequest httpRequest, String method);
-
-  SseEmitter sendHttpRequestEncodedFormBodyWithRampUp(
       String url,
       int virtualUsers,
       int iterations,
@@ -37,13 +29,26 @@ public interface HttpRequestService {
       HttpRequest httpRequest,
       String method);
 
-  SseEmitter sendHttpRequestJsonBody(
-      String url, int virtualUsers, int iterations, HttpRequest httpRequest, String method);
+  SseEmitter sendHttpRequestEncodedFormBodyWithDurations(
+      String url,
+      int virtualUsers,
+      int durations,
+      int rampUp,
+      HttpRequest httpRequest,
+      String method);
 
-  SseEmitter sendHttpRequestJsonBodyWithRampUp(
+  SseEmitter sendHttpRequestJsonBody(
       String url,
       int virtualUsers,
       int iterations,
+      int rampUp,
+      HttpRequest httpRequest,
+      String method);
+
+  SseEmitter sendHttpRequestJsonBodyWithDurations(
+      String url,
+      int virtualUsers,
+      int durations,
       int rampUp,
       HttpRequest httpRequest,
       String method);

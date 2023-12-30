@@ -31,49 +31,6 @@ public class HttpRequestServiceImpl implements HttpRequestService {
 
   @Override
   public SseEmitter sendHttpRequest(
-      String url, int virtualUsers, int iterations, HttpRequest httpRequest, String method) {
-    SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
-
-    CountDownLatch latch = new CountDownLatch(virtualUsers);
-
-    for (int i = 1; i <= virtualUsers; i++) {
-      executorService.execute(
-          () -> {
-            try {
-              for (int j = 1; j <= iterations; j++) {
-                Map<String, String> result;
-                result = this.sendHttpRequest(url, method.toUpperCase(), j, httpRequest);
-                HttpDataResponse jsonResponse = this.buildHttpDataResponse(result);
-                sseEmitter.send(jsonResponse, MediaType.APPLICATION_JSON);
-                sleep();
-              }
-            } catch (IOException e) {
-              e.printStackTrace();
-              sseEmitter.completeWithError(e);
-            } finally {
-              latch.countDown();
-            }
-          });
-    }
-
-    new Thread(
-            () -> {
-              try {
-                latch.await();
-                sseEmitter.complete();
-              } catch (InterruptedException e) {
-                e.printStackTrace();
-                Thread.currentThread().interrupt();
-                sseEmitter.completeWithError(e);
-              }
-            })
-        .start();
-
-    return sseEmitter;
-  }
-
-  @Override
-  public SseEmitter sendHttpRequestWithRampUp(
       String url,
       int virtualUsers,
       int iterations,
@@ -85,7 +42,6 @@ public class HttpRequestServiceImpl implements HttpRequestService {
     CountDownLatch latch = new CountDownLatch(virtualUsers);
 
     log.info(Long.toString(Utils.timeForCreationEachThread(virtualUsers, rampUp)));
-    log.info(Long.toString(Utils.calcThreadIncrement(virtualUsers, rampUp)));
 
     for (int i = 1; i <= virtualUsers; i++) {
       if (i != 1) {
@@ -127,51 +83,6 @@ public class HttpRequestServiceImpl implements HttpRequestService {
 
   @Override
   public SseEmitter sendHttpRequestWithDurations(
-      String url, int virtualUsers, int durations, HttpRequest httpRequest, String method) {
-
-    SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
-
-    CountDownLatch latch = new CountDownLatch(virtualUsers);
-
-    for (int i = 1; i <= virtualUsers; i++) {
-      executorService.execute(
-          () -> {
-            try {
-              long endTime = System.currentTimeMillis() + (durations * 1000L);
-
-              while (System.currentTimeMillis() < endTime) {
-                Map<String, String> result;
-                result = this.sendHttpRequest(url, method.toUpperCase(), 1, httpRequest);
-                HttpDataResponse jsonResponse = this.buildHttpDataResponse(result);
-                sseEmitter.send(jsonResponse, MediaType.APPLICATION_JSON);
-              }
-            } catch (IOException e) {
-              e.printStackTrace();
-              sseEmitter.completeWithError(e);
-            } finally {
-              latch.countDown();
-            }
-          });
-    }
-
-    new Thread(
-            () -> {
-              try {
-                latch.await();
-                sseEmitter.complete();
-              } catch (InterruptedException e) {
-                e.printStackTrace();
-                Thread.currentThread().interrupt();
-                sseEmitter.completeWithError(e);
-              }
-            })
-        .start();
-
-    return sseEmitter;
-  }
-
-  @Override
-  public SseEmitter sendHttpRequestWithDurationsAndRampUp(
       String url,
       int virtualUsers,
       int durations,
@@ -224,12 +135,20 @@ public class HttpRequestServiceImpl implements HttpRequestService {
 
   @Override
   public SseEmitter sendHttpRequestEncodedFormBody(
-      String url, int virtualUsers, int iterations, HttpRequest httpRequest, String method) {
+      String url,
+      int virtualUsers,
+      int iterations,
+      int rampUp,
+      HttpRequest httpRequest,
+      String method) {
     SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
 
     CountDownLatch latch = new CountDownLatch(virtualUsers);
 
     for (int i = 1; i <= virtualUsers; i++) {
+      if (i != 1) {
+        Utils.sleepThread(Utils.timeForCreationEachThread(virtualUsers, rampUp));
+      }
       executorService.execute(
           () -> {
             try {
@@ -240,7 +159,6 @@ public class HttpRequestServiceImpl implements HttpRequestService {
                         url, method.toUpperCase(), httpRequest, j);
                 HttpDataResponse jsonResponse = this.buildHttpDataResponse(result);
                 sseEmitter.send(jsonResponse, MediaType.APPLICATION_JSON);
-                sleep();
               }
             } catch (IOException e) {
               e.printStackTrace();
@@ -268,19 +186,16 @@ public class HttpRequestServiceImpl implements HttpRequestService {
   }
 
   @Override
-  public SseEmitter sendHttpRequestEncodedFormBodyWithRampUp(
+  public SseEmitter sendHttpRequestEncodedFormBodyWithDurations(
       String url,
       int virtualUsers,
-      int iterations,
+      int durations,
       int rampUp,
       HttpRequest httpRequest,
       String method) {
     SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
 
     CountDownLatch latch = new CountDownLatch(virtualUsers);
-
-    log.info(Long.toString(Utils.timeForCreationEachThread(virtualUsers, rampUp)));
-    log.info(Long.toString(Utils.calcThreadIncrement(virtualUsers, rampUp)));
 
     for (int i = 1; i <= virtualUsers; i++) {
       if (i != 1) {
@@ -289,11 +204,13 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       executorService.execute(
           () -> {
             try {
-              for (int j = 1; j <= iterations; j++) {
+              long endTime = System.currentTimeMillis() + (durations * 1000L);
+
+              while (System.currentTimeMillis() < endTime) {
                 Map<String, String> result;
                 result =
                     this.sendHttpRequestWithFormURLEncoded(
-                        url, method.toUpperCase(), httpRequest, j);
+                        url, method.toUpperCase(), httpRequest, 0);
                 HttpDataResponse jsonResponse = this.buildHttpDataResponse(result);
                 sseEmitter.send(jsonResponse, MediaType.APPLICATION_JSON);
               }
@@ -324,49 +241,6 @@ public class HttpRequestServiceImpl implements HttpRequestService {
 
   @Override
   public SseEmitter sendHttpRequestJsonBody(
-      String url, int virtualUsers, int iterations, HttpRequest httpRequest, String method) {
-    SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
-
-    CountDownLatch latch = new CountDownLatch(virtualUsers);
-
-    for (int i = 1; i <= virtualUsers; i++) {
-      executorService.execute(
-          () -> {
-            try {
-              for (int j = 1; j <= iterations; j++) {
-                Map<String, String> result;
-                result = this.sendHttpRequestWithJson(url, method.toUpperCase(), httpRequest, j);
-                HttpDataResponse jsonResponse = this.buildHttpDataResponse(result);
-                sseEmitter.send(jsonResponse, MediaType.APPLICATION_JSON);
-                sleep();
-              }
-            } catch (IOException e) {
-              e.printStackTrace();
-              sseEmitter.completeWithError(e);
-            } finally {
-              latch.countDown();
-            }
-          });
-    }
-
-    new Thread(
-            () -> {
-              try {
-                latch.await();
-                sseEmitter.complete();
-              } catch (InterruptedException e) {
-                e.printStackTrace();
-                Thread.currentThread().interrupt();
-                sseEmitter.completeWithError(e);
-              }
-            })
-        .start();
-
-    return sseEmitter;
-  }
-
-  @Override
-  public SseEmitter sendHttpRequestJsonBodyWithRampUp(
       String url,
       int virtualUsers,
       int iterations,
@@ -376,9 +250,6 @@ public class HttpRequestServiceImpl implements HttpRequestService {
     SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
 
     CountDownLatch latch = new CountDownLatch(virtualUsers);
-
-    log.info(Long.toString(Utils.timeForCreationEachThread(virtualUsers, rampUp)));
-    log.info(Long.toString(Utils.calcThreadIncrement(virtualUsers, rampUp)));
 
     for (int i = 1; i <= virtualUsers; i++) {
       if (i != 1) {
@@ -418,13 +289,58 @@ public class HttpRequestServiceImpl implements HttpRequestService {
     return sseEmitter;
   }
 
-  private void sleep() {
-    try {
-      Thread.sleep(1000);
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-      Thread.currentThread().interrupt();
+  @Override
+  public SseEmitter sendHttpRequestJsonBodyWithDurations(
+      String url,
+      int virtualUsers,
+      int durations,
+      int rampUp,
+      HttpRequest httpRequest,
+      String method) {
+    SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
+
+    CountDownLatch latch = new CountDownLatch(virtualUsers);
+
+    log.info(Long.toString(Utils.timeForCreationEachThread(virtualUsers, rampUp)));
+
+    for (int i = 1; i <= virtualUsers; i++) {
+      if (i != 1) {
+        Utils.sleepThread(Utils.timeForCreationEachThread(virtualUsers, rampUp));
+      }
+      executorService.execute(
+          () -> {
+            try {
+              long endTime = System.currentTimeMillis() + (durations * 1000L);
+
+              while (System.currentTimeMillis() < endTime) {
+                Map<String, String> result;
+                result = this.sendHttpRequestWithJson(url, method.toUpperCase(), httpRequest, 0);
+                HttpDataResponse jsonResponse = this.buildHttpDataResponse(result);
+                sseEmitter.send(jsonResponse, MediaType.APPLICATION_JSON);
+              }
+            } catch (IOException e) {
+              e.printStackTrace();
+              sseEmitter.completeWithError(e);
+            } finally {
+              latch.countDown();
+            }
+          });
     }
+
+    new Thread(
+            () -> {
+              try {
+                latch.await();
+                sseEmitter.complete();
+              } catch (InterruptedException e) {
+                e.printStackTrace();
+                Thread.currentThread().interrupt();
+                sseEmitter.completeWithError(e);
+              }
+            })
+        .start();
+
+    return sseEmitter;
   }
 
   private HttpDataResponse buildHttpDataResponse(Map<String, String> result) {
