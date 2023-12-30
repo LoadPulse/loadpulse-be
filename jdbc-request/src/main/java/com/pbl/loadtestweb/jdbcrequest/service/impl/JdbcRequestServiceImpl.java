@@ -35,8 +35,8 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
 
   private final ExecutorService executorService = Executors.newCachedThreadPool();
 
-  public static long threadRunEachMillisecond(int threadCount, int rampUp) {
-    return (long) ((double) rampUp / threadCount * 1000);
+  public static long threadRunEachMillisecond(int virtualUsers, int rampUp) {
+    return (long) ((double) rampUp / virtualUsers * 1000);
   }
 
   public static void sleepThread(long time) {
@@ -54,16 +54,16 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
       String username,
       String password,
       String sql,
-      int threadCount,
+      int virtualUsers,
       int iterations,
       int rampUp) {
     SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
 
-    CountDownLatch latch = new CountDownLatch(threadCount);
+    CountDownLatch latch = new CountDownLatch(virtualUsers);
 
-    for (int i = 1; i <= threadCount; i++) {
+    for (int i = 1; i <= virtualUsers; i++) {
       if (i != 1) {
-        sleepThread(threadRunEachMillisecond(threadCount, rampUp));
+        sleepThread(threadRunEachMillisecond(virtualUsers, rampUp));
       }
       executorService.execute(
           () -> {
@@ -108,41 +108,43 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
           String username,
           String password,
           String sql,
-          int threadCount,
+          int virtualUsers,
           int iterations,
           int rampUp, long durationTime) {
     SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
 
-    CountDownLatch latch = new CountDownLatch(threadCount);
-    for (int i = 1; i <= threadCount; i++) {
+    CountDownLatch latch = new CountDownLatch(virtualUsers);
+    for (int i = 1; i <= virtualUsers; i++) {
       if (i != 1) {
-        sleepThread(threadRunEachMillisecond(threadCount, rampUp));
+        sleepThread(threadRunEachMillisecond(virtualUsers, rampUp));
       }
       long startTime = System.currentTimeMillis();
-      long timeElapsed = 0;
-      do {
+
+
       executorService.execute(
               () -> {
                 try {
-                  for (int j = 1; j <= iterations; j++) {
+                  long timeElapsed = 0;
+                  do {
 
                     Map<String, String> result =
-                            this.loadTestThread(databaseUrl, jdbcDriverClass, username, password, sql, j);
+                            this.loadTestThread(databaseUrl, jdbcDriverClass, username, password, sql,0);
                     Map<String, List<JsonNode>> resultData =
                             this.getJdbcData(databaseUrl, jdbcDriverClass, username, password, sql);
                     JdbcDataResponse jdbcDataResponse = this.buildJdbcDataResponse(result, resultData);
                     sseEmitter.send(jdbcDataResponse, MediaType.APPLICATION_JSON);
                     sleep();
-                  }
+                    long endTime = System.currentTimeMillis();
+                    timeElapsed = endTime - startTime;
+                  } while (timeElapsed < durationTime * 1000L);
                 } catch (IOException | ClassNotFoundException e) {
                   throw new RuntimeException(e);
                 } finally {
                   latch.countDown();
                 }
               });
-        long endTime = System.currentTimeMillis();
-        timeElapsed = endTime - startTime;
-      } while (timeElapsed < durationTime);
+
+
 
     }
     new Thread(
