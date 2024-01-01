@@ -39,8 +39,7 @@ public class SwaggerConfig {
         .build()
         .apiInfo(apiInfo())
         .securityContexts(Collections.singletonList(securityContext()))
-        .securitySchemes(Collections.singletonList(getApiKey()))
-        .pathMapping("/api");
+        .securitySchemes(Collections.singletonList(getApiKey()));
   }
 
   private ApiInfo apiInfo() {
