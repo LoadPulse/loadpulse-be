@@ -35,7 +35,9 @@ public class JdbcDataResponse {
 
   private String latency;
 
-  private String bodySize;
+  private String dataSent;
+
+  private String dataReceived;
 
   private String errorCode;
 

@@ -22,7 +22,8 @@ public interface JdbcRequestMapper {
   @Mapping(source = "loadTime", target = "loadTime")
   @Mapping(source = "connectTime", target = "connectTime")
   @Mapping(source = "latency", target = "latency")
-  @Mapping(source = "bodySize", target = "bodySize")
+  @Mapping(source = "dataReceived",target = "dataReceived")
+  @Mapping(source = "dataSent",target = "dataSent")
   @Mapping(source = "data", target = "data")
   JdbcDataResponse toJdbcDataResponse(
       String threadName,
@@ -37,6 +38,7 @@ public interface JdbcRequestMapper {
       String loadTime,
       String connectTime,
       String latency,
-      String bodySize,
+      String dataSent,
+      String dataReceived,
       List<JsonNode> data);
 }
