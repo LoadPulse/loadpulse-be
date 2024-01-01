@@ -70,6 +70,7 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
           () -> {
             try {
               for (int j = 1; j <= iterations; j++) {
+
                 Map<String, String> result =
                     this.loadTestThread(databaseUrl, jdbcDriverClass, username, password, sql, j);
                 Map<String, List<JsonNode>> resultData =
@@ -100,7 +101,6 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
 
     return sseEmitter;
   }
-
   @Override
   public SseEmitter jdbcLoadTestWebWithDuration(
       String databaseUrl,
@@ -113,12 +113,8 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
       long durationTime) {
     SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
     CountDownLatch latch = new CountDownLatch(virtualUsers);
-    for (int i = 1; i <= virtualUsers; i++) {
-      if (i != 1) {
-        sleepThread(threadRunEachMillisecond(virtualUsers, rampUp));
-      }
-      long startTime = System.currentTimeMillis();
-      executorService.execute(
+    long startTime = System.currentTimeMillis();
+    executorService.execute(
           () -> {
             try {
               long timeElapsed = 0;
@@ -139,7 +135,6 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
               latch.countDown();
             }
           });
-    }
     new Thread(
             () -> {
               try {
@@ -150,8 +145,7 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
                 Thread.currentThread().interrupt();
                 sseEmitter.completeWithError(e);
               }
-            })
-        .start();
+            }).start();
 
     return sseEmitter;
   }
@@ -166,7 +160,6 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
         result.get(CommonConstant.ERROR_CODE),
         result.get(CommonConstant.ERROR_MESSAGE),
         result.get(CommonConstant.CONTENT_TYPE),
-        result.get(CommonConstant.DATA_ENCODING),
         result.get(CommonConstant.LOAD_TIME),
         result.get(CommonConstant.CONNECT_TIME),
         result.get(CommonConstant.LATENCY),
@@ -174,6 +167,8 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
         result.get(CommonConstant.DATA_RECEIVED),
         resultdata.get(CommonConstant.DATA));
   }
+
+
   public Map<String, String> loadTestThread(
       String databaseUrl,
       String jdbcDriverClass,
@@ -183,7 +178,6 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
       int iterations)
       throws ClassNotFoundException {
     Map<String, String> result = new HashMap<>();
-
     long loadStartTime = System.currentTimeMillis();
     try {
       result.put(
@@ -215,19 +209,19 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
         bodySize += rowBuilder.toString().getBytes().length;
       }
       long loadEndTime = System.currentTimeMillis();
+
       long latency = responseTime - loadStartTime;
       long loadTime = loadEndTime - loadStartTime;
       result.put(CommonConstant.LOAD_TIME, String.valueOf(loadTime));
       result.put(CommonConstant.CONNECT_TIME, String.valueOf(connectTime));
       result.put(CommonConstant.LATENCY, String.valueOf(latency));
+      result.put(CommonConstant.DATA_SENT,"0");
       result.put(
           CommonConstant.DATA_RECEIVED,
           String.valueOf(bodySize));
-      result.put(CommonConstant.DATA_SENT, "0");
+      result.put(CommonConstant.ERROR_CODE,"1");
       result.put(CommonConstant.THREAD_NAME, Thread.currentThread().getName());
-      result.put(CommonConstant.ERROR_CODE, "1");
       result.put(CommonConstant.CONTENT_TYPE,"text");
-      connection.close();
     } catch (SQLException ignored) {
       result.put(CommonConstant.THREAD_NAME, Thread.currentThread().getName());
       result.put(
@@ -235,9 +229,7 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
           CommonFunction.formatDateToString(CommonFunction.getCurrentDateTime()));
       result.put(CommonConstant.ERROR_CODE, String.valueOf(ignored.getErrorCode()));
       result.put(CommonConstant.ERROR_MESSAGE, ignored.getMessage());
-
     }
-
     return result;
   }
 
@@ -265,9 +257,8 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
         jsonNode = objectMapper.readTree(jsonObject.toString());
         jsonNodeList.add(jsonNode);
       }
-      connection.close();
       result.put(CommonConstant.DATA, jsonNodeList);
-    } catch (SQLException| ClassNotFoundException  ignored) {
+    } catch (SQLException | ClassNotFoundException ignored) {
       JsonObject jsonObject = new JsonObject();
       jsonObject.addProperty(CommonConstant.ERROR_MESSAGE, ignored.getMessage());
       ObjectMapper objectMapper = new ObjectMapper();

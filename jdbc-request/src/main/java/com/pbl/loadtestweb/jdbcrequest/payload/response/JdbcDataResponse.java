@@ -45,7 +45,5 @@ public class JdbcDataResponse {
 
   private String contentType;
 
-  private String dataEncoding;
-
   private List<JsonNode> data;
 }

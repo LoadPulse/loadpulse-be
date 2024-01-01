@@ -18,7 +18,6 @@ public interface JdbcRequestMapper {
   @Mapping(source = "errorCode", target = "errorCode")
   @Mapping(source = "errorMessage", target = "errorMessage")
   @Mapping(source = "contentType", target = "contentType")
-  @Mapping(source = "dataEncoding", target = "dataEncoding")
   @Mapping(source = "loadTime", target = "loadTime")
   @Mapping(source = "connectTime", target = "connectTime")
   @Mapping(source = "latency", target = "latency")
@@ -34,7 +33,6 @@ public interface JdbcRequestMapper {
       String errorCode,
       String errorMessage,
       String contentType,
-      String dataEncoding,
       String loadTime,
       String connectTime,
       String latency,
