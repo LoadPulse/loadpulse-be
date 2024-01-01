@@ -39,13 +39,14 @@ public class SwaggerConfig {
         .build()
         .apiInfo(apiInfo())
         .securityContexts(Collections.singletonList(securityContext()))
-        .securitySchemes(Collections.singletonList(getApiKey()));
+        .securitySchemes(Collections.singletonList(getApiKey()))
+        .pathMapping("/api");
   }
 
   private ApiInfo apiInfo() {
     return new ApiInfo(
-        "API Documentation - Load Test Web Project",
-        "Api for Load Test Web Project",
+        "API Documentation - Load Testing Project",
+        "Api for Load Testing Project",
         "V1",
         "NA terms of service url",
         "Contact",
