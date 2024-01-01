@@ -35,15 +35,15 @@ public class JdbcDataResponse {
 
   private String latency;
 
-  private String bodySize;
+  private String dataSent;
+
+  private String dataReceived;
 
   private String errorCode;
 
   private String errorMessage;
 
   private String contentType;
-
-  private String dataEncoding;
 
   private List<JsonNode> data;
 }

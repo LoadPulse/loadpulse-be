@@ -77,7 +77,6 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
                     this.getJdbcData(databaseUrl, jdbcDriverClass, username, password, sql);
                 JdbcDataResponse jdbcDataResponse = this.buildJdbcDataResponse(result, resultData);
                 sseEmitter.send(jdbcDataResponse, MediaType.APPLICATION_JSON);
-                sleep();
               }
             } catch (IOException | ClassNotFoundException e) {
               throw new RuntimeException(e);
@@ -114,34 +113,28 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
       long durationTime) {
     SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
     CountDownLatch latch = new CountDownLatch(virtualUsers);
-    for (int i = 1; i <= virtualUsers; i++) {
-      if (i != 1) {
-        sleepThread(threadRunEachMillisecond(virtualUsers, rampUp));
-      }
-      long startTime = System.currentTimeMillis();
-      executorService.execute(
-              () -> {
-                try {
-                  long timeElapsed = 0;
-                  do {
+    long startTime = System.currentTimeMillis();
+    executorService.execute(
+          () -> {
+            try {
+              long timeElapsed = 0;
+              do {
 
-                    Map<String, String> result =
-                            this.loadTestThread(databaseUrl, jdbcDriverClass, username, password, sql,0);
-                    Map<String, List<JsonNode>> resultData =
-                            this.getJdbcData(databaseUrl, jdbcDriverClass, username, password, sql);
-                    JdbcDataResponse jdbcDataResponse = this.buildJdbcDataResponse(result, resultData);
-                    sseEmitter.send(jdbcDataResponse, MediaType.APPLICATION_JSON);
-                    sleep();
-                    long endTime = System.currentTimeMillis();
-                    timeElapsed = endTime - startTime;
-                  } while (timeElapsed < durationTime * 1000L);
-                } catch (IOException | ClassNotFoundException e) {
-                  throw new RuntimeException(e);
-                } finally {
-                  latch.countDown();
-                }
-              });
-    }
+                Map<String, String> result =
+                    this.loadTestThread(databaseUrl, jdbcDriverClass, username, password, sql, 0);
+                Map<String, List<JsonNode>> resultData =
+                    this.getJdbcData(databaseUrl, jdbcDriverClass, username, password, sql);
+                JdbcDataResponse jdbcDataResponse = this.buildJdbcDataResponse(result, resultData);
+                sseEmitter.send(jdbcDataResponse, MediaType.APPLICATION_JSON);
+                long endTime = System.currentTimeMillis();
+                timeElapsed = endTime - startTime;
+              } while (timeElapsed < durationTime * 1000L);
+            } catch (IOException | ClassNotFoundException e) {
+              throw new RuntimeException(e);
+            } finally {
+              latch.countDown();
+            }
+          });
     new Thread(
             () -> {
               try {
@@ -152,21 +145,10 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
                 Thread.currentThread().interrupt();
                 sseEmitter.completeWithError(e);
               }
-            })
-        .start();
+            }).start();
 
     return sseEmitter;
   }
-
-  private void sleep() {
-    try {
-      Thread.sleep(1000);
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-      Thread.currentThread().interrupt();
-    }
-  }
-
   private JdbcDataResponse buildJdbcDataResponse(
       Map<String, String> result, Map<String, List<JsonNode>> resultdata) {
     return jdbcRequestMapper.toJdbcDataResponse(
@@ -178,31 +160,14 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
         result.get(CommonConstant.ERROR_CODE),
         result.get(CommonConstant.ERROR_MESSAGE),
         result.get(CommonConstant.CONTENT_TYPE),
-        result.get(CommonConstant.DATA_ENCODING),
         result.get(CommonConstant.LOAD_TIME),
         result.get(CommonConstant.CONNECT_TIME),
         result.get(CommonConstant.LATENCY),
-        result.get(CommonConstant.BODY_SIZE),
+        result.get(CommonConstant.DATA_SENT),
+        result.get(CommonConstant.DATA_RECEIVED),
         resultdata.get(CommonConstant.DATA));
   }
 
-  private long calcBodySize(
-      String databaseUrl, String jdbcDriverClass, String username, String password, String sql)
-      throws ClassNotFoundException, SQLException {
-    Class.forName(jdbcDriverClass);
-    Connection connection = DriverManager.getConnection(databaseUrl, username, password);
-    Statement statement = connection.createStatement();
-    ResultSet resultSet = statement.executeQuery(sql);
-    long bodySize = 0;
-    while (resultSet.next()) {
-      StringBuilder rowBuilder = new StringBuilder();
-      for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
-        rowBuilder.append(resultSet.getString(i));
-      }
-      bodySize += rowBuilder.toString().getBytes().length;
-    }
-    return bodySize;
-  }
 
   public Map<String, String> loadTestThread(
       String databaseUrl,
@@ -235,7 +200,14 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
       long responseTime = System.currentTimeMillis();
       Statement statement = connection.createStatement();
       ResultSet resultSet = statement.executeQuery(sql);
-
+      long bodySize = 0;
+      while (resultSet.next()) {
+        StringBuilder rowBuilder = new StringBuilder();
+        for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
+          rowBuilder.append(resultSet.getString(i));
+        }
+        bodySize += rowBuilder.toString().getBytes().length;
+      }
       long loadEndTime = System.currentTimeMillis();
 
       long latency = responseTime - loadStartTime;
@@ -243,11 +215,13 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
       result.put(CommonConstant.LOAD_TIME, String.valueOf(loadTime));
       result.put(CommonConstant.CONNECT_TIME, String.valueOf(connectTime));
       result.put(CommonConstant.LATENCY, String.valueOf(latency));
+      result.put(CommonConstant.DATA_SENT,"0");
       result.put(
-          CommonConstant.BODY_SIZE,
-          String.valueOf(this.calcBodySize(databaseUrl, jdbcDriverClass, username, password, sql)));
-
+          CommonConstant.DATA_RECEIVED,
+          String.valueOf(bodySize));
+      result.put(CommonConstant.ERROR_CODE,"1");
       result.put(CommonConstant.THREAD_NAME, Thread.currentThread().getName());
+      result.put(CommonConstant.CONTENT_TYPE,"text");
     } catch (SQLException ignored) {
       result.put(CommonConstant.THREAD_NAME, Thread.currentThread().getName());
       result.put(
