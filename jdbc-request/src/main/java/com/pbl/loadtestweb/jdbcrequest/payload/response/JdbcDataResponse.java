@@ -19,31 +19,31 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class JdbcDataResponse {
 
-  private String threadName;
+  private Object threadName;
 
-  private String iterations;
+  private Object iterations;
 
-  private String startAt;
+  private Object startAt;
 
-  private String nameDBMS;
+  private Object nameDBMS;
 
-  private String versionDBMS;
+  private Object versionDBMS;
 
-  private String loadTime;
+  private Object loadTime;
 
-  private String connectTime;
+  private Object connectTime;
 
-  private String latency;
+  private Object latency;
 
-  private String dataSent;
+  private Object dataSent;
 
-  private String dataReceived;
+  private Object dataReceived;
 
-  private String errorCode;
+  private Object errorCode;
 
-  private String errorMessage;
+  private Object errorMessage;
 
-  private String contentType;
+  private Object contentType;
 
-  private List<JsonNode> data;
+  private Object data;
 }
