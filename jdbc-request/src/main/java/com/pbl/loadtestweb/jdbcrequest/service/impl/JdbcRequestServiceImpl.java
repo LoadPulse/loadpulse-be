@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -83,7 +82,6 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
             }
           });
     }
-
     new Thread(
             () -> {
               try {
@@ -94,8 +92,7 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
                 Thread.currentThread().interrupt();
                 sseEmitter.completeWithError(e);
               }
-            })
-        .start();
+            }).start();
 
     return sseEmitter;
   }
@@ -193,7 +190,7 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
       result.put(CommonConstant.NAME_DBMS, dbmd.getDatabaseProductName());
       result.put(CommonConstant.VERSION_DBMS, dbmd.getDatabaseProductVersion());
 
-      long responseTime = System.currentTimeMillis();
+
 
       //Get data
       Statement statement = connection.createStatement();
@@ -214,9 +211,11 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
       }
       result.put(CommonConstant.DATA, jsonNodeList);
 
+
       //Calc data received
       Statement statement1 = connection.createStatement();
       ResultSet resultSet1 = statement1.executeQuery(sql);
+      long responseTime = System.currentTimeMillis();
       long bodySize = 0;
       while (resultSet1.next()) {
         StringBuilder rowBuilder = new StringBuilder();
