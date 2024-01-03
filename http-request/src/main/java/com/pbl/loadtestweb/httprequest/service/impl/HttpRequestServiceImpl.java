@@ -1,6 +1,5 @@
 package com.pbl.loadtestweb.httprequest.service.impl;
 
-import com.pbl.loadtestweb.common.common.CommonFunction;
 import com.pbl.loadtestweb.common.constant.CommonConstant;
 import com.pbl.loadtestweb.httprequest.mapper.HttpRequestMapper;
 import com.pbl.loadtestweb.httprequest.payload.request.HttpRequest;
@@ -384,9 +383,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
 
       long dataSent = Utils.calcRequestHeaderSize(connection);
 
-      result.put(
-          CommonConstant.START_AT,
-          CommonFunction.formatDateToString(CommonFunction.getCurrentDateTime()));
+      result.put(CommonConstant.START_AT, String.valueOf(System.currentTimeMillis()));
 
       long startTime = System.currentTimeMillis();
       connection.connect();
@@ -496,9 +493,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
         writer.write(requestBody);
       }
 
-      result.put(
-          CommonConstant.START_AT,
-          CommonFunction.formatDateToString(CommonFunction.getCurrentDateTime()));
+      result.put(CommonConstant.START_AT, String.valueOf(System.currentTimeMillis()));
 
       if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
         InputStream inputStream = connection.getInputStream();
@@ -607,9 +602,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
           OutputStreamWriter writer = new OutputStreamWriter(os, StandardCharsets.UTF_8)) {
         writer.write(params);
       }
-      result.put(
-          CommonConstant.START_AT,
-          CommonFunction.formatDateToString(CommonFunction.getCurrentDateTime()));
+      result.put(CommonConstant.START_AT, String.valueOf(System.currentTimeMillis()));
 
       if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
         InputStream inputStream = connection.getInputStream();
