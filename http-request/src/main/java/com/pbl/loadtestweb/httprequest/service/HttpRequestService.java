@@ -10,6 +10,7 @@ public interface HttpRequestService {
       int virtualUsers,
       int iterations,
       int rampUp,
+      boolean isKeepAlive,
       HttpRequest httpRequest,
       String method);
 
@@ -18,6 +19,7 @@ public interface HttpRequestService {
       int virtualUsers,
       int durations,
       int rampUp,
+      boolean isKeepAlive,
       HttpRequest httpRequest,
       String method);
 
@@ -26,6 +28,7 @@ public interface HttpRequestService {
       int virtualUsers,
       int iterations,
       int rampUp,
+      boolean isKeepAlive,
       HttpRequest httpRequest,
       String method);
 
@@ -34,6 +37,7 @@ public interface HttpRequestService {
       int virtualUsers,
       int durations,
       int rampUp,
+      boolean isKeepAlive,
       HttpRequest httpRequest,
       String method);
 
@@ -42,6 +46,7 @@ public interface HttpRequestService {
       int virtualUsers,
       int iterations,
       int rampUp,
+      boolean isKeepAlive,
       HttpRequest httpRequest,
       String method);
 
@@ -50,6 +55,7 @@ public interface HttpRequestService {
       int virtualUsers,
       int durations,
       int rampUp,
+      boolean isKeepAlive,
       HttpRequest httpRequest,
       String method);
 }

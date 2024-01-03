@@ -34,6 +34,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       int virtualUsers,
       int iterations,
       int rampUp,
+      boolean isKeepAlive,
       HttpRequest httpRequest,
       String method) {
     SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
@@ -51,7 +52,8 @@ public class HttpRequestServiceImpl implements HttpRequestService {
             try {
               for (int j = 1; j <= iterations; j++) {
                 Map<String, String> result;
-                result = this.sendHttpRequest(url, method.toUpperCase(), j, httpRequest);
+                result =
+                    this.sendHttpRequest(url, method.toUpperCase(), j, isKeepAlive, httpRequest);
                 HttpDataResponse jsonResponse = this.buildHttpDataResponse(result);
                 sseEmitter.send(jsonResponse, MediaType.APPLICATION_JSON);
               }
@@ -86,6 +88,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       int virtualUsers,
       int durations,
       int rampUp,
+      boolean isKeepAlive,
       HttpRequest httpRequest,
       String method) {
     SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
@@ -103,7 +106,8 @@ public class HttpRequestServiceImpl implements HttpRequestService {
 
               while (System.currentTimeMillis() < endTime) {
                 Map<String, String> result;
-                result = this.sendHttpRequest(url, method.toUpperCase(), 1, httpRequest);
+                result =
+                    this.sendHttpRequest(url, method.toUpperCase(), 1, isKeepAlive, httpRequest);
                 HttpDataResponse jsonResponse = this.buildHttpDataResponse(result);
                 sseEmitter.send(jsonResponse, MediaType.APPLICATION_JSON);
               }
@@ -138,6 +142,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       int virtualUsers,
       int iterations,
       int rampUp,
+      boolean isKeepAlive,
       HttpRequest httpRequest,
       String method) {
     SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
@@ -155,7 +160,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
                 Map<String, String> result;
                 result =
                     this.sendHttpRequestWithFormURLEncoded(
-                        url, method.toUpperCase(), httpRequest, j);
+                        url, method.toUpperCase(), httpRequest, j, isKeepAlive);
                 HttpDataResponse jsonResponse = this.buildHttpDataResponse(result);
                 sseEmitter.send(jsonResponse, MediaType.APPLICATION_JSON);
               }
@@ -190,6 +195,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       int virtualUsers,
       int durations,
       int rampUp,
+      boolean isKeepAlive,
       HttpRequest httpRequest,
       String method) {
     SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
@@ -209,7 +215,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
                 Map<String, String> result;
                 result =
                     this.sendHttpRequestWithFormURLEncoded(
-                        url, method.toUpperCase(), httpRequest, 0);
+                        url, method.toUpperCase(), httpRequest, 0, isKeepAlive);
                 HttpDataResponse jsonResponse = this.buildHttpDataResponse(result);
                 sseEmitter.send(jsonResponse, MediaType.APPLICATION_JSON);
               }
@@ -244,6 +250,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       int virtualUsers,
       int iterations,
       int rampUp,
+      boolean isKeepAlive,
       HttpRequest httpRequest,
       String method) {
     SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
@@ -259,7 +266,9 @@ public class HttpRequestServiceImpl implements HttpRequestService {
             try {
               for (int j = 1; j <= iterations; j++) {
                 Map<String, String> result;
-                result = this.sendHttpRequestWithJson(url, method.toUpperCase(), httpRequest, j);
+                result =
+                    this.sendHttpRequestWithJson(
+                        url, method.toUpperCase(), httpRequest, j, isKeepAlive);
                 HttpDataResponse jsonResponse = this.buildHttpDataResponse(result);
                 sseEmitter.send(jsonResponse, MediaType.APPLICATION_JSON);
               }
@@ -294,6 +303,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       int virtualUsers,
       int durations,
       int rampUp,
+      boolean isKeepAlive,
       HttpRequest httpRequest,
       String method) {
     SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
@@ -313,7 +323,9 @@ public class HttpRequestServiceImpl implements HttpRequestService {
 
               while (System.currentTimeMillis() < endTime) {
                 Map<String, String> result;
-                result = this.sendHttpRequestWithJson(url, method.toUpperCase(), httpRequest, 0);
+                result =
+                    this.sendHttpRequestWithJson(
+                        url, method.toUpperCase(), httpRequest, 0, isKeepAlive);
                 HttpDataResponse jsonResponse = this.buildHttpDataResponse(result);
                 sseEmitter.send(jsonResponse, MediaType.APPLICATION_JSON);
               }
@@ -366,7 +378,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
   }
 
   public Map<String, String> sendHttpRequest(
-      String url, String method, int iterations, HttpRequest httpRequest) {
+      String url, String method, int iterations, boolean keepAlive, HttpRequest httpRequest) {
     Map<String, String> result = new HashMap<>();
 
     try {
@@ -374,6 +386,9 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       HttpURLConnection connection = (HttpURLConnection) obj.openConnection();
       connection.setUseCaches(false);
       connection.setDoInput(true);
+      if (!keepAlive) {
+        connection.setRequestProperty(CommonConstant.CONNECTION, CommonConstant.CLOSE);
+      }
       connection.setRequestMethod(method);
 
       for (int i = 0; i < httpRequest.getKeyHeaders().size(); i++) {
@@ -463,7 +478,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
   }
 
   public Map<String, String> sendHttpRequestWithFormURLEncoded(
-      String url, String method, HttpRequest httpRequest, int iterations) {
+      String url, String method, HttpRequest httpRequest, int iterations, boolean keepAlive) {
     Map<String, String> result = new HashMap<>();
 
     try {
@@ -473,6 +488,9 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       connection.setRequestMethod(method);
       connection.setDoInput(true);
       connection.setDoOutput(true);
+      if (!keepAlive) {
+        connection.setRequestProperty(CommonConstant.CONNECTION, CommonConstant.CLOSE);
+      }
 
       for (int i = 0; i < httpRequest.getKeyHeaders().size(); i++) {
         connection.setRequestProperty(
@@ -570,7 +588,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
   }
 
   public Map<String, String> sendHttpRequestWithJson(
-      String url, String method, HttpRequest httpRequest, int iterations) {
+      String url, String method, HttpRequest httpRequest, int iterations, boolean keepAlive) {
     Map<String, String> result = new HashMap<>();
 
     try {
@@ -582,6 +600,9 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       connection.setDoOutput(true);
       connection.setRequestProperty("Content-Type", "application/json");
       connection.setRequestProperty("Accept", "application/json");
+      if (!keepAlive) {
+        connection.setRequestProperty(CommonConstant.CONNECTION, CommonConstant.CLOSE);
+      }
 
       for (int i = 0; i < httpRequest.getKeyHeaders().size(); i++) {
         connection.setRequestProperty(
