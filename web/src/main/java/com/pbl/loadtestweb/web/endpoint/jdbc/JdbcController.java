@@ -25,7 +25,7 @@ public class JdbcController {
       @RequestParam(name = "iterations", defaultValue = "0") int iterations,
       @RequestParam(name = "ramp_up", defaultValue = "0") int rampUp,
       @RequestParam(name = "duration", defaultValue = "0") long duration) {
-    if (iterations == 0) {
+    if (iterations == 0 && duration != 0) {
       return ResponseEntity.ok(
           jdbcRequestService.jdbcLoadTestWebWithDuration(
               databaseUrl,
@@ -37,7 +37,7 @@ public class JdbcController {
               rampUp,
               duration));
 
-    } else {
+    } else if(iterations != 0 && duration ==0) {
       return ResponseEntity.ok(
           jdbcRequestService.jdbcLoadTestWeb(
               databaseUrl,
@@ -49,5 +49,6 @@ public class JdbcController {
               iterations,
               rampUp));
     }
+    return null;
   }
 }
