@@ -191,7 +191,6 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
       result.put(CommonConstant.VERSION_DBMS, dbmd.getDatabaseProductVersion());
 
 
-
       //Get data
       Statement statement = connection.createStatement();
       ResultSet resultSet = statement.executeQuery(sql);
@@ -212,10 +211,12 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
       result.put(CommonConstant.DATA, jsonNodeList);
 
 
+      
       //Calc data received
       Statement statement1 = connection.createStatement();
       ResultSet resultSet1 = statement1.executeQuery(sql);
       long responseTime = System.currentTimeMillis();
+
       long bodySize = 0;
       while (resultSet1.next()) {
         StringBuilder rowBuilder = new StringBuilder();
