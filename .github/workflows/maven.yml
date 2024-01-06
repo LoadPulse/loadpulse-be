@@ -39,3 +39,26 @@ jobs:
         dockerfile: Dockerfile
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Connect to VPS
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.VPS_HOST }}
+        username: ${{ secrets.VPS_USERNAME }}
+        password: ${{ secrets.VPS_PASSWORD }}
+        script: |
+          docker stop load-test-web
+          docker rm load-test-web
+          docker pull phdhuy/load-test-web
+          docker run -d --name load-test-web -p 8080:8080 phdhuy/load-test-web
+
+    - name: Send deployment notification
+      uses: peter-evans/sendgrid-action@v1
+      env:
+        SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
+      with:
+        to: ${{ secrets.SENDGRID_TO }}
+        subject: Deployment to ${{ github.repo }} - ${{ job.status }}
+        body: |
+          This email is to inform you that a deployment has been made to the ${{ github.repo }} repository.
+          The deployment status is: ${{ job.status }}.
