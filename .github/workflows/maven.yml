@@ -40,3 +40,14 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
 
+    - name: Connect to VPS
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.VPS_HOST }}
+        username: ${{ secrets.VPS_USERNAME }}
+        password: ${{ secrets.VPS_PASSWORD }}
+        script: |
+          docker stop load-test-web
+          docker rm load-test-web
+          docker pull phdhuy/load-test-web
+          docker run -d --name load-test-web -p 8080:8080 phdhuy/load-test-web
