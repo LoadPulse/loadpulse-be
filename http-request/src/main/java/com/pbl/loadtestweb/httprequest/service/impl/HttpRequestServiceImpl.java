@@ -392,8 +392,11 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       connection.setRequestMethod(method);
 
       for (int i = 0; i < httpRequest.getKeyHeaders().size(); i++) {
-        connection.setRequestProperty(
-            httpRequest.getKeyHeaders().get(i), httpRequest.getValueHeaders().get(i));
+        if (httpRequest.getKeyHeaders().get(i).length() != 0
+            && httpRequest.getValueHeaders().get(i).length() != 0) {
+          connection.setRequestProperty(
+              httpRequest.getKeyHeaders().get(i), httpRequest.getValueHeaders().get(i));
+        }
       }
 
       long dataSent = Utils.calcRequestHeaderSize(connection);
@@ -493,8 +496,11 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       }
 
       for (int i = 0; i < httpRequest.getKeyHeaders().size(); i++) {
-        connection.setRequestProperty(
-            httpRequest.getKeyHeaders().get(i), httpRequest.getValueHeaders().get(i));
+        if (httpRequest.getKeyHeaders().get(i).length() != 0
+            && httpRequest.getValueHeaders().get(i).length() != 0) {
+          connection.setRequestProperty(
+              httpRequest.getKeyHeaders().get(i), httpRequest.getValueHeaders().get(i));
+        }
       }
 
       long requestHeaderSize = Utils.calcRequestHeaderSize(connection);
@@ -605,8 +611,11 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       }
 
       for (int i = 0; i < httpRequest.getKeyHeaders().size(); i++) {
-        connection.setRequestProperty(
-            httpRequest.getKeyHeaders().get(i), httpRequest.getValueHeaders().get(i));
+        if (httpRequest.getKeyHeaders().get(i).length() != 0
+            && httpRequest.getValueHeaders().get(i).length() != 0) {
+          connection.setRequestProperty(
+              httpRequest.getKeyHeaders().get(i), httpRequest.getValueHeaders().get(i));
+        }
       }
 
       String params = Utils.handleParamsToJsonBody(httpRequest);
