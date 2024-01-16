@@ -66,6 +66,10 @@ public class HttpRequestServiceImpl implements HttpRequestService {
           });
     }
 
+    return getSseEmitter(sseEmitter, latch);
+  }
+
+  private SseEmitter getSseEmitter(SseEmitter sseEmitter, CountDownLatch latch) {
     new Thread(
             () -> {
               try {
@@ -120,20 +124,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
           });
     }
 
-    new Thread(
-            () -> {
-              try {
-                latch.await();
-                sseEmitter.complete();
-              } catch (InterruptedException e) {
-                e.printStackTrace();
-                Thread.currentThread().interrupt();
-                sseEmitter.completeWithError(e);
-              }
-            })
-        .start();
-
-    return sseEmitter;
+    return getSseEmitter(sseEmitter, latch);
   }
 
   @Override
@@ -173,20 +164,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
           });
     }
 
-    new Thread(
-            () -> {
-              try {
-                latch.await();
-                sseEmitter.complete();
-              } catch (InterruptedException e) {
-                e.printStackTrace();
-                Thread.currentThread().interrupt();
-                sseEmitter.completeWithError(e);
-              }
-            })
-        .start();
-
-    return sseEmitter;
+    return getSseEmitter(sseEmitter, latch);
   }
 
   @Override
@@ -228,20 +206,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
           });
     }
 
-    new Thread(
-            () -> {
-              try {
-                latch.await();
-                sseEmitter.complete();
-              } catch (InterruptedException e) {
-                e.printStackTrace();
-                Thread.currentThread().interrupt();
-                sseEmitter.completeWithError(e);
-              }
-            })
-        .start();
-
-    return sseEmitter;
+    return getSseEmitter(sseEmitter, latch);
   }
 
   @Override
@@ -281,20 +246,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
           });
     }
 
-    new Thread(
-            () -> {
-              try {
-                latch.await();
-                sseEmitter.complete();
-              } catch (InterruptedException e) {
-                e.printStackTrace();
-                Thread.currentThread().interrupt();
-                sseEmitter.completeWithError(e);
-              }
-            })
-        .start();
-
-    return sseEmitter;
+    return getSseEmitter(sseEmitter, latch);
   }
 
   @Override
@@ -338,20 +290,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
           });
     }
 
-    new Thread(
-            () -> {
-              try {
-                latch.await();
-                sseEmitter.complete();
-              } catch (InterruptedException e) {
-                e.printStackTrace();
-                Thread.currentThread().interrupt();
-                sseEmitter.completeWithError(e);
-              }
-            })
-        .start();
-
-    return sseEmitter;
+    return getSseEmitter(sseEmitter, latch);
   }
 
   private HttpDataResponse buildHttpDataResponse(Map<String, String> result) {
@@ -384,20 +323,16 @@ public class HttpRequestServiceImpl implements HttpRequestService {
     try {
       URL obj = new URL(url);
       HttpURLConnection connection = (HttpURLConnection) obj.openConnection();
+
       connection.setUseCaches(false);
       connection.setDoInput(true);
+      connection.setRequestMethod(method);
+
       if (!keepAlive) {
         connection.setRequestProperty(CommonConstant.CONNECTION, CommonConstant.CLOSE);
       }
-      connection.setRequestMethod(method);
 
-      for (int i = 0; i < httpRequest.getKeyHeaders().size(); i++) {
-        if (httpRequest.getKeyHeaders().get(i).length() != 0
-            && httpRequest.getValueHeaders().get(i).length() != 0) {
-          connection.setRequestProperty(
-              httpRequest.getKeyHeaders().get(i), httpRequest.getValueHeaders().get(i));
-        }
-      }
+      Utils.setRequestProperties(connection, httpRequest);
 
       long dataSent = Utils.calcRequestHeaderSize(connection);
 
@@ -488,20 +423,16 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       URL obj = new URL(url);
 
       HttpURLConnection connection = (HttpURLConnection) obj.openConnection();
+
       connection.setRequestMethod(method);
       connection.setDoInput(true);
       connection.setDoOutput(true);
+
       if (!keepAlive) {
         connection.setRequestProperty(CommonConstant.CONNECTION, CommonConstant.CLOSE);
       }
 
-      for (int i = 0; i < httpRequest.getKeyHeaders().size(); i++) {
-        if (httpRequest.getKeyHeaders().get(i).length() != 0
-            && httpRequest.getValueHeaders().get(i).length() != 0) {
-          connection.setRequestProperty(
-              httpRequest.getKeyHeaders().get(i), httpRequest.getValueHeaders().get(i));
-        }
-      }
+      Utils.setRequestProperties(connection, httpRequest);
 
       long requestHeaderSize = Utils.calcRequestHeaderSize(connection);
 
@@ -610,13 +541,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
         connection.setRequestProperty(CommonConstant.CONNECTION, CommonConstant.CLOSE);
       }
 
-      for (int i = 0; i < httpRequest.getKeyHeaders().size(); i++) {
-        if (httpRequest.getKeyHeaders().get(i).length() != 0
-            && httpRequest.getValueHeaders().get(i).length() != 0) {
-          connection.setRequestProperty(
-              httpRequest.getKeyHeaders().get(i), httpRequest.getValueHeaders().get(i));
-        }
-      }
+      Utils.setRequestProperties(connection, httpRequest);
 
       String params = Utils.handleParamsToJsonBody(httpRequest);
       connection.setRequestProperty("Content-Length", String.valueOf(params.getBytes().length));
