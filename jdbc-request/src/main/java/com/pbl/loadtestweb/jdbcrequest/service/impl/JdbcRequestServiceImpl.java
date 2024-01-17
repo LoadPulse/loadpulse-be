@@ -16,13 +16,14 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import java.io.Console;
 import java.io.IOException;
 import java.sql.*;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Service
 @RequiredArgsConstructor
@@ -31,7 +32,7 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
     private final JdbcRequestMapper jdbcRequestMapper;
 
     private final ExecutorService executorService = Executors.newCachedThreadPool();
-
+    private static final Logger LOGGER = Logger.getLogger(JdbcRequestServiceImpl.class.getName());
     public static long threadRunEachMillisecond(int virtualUsers, int rampUp) {
         return (long) ((double) rampUp / virtualUsers * 1000);
     }
@@ -74,7 +75,7 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
                                 sseEmitter.send(jdbcDataResponse, MediaType.APPLICATION_JSON);
                             }
                         } catch (IOException | ClassNotFoundException | SQLException e) {
-                            e.printStackTrace();
+                            LOGGER.log(Level.SEVERE, e.getMessage(), e);
                         } finally {
                             latch.countDown();
                         }
@@ -86,7 +87,7 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
                         latch.await();
                         sseEmitter.complete();
                     } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        LOGGER.log(Level.SEVERE, e.getMessage(), e);
                         Thread.currentThread().interrupt();
                         sseEmitter.completeWithError(e);
                     }
@@ -110,7 +111,7 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
         executorService.execute(
                 () -> {
                     try {
-                        long timeElapsed = 0;
+                        long timeElapsed;
                         do {
 
                             Map<String, Object> result =
@@ -121,7 +122,7 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
                             timeElapsed = endTime - startTime;
                         } while (timeElapsed < durationTime * 1000L);
                     }  catch (SQLException | ClassNotFoundException | IOException e) {
-                        e.printStackTrace();
+                        LOGGER.log(Level.SEVERE, e.getMessage(), e);
                     } finally {
                         latch.countDown();
                     }
@@ -132,7 +133,7 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
                         latch.await();
                         sseEmitter.complete();
                     } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        LOGGER.log(Level.SEVERE, e.getMessage(), e);
                         Thread.currentThread().interrupt();
                         sseEmitter.completeWithError(e);
                     }
@@ -195,7 +196,7 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
                 ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
                 int cols = resultSetMetaData.getColumnCount();
                 List<JsonNode> jsonNodeList = new ArrayList<>();
-                JsonNode jsonNode = null;
+                JsonNode jsonNode ;
                 while (resultSet.next()) {
                     JsonObject jsonObject = new JsonObject();
                     for (int ii = 1; ii <= cols; ii++) {
@@ -210,7 +211,7 @@ public class JdbcRequestServiceImpl implements JdbcRequestService {
             }
 
             // Calc data received
-            long responseTime = 0;
+            long responseTime ;
             long bodySize = 0;
             try (Statement statement1 = connection.createStatement()) {
                 ResultSet resultSet1 = statement1.executeQuery(sql);
