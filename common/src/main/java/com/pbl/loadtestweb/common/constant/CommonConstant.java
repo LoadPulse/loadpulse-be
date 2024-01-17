@@ -63,4 +63,10 @@ public final class CommonConstant {
   public static final String ERROR_CODE = "errorCode";
 
   public static final String ERROR_MESSAGE = "errorMessage";
+
+  // Header
+
+  public static final String CONNECTION = "Connection";
+
+  public static final String CLOSE = "close";
 }

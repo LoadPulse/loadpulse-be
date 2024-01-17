@@ -22,18 +22,18 @@ public interface JdbcRequestMapper {
   @Mapping(source = "dataSent",target = "dataSent")
   @Mapping(source = "data", target = "data")
   JdbcDataResponse toJdbcResponse(
-      Object threadName,
-      Object iterations,
-      Object startAt,
-      Object nameDBMS,
-      Object versionDBMS,
-      Object errorCode,
-      Object errorMessage,
-      Object contentType,
-      Object loadTime,
-      Object connectTime,
-      Object latency,
-      Object dataSent,
-      Object dataReceived,
-      Object data);
+          Object threadName,
+          Object iterations,
+          Object startAt,
+          Object nameDBMS,
+          Object versionDBMS,
+          Object errorCode,
+          Object errorMessage,
+          Object contentType,
+          Object loadTime,
+          Object connectTime,
+          Object latency,
+          Object dataSent,
+          Object dataReceived,
+          Object data);
 }

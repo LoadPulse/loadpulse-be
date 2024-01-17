@@ -61,9 +61,9 @@ public class Utils {
   }
 
   public static String getResponseBodySuccess(HttpURLConnection connection) {
-    BufferedReader br = null;
-    StringBuilder body = null;
-    String line = "";
+    BufferedReader br;
+    StringBuilder body;
+    String line;
     try {
       br = new BufferedReader(new InputStreamReader(connection.getInputStream()));
       body = new StringBuilder();
@@ -77,9 +77,9 @@ public class Utils {
   }
 
   public static String getResponseBodyError(HttpURLConnection connection) {
-    BufferedReader br = null;
-    StringBuilder body = null;
-    String line = "";
+    BufferedReader br;
+    StringBuilder body;
+    String line;
     try {
       br = new BufferedReader(new InputStreamReader(connection.getErrorStream()));
       body = new StringBuilder();
@@ -132,10 +132,6 @@ public class Utils {
     return (long) ((double) rampUp / threadCount * 1000);
   }
 
-  public static int calcThreadIncrement(int targetThreadCount, int rampUpTimeInSeconds) {
-    return Math.max(1, targetThreadCount / rampUpTimeInSeconds);
-  }
-
   public static void sleepThread(long time) {
     try {
       Thread.sleep(time);
@@ -143,5 +139,16 @@ public class Utils {
       e.printStackTrace();
       Thread.currentThread().interrupt();
     }
+  }
+
+  public static HttpURLConnection setRequestProperties(HttpURLConnection connection, HttpRequest httpRequest) {
+    for (int i = 0; i < httpRequest.getKeyHeaders().size(); i++) {
+      if (httpRequest.getKeyHeaders().get(i).length() != 0
+          && httpRequest.getValueHeaders().get(i).length() != 0) {
+        connection.setRequestProperty(
+            httpRequest.getKeyHeaders().get(i), httpRequest.getValueHeaders().get(i));
+      }
+    }
+    return connection;
   }
 }

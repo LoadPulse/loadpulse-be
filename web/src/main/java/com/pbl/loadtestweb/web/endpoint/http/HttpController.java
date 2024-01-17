@@ -25,16 +25,17 @@ public class HttpController {
       @RequestParam(name = "url", defaultValue = "") String url,
       @RequestParam(name = "ramp_up", defaultValue = "0") int rampUp,
       @RequestParam(name = "durations", defaultValue = "0") int durations,
+      @RequestParam(name = "is_keep_alive", defaultValue = "false") boolean isKeepAlive,
       @RequestBody HttpRequest httpRequest,
       @PathVariable String method) {
     if (iterations == 0) {
       return ResponseEntity.ok(
           httpRequestService.sendHttpRequestWithDurations(
-              url, virtualUsers, durations, rampUp, httpRequest, method));
+              url, virtualUsers, durations, rampUp, isKeepAlive, httpRequest, method));
     } else {
       return ResponseEntity.ok(
           httpRequestService.sendHttpRequest(
-              url, virtualUsers, iterations, rampUp, httpRequest, method));
+              url, virtualUsers, iterations, rampUp, isKeepAlive, httpRequest, method));
     }
   }
 
@@ -46,16 +47,17 @@ public class HttpController {
       @RequestParam(name = "url", defaultValue = "") String url,
       @RequestParam(name = "ramp_up", defaultValue = "0") int rampUp,
       @RequestParam(name = "durations", defaultValue = "0") int durations,
+      @RequestParam(name = "is_keep_alive", defaultValue = "false") boolean isKeepAlive,
       @PathVariable String method,
       @RequestBody HttpRequest httpRequest) {
     if (iterations == 0) {
       return ResponseEntity.ok(
           httpRequestService.sendHttpRequestEncodedFormBodyWithDurations(
-              url, virtualUsers, durations, rampUp, httpRequest, method));
+              url, virtualUsers, durations, rampUp, isKeepAlive, httpRequest, method));
     } else {
       return ResponseEntity.ok(
           httpRequestService.sendHttpRequestEncodedFormBody(
-              url, virtualUsers, iterations, rampUp, httpRequest, method));
+              url, virtualUsers, iterations, rampUp, isKeepAlive, httpRequest, method));
     }
   }
 
@@ -67,16 +69,17 @@ public class HttpController {
       @RequestParam(name = "url", defaultValue = "") String url,
       @RequestParam(name = "ramp_up", defaultValue = "0") int rampUp,
       @RequestParam(name = "durations", defaultValue = "0") int durations,
+      @RequestParam(name = "is_keep_alive", defaultValue = "false") boolean isKeepAlive,
       @PathVariable String method,
       @RequestBody HttpRequest httpRequest) {
     if (iterations == 0) {
       return ResponseEntity.ok(
           httpRequestService.sendHttpRequestJsonBodyWithDurations(
-              url, virtualUsers, durations, rampUp, httpRequest, method));
+              url, virtualUsers, durations, rampUp, isKeepAlive, httpRequest, method));
     } else {
       return ResponseEntity.ok(
           httpRequestService.sendHttpRequestJsonBody(
-              url, virtualUsers, iterations, rampUp, httpRequest, method));
+              url, virtualUsers, iterations, rampUp, isKeepAlive, httpRequest, method));
     }
   }
 }
