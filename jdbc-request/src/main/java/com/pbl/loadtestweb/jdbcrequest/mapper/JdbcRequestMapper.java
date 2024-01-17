@@ -1,12 +1,9 @@
 package com.pbl.loadtestweb.jdbcrequest.mapper;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.pbl.loadtestweb.common.config.SpringMapStructConfig;
 import com.pbl.loadtestweb.jdbcrequest.payload.response.JdbcDataResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-
-import java.util.List;
 
 @Mapper(config = SpringMapStructConfig.class)
 public interface JdbcRequestMapper {
@@ -24,19 +21,19 @@ public interface JdbcRequestMapper {
   @Mapping(source = "dataReceived",target = "dataReceived")
   @Mapping(source = "dataSent",target = "dataSent")
   @Mapping(source = "data", target = "data")
-  JdbcDataResponse toJdbcDataResponse(
-      Object threadName,
-      Object iterations,
-      Object startAt,
-      Object nameDBMS,
-      Object versionDBMS,
-      Object errorCode,
-      Object errorMessage,
-      Object contentType,
-      Object loadTime,
-      Object connectTime,
-      Object latency,
-      Object dataSent,
-      Object dataReceived,
-      Object data);
+  JdbcDataResponse toJdbcResponse(
+          Object threadName,
+          Object iterations,
+          Object startAt,
+          Object nameDBMS,
+          Object versionDBMS,
+          Object errorCode,
+          Object errorMessage,
+          Object contentType,
+          Object loadTime,
+          Object connectTime,
+          Object latency,
+          Object dataSent,
+          Object dataReceived,
+          Object data);
 }
