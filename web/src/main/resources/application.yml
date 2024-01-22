@@ -5,4 +5,4 @@ server:
     8080
 spring:
   profiles:
-    active: dev
+    active: prod
