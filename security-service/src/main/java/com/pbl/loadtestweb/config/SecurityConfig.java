@@ -1,18 +1,23 @@
 package com.pbl.loadtestweb.config;
 
+import com.pbl.loadtestweb.exception.CustomAccessDeniedHandler;
 import com.pbl.loadtestweb.exception.CustomAuthenticationEntryPoint;
+import com.pbl.loadtestweb.filter.JwtFilter;
+import com.pbl.loadtestweb.service.CustomUserDetailsService;
+import com.pbl.loadtestweb.utils.TokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -20,15 +25,26 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableGlobalMethodSecurity(securedEnabled = true, jsr250Enabled = true, prePostEnabled = true)
 public class SecurityConfig {
 
-  @Bean
-  public PasswordEncoder passwordEncoder() {
-    return new BCryptPasswordEncoder();
-  }
+  private final CustomUserDetailsService customUserDetailsService;
+
+  private final TokenProvider tokenProvider;
+
+  private final PasswordEncoder passwordEncoder;
 
   @Bean
   public AuthenticationManager authenticationManager(
       AuthenticationConfiguration authenticationConfiguration) throws Exception {
     return authenticationConfiguration.getAuthenticationManager();
+  }
+
+  @Bean
+  public AuthenticationManager authenticationManagerBean(HttpSecurity http) throws Exception {
+    AuthenticationManagerBuilder authenticationManagerBuilder =
+        http.getSharedObject(AuthenticationManagerBuilder.class);
+    authenticationManagerBuilder
+        .userDetailsService(customUserDetailsService)
+        .passwordEncoder(passwordEncoder);
+    return authenticationManagerBuilder.build();
   }
 
   @Bean
@@ -46,6 +62,7 @@ public class SecurityConfig {
         .httpBasic()
         .disable()
         .exceptionHandling()
+        .accessDeniedHandler(new CustomAccessDeniedHandler())
         .authenticationEntryPoint(new CustomAuthenticationEntryPoint())
         .and()
         .authorizeRequests()
@@ -64,6 +81,7 @@ public class SecurityConfig {
             "/swagger-resources/**")
         .permitAll();
 
+    http.addFilterBefore(new JwtFilter(tokenProvider), UsernamePasswordAuthenticationFilter.class);
     return http.build();
   }
 }

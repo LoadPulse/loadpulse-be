@@ -15,6 +15,8 @@ public final class CommonFunction {
 
   private static final String ERROR_FILE = "errors.yml";
 
+  private static final String VALIDATION_FILE = "validations.yml";
+
   public static Timestamp getCurrentDateTime() {
     Date date = new Date();
     return new Timestamp(date.getTime());
@@ -33,6 +35,27 @@ public final class CommonFunction {
     String code = (String) objError.get("code");
     String message = (String) objError.get("message");
     return new ErrorResponse(code, message);
+  }
+
+  public static ErrorResponse getValidationError(
+          String resource, String fieldName, String validation) {
+    if (fieldName.contains("[")) {
+      fieldName = handleFieldName(fieldName);
+    }
+
+    ReadYAML readYAML = new ReadYAML();
+    Map<String, Object> errors = readYAML.getValueFromYAML(VALIDATION_FILE);
+    Map<String, Object> fields = (Map<String, Object>) errors.get(resource);
+    Map<String, Object> objErrors = (Map<String, Object>) fields.get(fieldName);
+    Map<String, Object> objError = (Map<String, Object>) objErrors.get(validation);
+    String code = (String) objError.get("code");
+    String message = (String) objError.get("message");
+    return new ErrorResponse(code, message);
+  }
+
+  public static String handleFieldName(String fieldName) {
+    String index = fieldName.substring(fieldName.indexOf("[") + 1, fieldName.indexOf("]"));
+    return fieldName.replaceAll(index, "");
   }
 
   public static String convertToJSONString(Object ob) {
