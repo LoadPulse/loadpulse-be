@@ -1,27 +1,30 @@
 package com.pbl.loadtestweb.httprequest.service;
 
+import com.pbl.loadtestweb.domain.UserPrincipal;
 import com.pbl.loadtestweb.httprequest.payload.request.HttpRequest;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 public interface HttpRequestService {
 
-  SseEmitter sendHttpRequest(
+  void sendHttpRequest(
       String url,
       int virtualUsers,
       int iterations,
       int rampUp,
       boolean isKeepAlive,
       HttpRequest httpRequest,
-      String method);
+      String method,
+      UserPrincipal userPrincipal);
 
-  SseEmitter sendHttpRequestWithDurations(
+  void sendHttpRequestWithDurations(
       String url,
       int virtualUsers,
       int durations,
       int rampUp,
       boolean isKeepAlive,
       HttpRequest httpRequest,
-      String method);
+      String method,
+      UserPrincipal userPrincipal);
 
   SseEmitter sendHttpRequestEncodedFormBody(
       String url,

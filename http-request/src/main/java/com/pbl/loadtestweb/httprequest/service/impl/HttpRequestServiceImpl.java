@@ -1,14 +1,17 @@
 package com.pbl.loadtestweb.httprequest.service.impl;
 
 import com.pbl.loadtestweb.common.constant.CommonConstant;
+import com.pbl.loadtestweb.domain.UserPrincipal;
 import com.pbl.loadtestweb.httprequest.mapper.HttpRequestMapper;
 import com.pbl.loadtestweb.httprequest.payload.request.HttpRequest;
 import com.pbl.loadtestweb.httprequest.payload.response.HttpDataResponse;
 import com.pbl.loadtestweb.httprequest.service.HttpRequestService;
 import com.pbl.loadtestweb.httprequest.utils.Utils;
+import com.pbl.loadtestweb.service.MessageQueueService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -24,22 +27,23 @@ import java.util.concurrent.*;
 @Slf4j
 public class HttpRequestServiceImpl implements HttpRequestService {
 
+  private final MessageQueueService messageQueueService;
+
   private final HttpRequestMapper httpRequestMapper;
 
   private final ExecutorService executorService = Executors.newCachedThreadPool();
 
   @Override
-  public SseEmitter sendHttpRequest(
+  @Async("threadPoolTaskExecutor")
+  public void sendHttpRequest(
       String url,
       int virtualUsers,
       int iterations,
       int rampUp,
       boolean isKeepAlive,
       HttpRequest httpRequest,
-      String method) {
-    SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
-
-    CountDownLatch latch = new CountDownLatch(virtualUsers);
+      String method,
+      UserPrincipal userPrincipal) {
 
     log.info(Long.toString(Utils.timeForCreationEachThread(virtualUsers, rampUp)));
 
@@ -55,18 +59,16 @@ public class HttpRequestServiceImpl implements HttpRequestService {
                 result =
                     this.sendHttpRequest(url, method.toUpperCase(), j, isKeepAlive, httpRequest);
                 HttpDataResponse jsonResponse = this.buildHttpDataResponse(result);
-                sseEmitter.send(jsonResponse, MediaType.APPLICATION_JSON);
+                messageQueueService.sendMessage(
+                    userPrincipal.getId().toString(),
+                    userPrincipal.getId().toString(),
+                    jsonResponse);
               }
-            } catch (IOException e) {
+            } catch (Exception e) {
               e.printStackTrace();
-              sseEmitter.completeWithError(e);
-            } finally {
-              latch.countDown();
             }
           });
     }
-
-    return getSseEmitter(sseEmitter, latch);
   }
 
   private SseEmitter getSseEmitter(SseEmitter sseEmitter, CountDownLatch latch) {
@@ -87,17 +89,16 @@ public class HttpRequestServiceImpl implements HttpRequestService {
   }
 
   @Override
-  public SseEmitter sendHttpRequestWithDurations(
+  @Async("threadPoolTaskExecutor")
+  public void sendHttpRequestWithDurations(
       String url,
       int virtualUsers,
       int durations,
       int rampUp,
       boolean isKeepAlive,
       HttpRequest httpRequest,
-      String method) {
-    SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
-
-    CountDownLatch latch = new CountDownLatch(virtualUsers);
+      String method,
+      UserPrincipal userPrincipal) {
 
     for (int i = 1; i <= virtualUsers; i++) {
       if (i != 1) {
@@ -113,18 +114,16 @@ public class HttpRequestServiceImpl implements HttpRequestService {
                 result =
                     this.sendHttpRequest(url, method.toUpperCase(), 1, isKeepAlive, httpRequest);
                 HttpDataResponse jsonResponse = this.buildHttpDataResponse(result);
-                sseEmitter.send(jsonResponse, MediaType.APPLICATION_JSON);
+                messageQueueService.sendMessage(
+                    userPrincipal.getId().toString(),
+                    userPrincipal.getId().toString(),
+                    jsonResponse);
               }
-            } catch (IOException e) {
+            } catch (Exception e) {
               e.printStackTrace();
-              sseEmitter.completeWithError(e);
-            } finally {
-              latch.countDown();
             }
           });
     }
-
-    return getSseEmitter(sseEmitter, latch);
   }
 
   @Override
