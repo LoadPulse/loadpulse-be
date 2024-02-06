@@ -1,11 +1,16 @@
 package com.pbl.loadtestweb.web.endpoint.http;
 
+import com.pbl.loadtestweb.annotation.CurrentUser;
+import com.pbl.loadtestweb.common.payload.general.ResponseDataAPI;
+import com.pbl.loadtestweb.domain.UserPrincipal;
 import com.pbl.loadtestweb.httprequest.payload.request.HttpRequest;
 import com.pbl.loadtestweb.httprequest.service.HttpRequestService;
+import com.pbl.loadtestweb.service.MessageQueueService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -17,9 +22,12 @@ public class HttpController {
 
   private final HttpRequestService httpRequestService;
 
+  private final MessageQueueService messageQueueService;
+
   @PostMapping(value = "/{method}")
+  @PreAuthorize("hasRole('USER')")
   @ApiOperation("Api send http request")
-  public ResponseEntity<SseEmitter> sendHttpRequest(
+  public ResponseEntity<ResponseDataAPI> sendHttpRequest(
       @RequestParam(name = "virtual_users", defaultValue = "1") int virtualUsers,
       @RequestParam(name = "iterations", defaultValue = "1") int iterations,
       @RequestParam(name = "url", defaultValue = "") String url,
@@ -27,16 +35,17 @@ public class HttpController {
       @RequestParam(name = "durations", defaultValue = "0") int durations,
       @RequestParam(name = "is_keep_alive", defaultValue = "false") boolean isKeepAlive,
       @RequestBody HttpRequest httpRequest,
-      @PathVariable String method) {
+      @PathVariable String method,
+      @CurrentUser UserPrincipal userPrincipal) {
+    String queueName = messageQueueService.createQueue(userPrincipal);
     if (iterations == 0) {
-      return ResponseEntity.ok(
-          httpRequestService.sendHttpRequestWithDurations(
-              url, virtualUsers, durations, rampUp, isKeepAlive, httpRequest, method));
+      httpRequestService.sendHttpRequestWithDurations(
+          url, virtualUsers, durations, rampUp, isKeepAlive, httpRequest, method, userPrincipal);
     } else {
-      return ResponseEntity.ok(
-          httpRequestService.sendHttpRequest(
-              url, virtualUsers, iterations, rampUp, isKeepAlive, httpRequest, method));
+      httpRequestService.sendHttpRequest(
+          url, virtualUsers, iterations, rampUp, isKeepAlive, httpRequest, method, userPrincipal);
     }
+    return ResponseEntity.ok(ResponseDataAPI.successWithoutMeta(queueName));
   }
 
   @PostMapping("/{method}/encoded-form-body")
