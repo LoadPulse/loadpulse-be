@@ -4,5 +4,30 @@ server:
   port:
     8080
 spring:
+  main:
+    banner-mode: off
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  thymeleaf:
+    mode: HTML
   profiles:
     active: prod
+  datasource:
+    hikari:
+      auto-commit: false
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: com.pbl.loadtestweb.common.config.PostgreSqlCustomDialect
+        type: trace
+        temp:
+          use_jdbc_metadata_defaults: false
+        jdbc:
+          time_zone: UTC
+          lob:
+            non_contextual_creation: true

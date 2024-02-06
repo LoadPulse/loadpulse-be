@@ -1,0 +1,46 @@
+#Common
+internal_server_error:
+  code: ERR.SER0101
+  message: Internal server error!
+forbidden_error:
+  code: ERR.AUTH0101
+  message: Access Denied You don’t have permission to access!
+unauthorized:
+  code: ERR.AUTH0102
+  message: You do not have permission to access this api!
+
+#Auth
+password_and_confirmation_password_is_not_match:
+  code: ERR.AUTH0103
+  message: Password and confirmation password is not match!
+email_already_in_use:
+  code: ERR.AUTH0104
+  message: Email already in use!
+incorrect_email_or_password:
+  code: ERR.AUTH0106
+  message: Incorrect email or password!
+
+#OauthToken
+oauth_token_not_found:
+  code: ERR.TOK0101
+  message: Oauth token was not found!
+invalid_refresh_token:
+  code: ERR.TOK0102
+  message: Invalid refresh token!
+expired_refresh_token:
+  code: ERR.TOK0103
+  message: Expired refresh token!
+invalid_token:
+  code: ERR.TOK0104
+  message: Invalid access token!
+expired_token:
+  code: ERR.TOK0105
+  message: Expired access token!
+revoked_token:
+  code: ERR.TOK0106
+  message: Token was be revoked!
+
+#User
+user_not_found:
+  code: ERR.USE0101
+  message: User was not found!

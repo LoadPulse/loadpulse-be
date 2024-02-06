@@ -11,6 +11,14 @@ public final class CommonConstant {
 
   public static final String SERVER = "Server";
 
+  public static final String AUTHORIZATION = "Authorization";
+
+  public static final String RULE_PASSWORD = "((?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{8,32})";
+
+
+
+
+
   // Key
   public static final String LOAD_TIME = "loadTime";
 

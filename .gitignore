@@ -4,6 +4,7 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 /web/src/main/resources/application-dev.yml
+/web/src/main/resources/environment.env
 
 ### STS ###
 .apt_generated
