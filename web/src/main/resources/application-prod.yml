@@ -1,4 +1,0 @@
-logging:
-  config: classpath:logback-spring.xml
-  file:
-    path: /home/load-testing/logs
