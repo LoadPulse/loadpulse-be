@@ -17,18 +17,23 @@ services:
     image: "rabbitmq:latest"
     container_name: rabbitmq-container
     ports:
-      - "5673:5672"
-      - "15673:15672"
+      - "5672:5672"
+      - "15672:15672"
 
   backend:
-    image: phdhuy/load-test-web
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: spring-app-container
+    links:
+      - postgres
+      - rabbitmq
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5433/postgres
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/postgres
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
       SPRING_RABBITMQ_HOST: rabbitmq
-      SPRING_RABBITMQ_PORT: 5673
+      SPRING_RABBITMQ_PORT: 5672
       SPRING_RABBITMQ_USERNAME: guest
       SPRING_RABBITMQ_PASSWORD: guest
     ports:
