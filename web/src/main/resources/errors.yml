@@ -13,9 +13,9 @@ unauthorized:
 password_and_confirmation_password_is_not_match:
   code: ERR.AUTH0103
   message: Password and confirmation password is not match!
-email_already_in_use:
+email_already_exists:
   code: ERR.AUTH0104
-  message: Email already in use!
+  message: Email already exists!
 incorrect_email_or_password:
   code: ERR.AUTH0106
   message: Incorrect email or password!
