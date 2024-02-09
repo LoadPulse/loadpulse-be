@@ -3,15 +3,16 @@ version: '3.8'
 services:
   postgres:
     image: postgres:latest
+    hostname: postgres
     container_name: postgres-container
+    ports:
+      - "5433:5432"
     environment:
-      POSTGRES_DB: postgres
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: dockerdb
+      POSTGRES_USER: dockeruser
+      POSTGRES_PASSWORD: dockerpassword
     volumes:
       - postgres-data:/var/lib/postgresql/data
-    expose:
-      - 5432
 
   rabbitmq:
     image: "rabbitmq:latest"
@@ -29,9 +30,9 @@ services:
       - postgres
       - rabbitmq
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/postgres
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/dockerdb
+      SPRING_DATASOURCE_USERNAME: dockeruser
+      SPRING_DATASOURCE_PASSWORD: dockerpassword
       SPRING_RABBITMQ_HOST: rabbitmq
       SPRING_RABBITMQ_PORT: 5672
       SPRING_RABBITMQ_USERNAME: guest
