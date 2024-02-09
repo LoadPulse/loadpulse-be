@@ -22,9 +22,7 @@ services:
       - "15672:15672"
 
   backend:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: phdhuy/load-test-web:latest
     container_name: spring-app-container
     links:
       - postgres
