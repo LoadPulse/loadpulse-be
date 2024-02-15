@@ -38,7 +38,7 @@ public final class CommonFunction {
   }
 
   public static ErrorResponse getValidationError(
-          String resource, String fieldName, String validation) {
+      String resource, String fieldName, String validation) {
     if (fieldName.contains("[")) {
       fieldName = handleFieldName(fieldName);
     }
@@ -66,5 +66,9 @@ public final class CommonFunction {
       log.error(e.getMessage());
       return null;
     }
+  }
+
+  public static String convertToSnakeCase(String input) {
+    return input.replaceAll("([^_A-Z])([A-Z])", "$1_$2").toLowerCase();
   }
 }

@@ -6,8 +6,14 @@ import com.pbl.loadtestweb.common.payload.general.ResponseDataAPI;
 import com.pbl.loadtestweb.common.payload.response.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.validation.ObjectError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.util.List;
+import java.util.Objects;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -59,5 +65,19 @@ public class GlobalExceptionHandler {
     ErrorResponse errorResponse = CommonFunction.getExceptionError(ex.getMessage());
     ResponseDataAPI responseDataAPI = ResponseDataAPI.error(errorResponse);
     return new ResponseEntity<>(responseDataAPI, HttpStatus.GATEWAY_TIMEOUT);
+  }
+
+  @ExceptionHandler(MethodArgumentNotValidException.class)
+  public ResponseEntity<Object> handleValidationExceptions(MethodArgumentNotValidException ex) {
+    List<ObjectError> objectErrors = ex.getBindingResult().getAllErrors();
+    ObjectError objectError = objectErrors.get(objectErrors.size() - 1);
+    String error = CommonFunction.convertToSnakeCase(Objects.requireNonNull(objectError.getCode()));
+    String fieldName = CommonFunction.convertToSnakeCase(((FieldError) objectError).getField());
+    String resource = CommonFunction.convertToSnakeCase(objectError.getObjectName());
+
+    ErrorResponse errorResponse = CommonFunction.getValidationError(resource, fieldName, error);
+    ResponseDataAPI responseDataAPI = ResponseDataAPI.error(errorResponse);
+
+    return new ResponseEntity<>(responseDataAPI, HttpStatus.BAD_REQUEST);
   }
 }
