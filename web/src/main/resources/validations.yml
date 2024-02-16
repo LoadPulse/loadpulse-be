@@ -51,7 +51,7 @@ sign_in_request:
       message: Email must be a well-formed email address!
     not_blank:
       code: VAL.SIR0102
-      mssage: Email must be not blank!
+      message: Email must be not blank!
   password:
     not_blank:
       code: VAL.SIR0201

@@ -39,10 +39,6 @@ public final class CommonFunction {
 
   public static ErrorResponse getValidationError(
       String resource, String fieldName, String validation) {
-    if (fieldName.contains("[")) {
-      fieldName = handleFieldName(fieldName);
-    }
-
     ReadYAML readYAML = new ReadYAML();
     Map<String, Object> errors = readYAML.getValueFromYAML(VALIDATION_FILE);
     Map<String, Object> fields = (Map<String, Object>) errors.get(resource);
@@ -51,11 +47,6 @@ public final class CommonFunction {
     String code = (String) objError.get("code");
     String message = (String) objError.get("message");
     return new ErrorResponse(code, message);
-  }
-
-  public static String handleFieldName(String fieldName) {
-    String index = fieldName.substring(fieldName.indexOf("[") + 1, fieldName.indexOf("]"));
-    return fieldName.replaceAll(index, "");
   }
 
   public static String convertToJSONString(Object ob) {
