@@ -8,11 +8,14 @@ import com.pbl.loadtestweb.httprequest.service.HttpRequestService;
 import com.pbl.loadtestweb.service.MessageQueueService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import springfox.documentation.annotations.ApiIgnore;
 
 @RestController
 @RequiredArgsConstructor
@@ -27,6 +30,7 @@ public class HttpController {
   @PostMapping(value = "/{method}")
   @PreAuthorize("hasRole('USER')")
   @ApiOperation("Api send http request")
+  @ApiResponse(code = 200, message = "Create ")
   public ResponseEntity<ResponseDataAPI> sendHttpRequest(
       @RequestParam(name = "virtual_users", defaultValue = "1") int virtualUsers,
       @RequestParam(name = "iterations", defaultValue = "1") int iterations,
@@ -35,8 +39,9 @@ public class HttpController {
       @RequestParam(name = "durations", defaultValue = "0") int durations,
       @RequestParam(name = "is_keep_alive", defaultValue = "false") boolean isKeepAlive,
       @RequestBody HttpRequest httpRequest,
-      @PathVariable String method,
-      @CurrentUser UserPrincipal userPrincipal) {
+      @Parameter(description = "Method of test", required = true) @PathVariable
+          String method,
+      @ApiIgnore  @CurrentUser UserPrincipal userPrincipal) {
     String queueName = messageQueueService.createQueue(userPrincipal);
     if (iterations == 0) {
       httpRequestService.sendHttpRequestWithDurations(
