@@ -4,6 +4,7 @@ import com.pbl.loadtestweb.common.constant.CommonConstant;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
+import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
 import springfox.documentation.service.ApiInfo;
@@ -43,14 +44,11 @@ public class SwaggerConfig {
   }
 
   private ApiInfo apiInfo() {
-    return new ApiInfo(
-        "API Documentation - Load Testing Project",
-        "Api for Load Testing Project",
-        "V1",
-        "NA terms of service url",
-        "Contact",
-        "A license given",
-        "NA");
+    return new ApiInfoBuilder()
+        .title("Load Test Web API")
+        .description("Load Test Web API")
+        .version("1.0")
+        .build();
   }
 
   private SecurityContext securityContext() {
