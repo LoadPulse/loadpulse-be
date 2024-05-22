@@ -1,4 +1,4 @@
-# load-testing
+# loadpulse
 Brief description of your Spring Boot project.
 
 ## Table of Contents

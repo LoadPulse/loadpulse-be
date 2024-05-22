@@ -23,7 +23,7 @@ spring:
       ddl-auto: update
     properties:
       hibernate:
-        dialect: com.pbl.loadtestweb.common.config.PostgreSqlCustomDialect
+        dialect: com.pbl.loadpulse.common.config.PostgreSqlCustomDialect
         type: trace
         temp:
           use_jdbc_metadata_defaults: false

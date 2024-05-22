@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.pbl</groupId>
-        <artifactId>performance-testing</artifactId>
+        <artifactId>loadpulse</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
