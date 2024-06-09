@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.pbl</groupId>
 
-    <artifactId>http-request</artifactId>
+    <artifactId>http-service</artifactId>
     <packaging>jar</packaging>
     <version>0.0.1-SNAPSHOT</version>
     <name>http-request</name>

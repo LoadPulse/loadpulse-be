@@ -18,8 +18,8 @@
     <modules>
         <module>common</module>
         <module>web</module>
-        <module>http-request</module>
-        <module>jdbc-request</module>
+        <module>http-service</module>
+        <module>jdbc-service</module>
         <module>security-service</module>
         <module>message-queue-service</module>
     </modules>
@@ -136,12 +136,12 @@
             </dependency>
             <dependency>
                 <groupId>com.pbl</groupId>
-                <artifactId>http-request</artifactId>
+                <artifactId>http-service</artifactId>
                 <version>0.0.1-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>com.pbl</groupId>
-                <artifactId>jdbc-request</artifactId>
+                <artifactId>jdbc-service</artifactId>
                 <version>0.0.1-SNAPSHOT</version>
             </dependency>
         </dependencies>
