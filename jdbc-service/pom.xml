@@ -10,7 +10,7 @@
     </parent>
 
     <groupId>com.pbl</groupId>
-    <artifactId>jdbc-request</artifactId>
+    <artifactId>jdbc-service</artifactId>
 
     <dependencies>
         <dependency>

@@ -14,13 +14,13 @@
     <dependencies>
         <dependency>
             <groupId>com.pbl</groupId>
-            <artifactId>http-request</artifactId>
+            <artifactId>http-service</artifactId>
             <version>0.0.1-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.pbl</groupId>
-            <artifactId>jdbc-request</artifactId>
+            <artifactId>jdbc-service</artifactId>
             <version>0.0.1-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
