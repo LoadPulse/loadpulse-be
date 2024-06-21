@@ -1,7 +1,7 @@
 package com.pbl.loadpulse.web.endpoint.jdbc;
 
 import com.pbl.loadpulse.jdbcrequest.service.JdbcRequestService;
-import io.swagger.annotations.Api;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,7 +10,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/v1/jdbc-request")
-@Api(tags = "Jdbc Request APIs")
+@Tag(name = "Jdbc Request APIs")
 public class JdbcController {
   private final JdbcRequestService jdbcRequestService;
 

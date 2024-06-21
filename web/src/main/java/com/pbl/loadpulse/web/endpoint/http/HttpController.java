@@ -1,36 +1,28 @@
 package com.pbl.loadpulse.web.endpoint.http;
 
-import com.pbl.loadpulse.annotation.CurrentUser;
 import com.pbl.loadpulse.common.payload.general.ResponseDataAPI;
-import com.pbl.loadpulse.domain.UserPrincipal;
 import com.pbl.loadpulse.httprequest.payload.request.HttpRequest;
 import com.pbl.loadpulse.httprequest.service.HttpRequestService;
-import com.pbl.loadpulse.service.MessageQueueService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-import springfox.documentation.annotations.ApiIgnore;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/v1/http-methods")
-@Api(tags = "Http Request APIs")
+@Tag(name = "Http Request APIs")
 public class HttpController {
 
   private final HttpRequestService httpRequestService;
 
-  private final MessageQueueService messageQueueService;
-
   @PostMapping(value = "/{method}")
   @PreAuthorize("hasRole('USER')")
-  @ApiOperation("Api send http request")
-  @ApiResponse(code = 200, message = "Create ")
+  @Operation(summary = "Api send http request")
   public ResponseEntity<ResponseDataAPI> sendHttpRequest(
       @RequestParam(name = "virtual_users", defaultValue = "1") int virtualUsers,
       @RequestParam(name = "iterations", defaultValue = "1") int iterations,
@@ -40,21 +32,19 @@ public class HttpController {
       @RequestParam(name = "is_keep_alive", defaultValue = "false") boolean isKeepAlive,
       @RequestBody HttpRequest httpRequest,
       @Parameter(description = "Method of test", required = true) @PathVariable
-          String method,
-      @ApiIgnore  @CurrentUser UserPrincipal userPrincipal) {
-    String queueName = messageQueueService.createQueue(userPrincipal);
+          String method) {
     if (iterations == 0) {
       httpRequestService.sendHttpRequestWithDurations(
-          url, virtualUsers, durations, rampUp, isKeepAlive, httpRequest, method, userPrincipal);
+          url, virtualUsers, durations, rampUp, isKeepAlive, httpRequest, method);
     } else {
       httpRequestService.sendHttpRequest(
-          url, virtualUsers, iterations, rampUp, isKeepAlive, httpRequest, method, userPrincipal);
+          url, virtualUsers, iterations, rampUp, isKeepAlive, httpRequest, method);
     }
-    return ResponseEntity.ok(ResponseDataAPI.successWithoutMeta(queueName));
+    return ResponseEntity.ok(ResponseDataAPI.successWithoutMetaAndData());
   }
 
   @PostMapping("/{method}/encoded-form-body")
-  @ApiOperation("Api send http request with encoded form body")
+  @Operation(summary = "Api send http request with encoded form body")
   public ResponseEntity<SseEmitter> sendHttpRequestWithEncodedFormBody(
       @RequestParam(name = "virtual_users", defaultValue = "1") int virtualUsers,
       @RequestParam(name = "iterations", defaultValue = "1") int iterations,
@@ -76,7 +66,7 @@ public class HttpController {
   }
 
   @PostMapping("/{method}/json-body")
-  @ApiOperation("Api send http request with json body")
+  @Operation(summary = "Api send http request with json body")
   public ResponseEntity<SseEmitter> sendHttpRequestWithJsonBody(
       @RequestParam(name = "virtual_users", defaultValue = "1") int virtualUsers,
       @RequestParam(name = "iterations", defaultValue = "1") int iterations,
