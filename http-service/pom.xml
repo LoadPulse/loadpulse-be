@@ -8,7 +8,7 @@
         <artifactId>loadpulse</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
-
+    <groupId>com.pbl.loadpulse</groupId>
     <artifactId>http-service</artifactId>
     <packaging>jar</packaging>
     <version>0.0.1-SNAPSHOT</version>
@@ -17,7 +17,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.pbl</groupId>
+            <groupId>com.pbl.loadpulse</groupId>
             <artifactId>common</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
