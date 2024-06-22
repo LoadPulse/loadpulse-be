@@ -1,7 +1,6 @@
 package com.pbl.loadpulse.httprequest.service;
 
 import com.pbl.loadpulse.httprequest.payload.request.HttpRequest;
-import com.pbl.loadpulse.domain.UserPrincipal;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 public interface HttpRequestService {
@@ -13,8 +12,7 @@ public interface HttpRequestService {
       int rampUp,
       boolean isKeepAlive,
       HttpRequest httpRequest,
-      String method,
-      UserPrincipal userPrincipal);
+      String method);
 
   void sendHttpRequestWithDurations(
       String url,
@@ -23,8 +21,7 @@ public interface HttpRequestService {
       int rampUp,
       boolean isKeepAlive,
       HttpRequest httpRequest,
-      String method,
-      UserPrincipal userPrincipal);
+      String method);
 
   SseEmitter sendHttpRequestEncodedFormBody(
       String url,

@@ -9,12 +9,12 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <groupId>com.pbl</groupId>
+    <groupId>com.pbl.loadpulse</groupId>
     <artifactId>jdbc-service</artifactId>
 
     <dependencies>
         <dependency>
-            <groupId>com.pbl</groupId>
+            <groupId>com.pbl.loadpulse</groupId>
             <artifactId>common</artifactId>
             <version>0.0.1-SNAPSHOT</version>
             <scope>compile</scope>

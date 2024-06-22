@@ -3,11 +3,9 @@ package com.pbl.loadpulse.httprequest.service.impl;
 import com.pbl.loadpulse.common.constant.CommonConstant;
 import com.pbl.loadpulse.httprequest.payload.request.HttpRequest;
 import com.pbl.loadpulse.httprequest.payload.response.HttpDataResponse;
-import com.pbl.loadpulse.domain.UserPrincipal;
 import com.pbl.loadpulse.httprequest.mapper.HttpRequestMapper;
 import com.pbl.loadpulse.httprequest.service.HttpRequestService;
 import com.pbl.loadpulse.httprequest.utils.Utils;
-import com.pbl.loadpulse.service.MessageQueueService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -27,8 +25,6 @@ import java.util.concurrent.*;
 @Slf4j
 public class HttpRequestServiceImpl implements HttpRequestService {
 
-  private final MessageQueueService messageQueueService;
-
   private final HttpRequestMapper httpRequestMapper;
 
   private final ExecutorService executorService = Executors.newCachedThreadPool();
@@ -42,8 +38,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       int rampUp,
       boolean isKeepAlive,
       HttpRequest httpRequest,
-      String method,
-      UserPrincipal userPrincipal) {
+      String method) {
 
     log.info(Long.toString(Utils.timeForCreationEachThread(virtualUsers, rampUp)));
 
@@ -59,10 +54,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
                 result =
                     this.sendHttpRequest(url, method.toUpperCase(), j, isKeepAlive, httpRequest);
                 HttpDataResponse jsonResponse = this.buildHttpDataResponse(result);
-                messageQueueService.sendMessage(
-                    userPrincipal.getId().toString(),
-                    userPrincipal.getId().toString(),
-                    jsonResponse);
+
               }
             } catch (Exception e) {
               e.printStackTrace();
@@ -97,8 +89,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
       int rampUp,
       boolean isKeepAlive,
       HttpRequest httpRequest,
-      String method,
-      UserPrincipal userPrincipal) {
+      String method) {
 
     for (int i = 1; i <= virtualUsers; i++) {
       if (i != 1) {
@@ -114,10 +105,7 @@ public class HttpRequestServiceImpl implements HttpRequestService {
                 result =
                     this.sendHttpRequest(url, method.toUpperCase(), 1, isKeepAlive, httpRequest);
                 HttpDataResponse jsonResponse = this.buildHttpDataResponse(result);
-                messageQueueService.sendMessage(
-                    userPrincipal.getId().toString(),
-                    userPrincipal.getId().toString(),
-                    jsonResponse);
+
               }
             } catch (Exception e) {
               e.printStackTrace();
