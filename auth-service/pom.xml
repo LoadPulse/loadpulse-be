@@ -11,6 +11,14 @@
 
     <groupId>com.pbl.loadpulse</groupId>
     <artifactId>auth-service</artifactId>
+    <dependencies>
+        <dependency>
+            <groupId>com.pbl.loadpulse</groupId>
+            <artifactId>common</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
 
 
 </project>

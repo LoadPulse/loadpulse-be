@@ -29,6 +29,8 @@
         <com.vladmihalcea.version>2.20.0</com.vladmihalcea.version>
         <org.yaml.version>2.0</org.yaml.version>
         <org.springdoc.version>2.3.0</org.springdoc.version>
+        <hibernate-63.version>3.7.6</hibernate-63.version>
+        <liquibase.version>4.28.0</liquibase.version>
     </properties>
 
     <dependencies>
@@ -90,12 +92,7 @@
         <dependency>
             <groupId>io.hypersistence</groupId>
             <artifactId>hypersistence-utils-hibernate-63</artifactId>
-            <version>3.7.6</version>
-        </dependency>
-        <dependency>
-            <groupId>io.github.cdimascio</groupId>
-            <artifactId>dotenv-java</artifactId>
-            <version>2.2.0</version>
+            <version>${hibernate-63.version}</version>
         </dependency>
         <dependency>
             <groupId>org.yaml</groupId>
@@ -106,6 +103,11 @@
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
             <version>${org.springdoc.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.liquibase</groupId>
+            <artifactId>liquibase-core</artifactId>
+            <version>${liquibase.version}</version>
         </dependency>
 
 

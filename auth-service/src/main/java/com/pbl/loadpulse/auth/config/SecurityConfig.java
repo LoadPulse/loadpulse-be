@@ -42,11 +42,10 @@ public class SecurityConfig {
                                                 antMatcher("/**/*.jpg"),
                                                 antMatcher("/**/*.css"),
                                                 antMatcher("/**/*.js"),
-                                                antMatcher("/swagger-ui/**"), // Permit access to Swagger UI
-                                                antMatcher("/v3/api-docs/**")) // Permit access to Swagger API docs
+                                                antMatcher("/swagger-ui/**"),
+                                                antMatcher("/v3/api-docs/**"))
                                         .permitAll().anyRequest().permitAll());
 
-//        http.addFilterBefore(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
