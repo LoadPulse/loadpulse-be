@@ -12,7 +12,7 @@ public class MessageConstant {
   public static final String INCORRECT_EMAIL_OR_PASSWORD = "incorrect_email_or_password";
 
   public static final String PASSWORD_NOT_MATCHED_WITH_CONFIRM_PASSWORD =
-      "password_not_matched_with_confirm_password";
+      "password_and_confirmation_password_is_not_match";
 
   public static final String UNAUTHORIZED = "unauthorized";
 

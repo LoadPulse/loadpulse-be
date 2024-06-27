@@ -37,7 +37,7 @@ public class JdbcController {
               rampUp,
               duration));
 
-    } else if(iterations != 0 && duration ==0) {
+    } else if (iterations != 0 && duration == 0) {
       return ResponseEntity.ok(
           jdbcRequestService.jdbcLoadTestWeb(
               databaseUrl,

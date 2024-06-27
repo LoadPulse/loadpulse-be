@@ -15,8 +15,8 @@ public class SwaggerConfig {
 
   private Info apiInfo() {
     return new Info()
-            .title("Springdoc API")
-            .description("Springdoc API Documentation")
-            .version("1.0.0");
+        .title("Springdoc API")
+        .description("Springdoc API Documentation")
+        .version("1.0.0");
   }
 }

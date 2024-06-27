@@ -33,6 +33,7 @@
         <liquibase.version>4.28.0</liquibase.version>
         <liquibase-maven-plugin.version>4.19.0</liquibase-maven-plugin.version>
         <liquibase-hibernate.version>4.19.0</liquibase-hibernate.version>
+        <jedis.version>5.1.0</jedis.version>
     </properties>
 
     <dependencies>
@@ -47,6 +48,10 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-oauth2-client</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -118,6 +123,15 @@
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-yaml</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+            <version>${jedis.version}</version>
         </dependency>
 
 

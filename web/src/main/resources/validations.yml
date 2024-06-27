@@ -7,20 +7,6 @@ sign_up_request:
     email:
       code: VAL.SUR0102
       message: Email must be a well-formed email address!
-  first_name:
-    not_blank:
-      code: VAL.SUR0201
-      message: First name must be not blank!
-    size:
-      code: VAL.SUR0202
-      message: First name size must be between 1 and 100!
-  last_name:
-    not_blank:
-      code: VAL.SUR0301
-      message: Last name must be not blank!
-    size:
-      code: VAL.SUR0302
-      message: Last name size must be between 1 and 100!
   password:
     not_blank:
       code: VAL.SUR0401
@@ -35,27 +21,3 @@ sign_up_request:
     pattern:
       code: VAL.SUR0502
       message: Confirmation password has at least 8 characters, containing at least 1 uppercase letter, 1 lowercase letter, 1 numeric character!
-  role:
-    not_blank:
-      code: VAL.SUR0601
-      message: Role must not be blank!
-    pattern:
-      code: VAL.SUR0602
-      message: Role must be follow pattern!
-
-#SignInRequest
-sign_in_request:
-  email:
-    email:
-      code: VAL.SIR0101
-      message: Email must be a well-formed email address!
-    not_blank:
-      code: VAL.SIR0102
-      message: Email must be not blank!
-  password:
-    not_blank:
-      code: VAL.SIR0201
-      message: Password must be not blank!
-    pattern:
-      code: VAL.SIR0202
-      message: Password must be follow pattern!

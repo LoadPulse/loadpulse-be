@@ -54,7 +54,6 @@ public class HttpRequestServiceImpl implements HttpRequestService {
                 result =
                     this.sendHttpRequest(url, method.toUpperCase(), j, isKeepAlive, httpRequest);
                 HttpDataResponse jsonResponse = this.buildHttpDataResponse(result);
-
               }
             } catch (Exception e) {
               e.printStackTrace();
@@ -105,7 +104,6 @@ public class HttpRequestServiceImpl implements HttpRequestService {
                 result =
                     this.sendHttpRequest(url, method.toUpperCase(), 1, isKeepAlive, httpRequest);
                 HttpDataResponse jsonResponse = this.buildHttpDataResponse(result);
-
               }
             } catch (Exception e) {
               e.printStackTrace();

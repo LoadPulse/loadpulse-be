@@ -20,34 +20,35 @@ import static org.springframework.security.web.util.matcher.AntPathRequestMatche
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    @Bean
-    AuthenticationManager authenticationManager(
-            AuthenticationConfiguration authenticationConfiguration) throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
-    }
+  @Bean
+  AuthenticationManager authenticationManager(
+      AuthenticationConfiguration authenticationConfiguration) throws Exception {
+    return authenticationConfiguration.getAuthenticationManager();
+  }
 
-    @Bean
-    protected SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+  @Bean
+  protected SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
-        http.csrf(AbstractHttpConfigurer::disable)
-//                .exceptionHandling(exp -> exp.authenticationEntryPoint(new RestAuthenticationEntryPoint()))
-                .sessionManagement(
-                        session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(
-                        auth ->
-                                auth.requestMatchers(
-                                                antMatcher("/app/**"),
-                                                antMatcher("/favicon.ico"),
-                                                antMatcher("/**/*.png"),
-                                                antMatcher("/**/*.jpg"),
-                                                antMatcher("/**/*.css"),
-                                                antMatcher("/**/*.js"),
-                                                antMatcher("/swagger-ui/**"),
-                                                antMatcher("/v3/api-docs/**"))
-                                        .permitAll().anyRequest().permitAll());
+    http.csrf(AbstractHttpConfigurer::disable)
+        //                .exceptionHandling(exp -> exp.authenticationEntryPoint(new
+        // RestAuthenticationEntryPoint()))
+        .sessionManagement(
+            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .authorizeHttpRequests(
+            auth ->
+                auth.requestMatchers(
+                        antMatcher("/app/**"),
+                        antMatcher("/favicon.ico"),
+                        antMatcher("/**/*.png"),
+                        antMatcher("/**/*.jpg"),
+                        antMatcher("/**/*.css"),
+                        antMatcher("/**/*.js"),
+                        antMatcher("/swagger-ui/**"),
+                        antMatcher("/v3/api-docs/**"))
+                    .permitAll()
+                    .anyRequest()
+                    .permitAll());
 
-
-        return http.build();
-    }
+    return http.build();
+  }
 }
-

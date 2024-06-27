@@ -1,12 +1,13 @@
 # loadpulse
+
 Brief description of your Spring Boot project.
 
 ## Table of Contents
 
 - [Project Description](#project-description)
 - [Getting Started](#getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
+    - [Prerequisites](#prerequisites)
+    - [Installation](#installation)
 - [Usage](#usage)
 - [Configuration](#configuration)
 - [Contributing](#contributing)
@@ -18,7 +19,8 @@ Provide a concise and informative description of your project. Explain what it d
 
 ## Getting Started
 
-Include instructions on how to get your project up and running. This section should cover the prerequisites and installation steps.
+Include instructions on how to get your project up and running. This section should cover the prerequisites and
+installation steps.
 
 ### Prerequisites
 
