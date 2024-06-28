@@ -9,6 +9,7 @@ import com.pbl.loadpulse.auth.service.UserService;
 import com.pbl.loadpulse.common.common.CommonFunction;
 import com.pbl.loadpulse.common.constant.MessageConstant;
 import com.pbl.loadpulse.common.exception.BadRequestException;
+import com.pbl.loadpulse.email.service.EmailService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -24,6 +25,8 @@ public class UserServiceImpl implements UserService {
   private final UserRepository userRepository;
 
   private final RedisTemplate<String, Object> redisTemplate;
+
+  private final EmailService emailService;
 
   private final UserMapper userMapper;
 
@@ -44,7 +47,9 @@ public class UserServiceImpl implements UserService {
     user.setPassword(signUpRequest.getPassword());
     userRepository.save(user);
 
-    this.setConfirmationTokenToRedis(user, CommonFunction.generateUUID());
+    UUID confirmToken = CommonFunction.generateUUID();
+    this.setConfirmationTokenToRedis(user, confirmToken);
+    emailService.sendMailConfirmRegister(user.getEmail(), confirmToken);
 
     return userMapper.toUserInfoResponse(user);
   }
