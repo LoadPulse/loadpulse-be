@@ -141,7 +141,8 @@ public class Utils {
     }
   }
 
-  public static HttpURLConnection setRequestProperties(HttpURLConnection connection, HttpRequest httpRequest) {
+  public static HttpURLConnection setRequestProperties(
+      HttpURLConnection connection, HttpRequest httpRequest) {
     for (int i = 0; i < httpRequest.getKeyHeaders().size(); i++) {
       if (httpRequest.getKeyHeaders().get(i).length() != 0
           && httpRequest.getValueHeaders().get(i).length() != 0) {

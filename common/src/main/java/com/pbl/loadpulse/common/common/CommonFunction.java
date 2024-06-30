@@ -8,6 +8,7 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
+import java.util.UUID;
 
 @Slf4j
 public final class CommonFunction {
@@ -61,5 +62,9 @@ public final class CommonFunction {
 
   public static String convertToSnakeCase(String input) {
     return input.replaceAll("([^_A-Z])([A-Z])", "$1_$2").toLowerCase();
+  }
+
+  public static UUID generateUUID() {
+    return UUID.randomUUID();
   }
 }

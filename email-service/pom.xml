@@ -10,7 +10,14 @@
     </parent>
 
     <groupId>com.pbl.loadpulse</groupId>
-    <artifactId>auth-service</artifactId>
+    <artifactId>email-service</artifactId>
+
+    <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.pbl.loadpulse</groupId>
@@ -18,12 +25,6 @@
             <version>0.0.1-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
-        <dependency>
-            <groupId>com.pbl.loadpulse</groupId>
-            <artifactId>email-service</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-        </dependency>
     </dependencies>
-
 
 </project>

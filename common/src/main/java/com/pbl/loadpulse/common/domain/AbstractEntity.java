@@ -18,8 +18,7 @@ import java.sql.Timestamp;
 @EntityListeners(AuditingEntityListener.class)
 public class AbstractEntity implements Serializable {
 
-  @Serial
-  private static final long serialVersionUID = 1L;
+  @Serial private static final long serialVersionUID = 1L;
 
   @CreatedDate private Timestamp createdAt;
 

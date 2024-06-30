@@ -31,8 +31,7 @@ public class HttpController {
       @RequestParam(name = "durations", defaultValue = "0") int durations,
       @RequestParam(name = "is_keep_alive", defaultValue = "false") boolean isKeepAlive,
       @RequestBody HttpRequest httpRequest,
-      @Parameter(description = "Method of test", required = true) @PathVariable
-          String method) {
+      @Parameter(description = "Method of test", required = true) @PathVariable String method) {
     if (iterations == 0) {
       httpRequestService.sendHttpRequestWithDurations(
           url, virtualUsers, durations, rampUp, isKeepAlive, httpRequest, method);

@@ -10,3 +10,7 @@ spring:
     host: localhost
     username: guest
     password: guest
+  data:
+    redis:
+      host: localhost
+      port: 6379
