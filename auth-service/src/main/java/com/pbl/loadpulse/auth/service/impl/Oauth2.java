@@ -12,14 +12,12 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class Oauth2 {
 
+  private OAuth2AuthorizedClientService authorizedClientService;
 
-    private OAuth2AuthorizedClientService authorizedClientService;
-
-    public String getAccessToken(OidcUser oidcUser) {
-        OAuth2AuthorizedClient client = authorizedClientService.loadAuthorizedClient(
-                oidcUser.getAuthorizedParty(),
-                oidcUser.getName()
-        );
-        return client.getAccessToken().getTokenValue();
-    }
+  public String getAccessToken(OidcUser oidcUser) {
+    OAuth2AuthorizedClient client =
+        authorizedClientService.loadAuthorizedClient(
+            oidcUser.getAuthorizedParty(), oidcUser.getName());
+    return client.getAccessToken().getTokenValue();
+  }
 }

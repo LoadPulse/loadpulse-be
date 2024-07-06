@@ -8,5 +8,6 @@ import com.pbl.loadpulse.auth.payload.response.UserInfoResponse;
 public interface UserService {
 
   UserInfoResponse signUp(SignUpRequest signUpRequest);
-  JwtResponse signIn (SignInRequest signInRequest);
+
+  JwtResponse signIn(SignInRequest signInRequest);
 }

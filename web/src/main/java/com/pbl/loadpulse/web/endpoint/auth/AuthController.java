@@ -24,6 +24,7 @@ public class AuthController {
   public ResponseEntity<ResponseDataAPI> signUp(@Valid @RequestBody SignUpRequest signUpRequest) {
     return ResponseEntity.ok(ResponseDataAPI.successWithoutMeta(userService.signUp(signUpRequest)));
   }
+
   @PostMapping("/sign-in")
   @Operation(summary = "Api sign in user")
   public ResponseEntity<ResponseDataAPI> signIn(@Valid @RequestBody SignInRequest signInRequest) {

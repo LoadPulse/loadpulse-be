@@ -20,7 +20,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 
-
 import java.time.Duration;
 import java.util.UUID;
 
@@ -65,14 +64,16 @@ public class UserServiceImpl implements UserService {
 
     return userMapper.toUserInfoResponse(user);
   }
+
   @Override
   @Transactional
-  public JwtResponse signIn(SignInRequest signInRequest){
+  public JwtResponse signIn(SignInRequest signInRequest) {
     User user = userRepository.findByEmail(signInRequest.getEmail());
     String accessToken = jwtService.generateToken(user);
     String refreshToken = jwtService.generateRefreshToken(user);
-    return tokenMapper.toJwtResponse(accessToken,refreshToken);
+    return tokenMapper.toJwtResponse(accessToken, refreshToken);
   }
+
   private boolean isEmailExist(String email) {
     return userRepository.existsByEmail(email);
   }

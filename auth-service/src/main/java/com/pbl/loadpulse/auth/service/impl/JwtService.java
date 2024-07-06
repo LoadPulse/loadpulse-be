@@ -45,8 +45,7 @@ public class JwtService {
     return buildToken(new HashMap<>(), user, Long.parseLong(refreshExpiration));
   }
 
-  private String buildToken(
-      Map<String, Object> extraClaims, User user, long expiration) {
+  private String buildToken(Map<String, Object> extraClaims, User user, long expiration) {
     return Jwts.builder()
         .setClaims(extraClaims)
         .setSubject(user.getEmail())
