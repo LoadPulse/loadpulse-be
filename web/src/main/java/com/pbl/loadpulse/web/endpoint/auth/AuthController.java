@@ -1,5 +1,6 @@
 package com.pbl.loadpulse.web.endpoint.auth;
 
+import com.pbl.loadpulse.auth.payload.request.SignInRequest;
 import com.pbl.loadpulse.auth.payload.request.SignUpRequest;
 import com.pbl.loadpulse.auth.service.UserService;
 import com.pbl.loadpulse.common.payload.general.ResponseDataAPI;
@@ -22,5 +23,10 @@ public class AuthController {
   @Operation(summary = "Api sign up user")
   public ResponseEntity<ResponseDataAPI> signUp(@Valid @RequestBody SignUpRequest signUpRequest) {
     return ResponseEntity.ok(ResponseDataAPI.successWithoutMeta(userService.signUp(signUpRequest)));
+  }
+  @PostMapping("/sign-in")
+  @Operation(summary = "Api sign in user")
+  public ResponseEntity<ResponseDataAPI> signIn(@Valid @RequestBody SignInRequest signInRequest) {
+    return ResponseEntity.ok(ResponseDataAPI.successWithoutMeta(userService.signIn(signInRequest)));
   }
 }
