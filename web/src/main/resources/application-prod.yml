@@ -2,7 +2,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/load-testing
     username: postgres
-    password: duchuy
+    password: anhdung
     hikari:
       max-lifetime: 60000
   rabbitmq:
@@ -14,3 +14,18 @@ spring:
     redis:
       host: localhost
       port: 6379
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: kinphan189@gmail.com
+    password: gmwq wadk dofv alva
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+application:
+  security:
+    jwt:
+      secret-key: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+      expiration: 36000000 # 10 hours
+      refresh-token:
+        expiration: 604800000 # 7 days
