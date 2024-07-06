@@ -1,8 +1,11 @@
 package com.pbl.loadpulse.auth.service.impl;
 
 import com.pbl.loadpulse.auth.domain.User;
+import com.pbl.loadpulse.auth.mapper.TokenMapper;
 import com.pbl.loadpulse.auth.mapper.UserMapper;
+import com.pbl.loadpulse.auth.payload.request.SignInRequest;
 import com.pbl.loadpulse.auth.payload.request.SignUpRequest;
+import com.pbl.loadpulse.auth.payload.response.JwtResponse;
 import com.pbl.loadpulse.auth.payload.response.UserInfoResponse;
 import com.pbl.loadpulse.auth.repository.UserRepository;
 import com.pbl.loadpulse.auth.service.UserService;
@@ -12,8 +15,10 @@ import com.pbl.loadpulse.common.exception.BadRequestException;
 import com.pbl.loadpulse.email.service.EmailService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
 
 import java.time.Duration;
 import java.util.UUID;
@@ -29,6 +34,12 @@ public class UserServiceImpl implements UserService {
   private final EmailService emailService;
 
   private final UserMapper userMapper;
+
+  private final JwtService jwtService;
+
+  private final TokenMapper tokenMapper;
+
+  private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
   @Override
   @Transactional
@@ -52,6 +63,15 @@ public class UserServiceImpl implements UserService {
     emailService.sendMailConfirmRegister(user.getEmail(), confirmToken);
 
     return userMapper.toUserInfoResponse(user);
+  }
+
+  @Override
+  @Transactional
+  public JwtResponse signIn(SignInRequest signInRequest) {
+    User user = userRepository.findByEmail(signInRequest.getEmail());
+    String accessToken = jwtService.generateToken(user);
+    String refreshToken = jwtService.generateRefreshToken(user);
+    return tokenMapper.toJwtResponse(accessToken, refreshToken);
   }
 
   private boolean isEmailExist(String email) {

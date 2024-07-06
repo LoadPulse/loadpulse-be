@@ -10,6 +10,10 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.web.SecurityFilterChain;
 
 import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
@@ -44,11 +48,27 @@ public class SecurityConfig {
                         antMatcher("/**/*.css"),
                         antMatcher("/**/*.js"),
                         antMatcher("/swagger-ui/**"),
-                        antMatcher("/v3/api-docs/**"))
+                        antMatcher("/v3/api-docs/**"),
+                        antMatcher("/v1/user"))
                     .permitAll()
                     .anyRequest()
-                    .permitAll());
+                    .permitAll())
+        .oauth2Login(
+            oauth2Login ->
+                oauth2Login.userInfoEndpoint(
+                    userInfoEndpoint -> userInfoEndpoint.oidcUserService(this.oidcUserService())));
+    //        http.addFilterBefore(tokenAuthenticationFilter,
 
     return http.build();
+  }
+
+  private OidcUserService oidcUserService() {
+    OidcUserService delegate = new OidcUserService();
+    return new OidcUserService() {
+      @Override
+      public OidcUser loadUser(OidcUserRequest userRequest) throws OAuth2AuthenticationException {
+        return delegate.loadUser(userRequest);
+      }
+    };
   }
 }
