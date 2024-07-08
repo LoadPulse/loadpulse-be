@@ -1,5 +1,7 @@
 package com.pbl.loadpulse.auth.config;
 
+import com.pbl.loadpulse.auth.exception.CustomAuthenticationEntryPoint;
+import com.pbl.loadpulse.auth.filter.TokenAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,6 +13,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
 
@@ -19,6 +22,8 @@ import static org.springframework.security.web.util.matcher.AntPathRequestMatche
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
+
+  private final TokenAuthenticationFilter tokenAuthenticationFilter;
 
   @Bean
   AuthenticationManager authenticationManager(
@@ -30,8 +35,8 @@ public class SecurityConfig {
   protected SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
     http.csrf(AbstractHttpConfigurer::disable)
-        //                .exceptionHandling(exp -> exp.authenticationEntryPoint(new
-        // RestAuthenticationEntryPoint()))
+        .exceptionHandling(
+            exp -> exp.authenticationEntryPoint(new CustomAuthenticationEntryPoint()))
         .sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(
@@ -49,6 +54,7 @@ public class SecurityConfig {
                     .anyRequest()
                     .permitAll());
 
+    http.addFilterBefore(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
     return http.build();
   }
 }

@@ -8,11 +8,14 @@ import com.pbl.loadpulse.auth.repository.UserRepository;
 import com.pbl.loadpulse.auth.service.UserService;
 import com.pbl.loadpulse.common.common.CommonFunction;
 import com.pbl.loadpulse.common.constant.MessageConstant;
+import com.pbl.loadpulse.common.domain.enums.Role;
 import com.pbl.loadpulse.common.exception.BadRequestException;
+import com.pbl.loadpulse.common.exception.NotFoundException;
 import com.pbl.loadpulse.email.service.EmailService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -27,6 +30,8 @@ public class UserServiceImpl implements UserService {
   private final RedisTemplate<String, Object> redisTemplate;
 
   private final EmailService emailService;
+
+  private final PasswordEncoder passwordEncoder;
 
   private final UserMapper userMapper;
 
@@ -44,7 +49,9 @@ public class UserServiceImpl implements UserService {
     }
 
     user.setEmail(signUpRequest.getEmail());
-    user.setPassword(signUpRequest.getPassword());
+    user.setRole(Role.ROLE_USER);
+    user.setPassword(passwordEncoder.encode(signUpRequest.getPassword()));
+
     userRepository.save(user);
 
     UUID confirmToken = CommonFunction.generateUUID();
@@ -52,6 +59,13 @@ public class UserServiceImpl implements UserService {
     emailService.sendMailConfirmRegister(user.getEmail(), confirmToken);
 
     return userMapper.toUserInfoResponse(user);
+  }
+
+  @Override
+  public User findById(UUID id) {
+    return userRepository
+        .findById(id)
+        .orElseThrow(() -> new NotFoundException(MessageConstant.USER_NOT_FOUND));
   }
 
   private boolean isEmailExist(String email) {

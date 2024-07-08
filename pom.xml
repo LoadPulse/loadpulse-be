@@ -35,6 +35,8 @@
         <liquibase-maven-plugin.version>4.19.0</liquibase-maven-plugin.version>
         <liquibase-hibernate.version>4.19.0</liquibase-hibernate.version>
         <jedis.version>5.1.0</jedis.version>
+        <jjwt.version>0.9.1</jjwt.version>
+        <jsonwebtoken.version>0.11.5</jsonwebtoken.version>
     </properties>
 
     <dependencies>
@@ -142,6 +144,16 @@
             <artifactId>jedis</artifactId>
             <version>${jedis.version}</version>
         </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt</artifactId>
+            <version>${jjwt.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>${jsonwebtoken.version}</version>
+        </dependency>
 
 
         <dependency>
@@ -208,6 +220,7 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>3.2.6</version>
                 <configuration>
                     <excludes>
                         <exclude>

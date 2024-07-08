@@ -1,6 +1,7 @@
 package com.pbl.loadpulse.auth.domain;
 
 import com.pbl.loadpulse.common.domain.AbstractEntity;
+import com.pbl.loadpulse.common.domain.enums.Role;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import lombok.*;
@@ -27,4 +28,10 @@ public class User extends AbstractEntity {
   private String password;
 
   @Column private Timestamp confirmedAt;
+
+  @Column private Boolean isConfirmed = false;
+
+  @Enumerated(EnumType.STRING)
+  @Column
+  private Role role;
 }
