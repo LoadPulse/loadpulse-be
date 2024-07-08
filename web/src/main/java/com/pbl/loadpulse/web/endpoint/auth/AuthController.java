@@ -24,7 +24,6 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -61,7 +60,7 @@ public class AuthController {
     } catch (InternalAuthenticationServiceException e) {
       throw new UnauthorizedException(e.getMessage());
     } catch (DisabledException e) {
-        throw new UnauthorizedException(MessageConstant.USER_NOT_FOUND);
+      throw new UnauthorizedException(MessageConstant.USER_NOT_FOUND);
     } catch (AuthenticationException e) {
       throw new UnauthorizedException(MessageConstant.INTERNAL_SERVER_ERROR);
     }
@@ -70,7 +69,8 @@ public class AuthController {
   @PostMapping("/refresh_tokens")
   @PreAuthorize("hasRole('USER')")
   public ResponseEntity<ResponseDataAPI> refreshTokenUser(
-           @Valid @RequestBody RefreshTokenRequest refreshTokenRequest, @CurrentUser UserPrincipal userPrincipal) {
+      @Valid @RequestBody RefreshTokenRequest refreshTokenRequest,
+      @CurrentUser UserPrincipal userPrincipal) {
     return ResponseEntity.ok(
         ResponseDataAPI.successWithoutMeta(
             tokenUtils.refreshToken(refreshTokenRequest.getRefreshToken())));
