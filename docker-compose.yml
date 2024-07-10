@@ -21,12 +21,21 @@ services:
       - "5672:5672"
       - "15672:15672"
 
+  redis:
+    image: redis:latest
+    container_name: redis-container
+    ports:
+      - "6379:6379"
+
   backend:
-    image: phdhuy/load-test-web:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: spring-app-container
     links:
       - postgres
       - rabbitmq
+      - redis
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/dockerdb
       SPRING_DATASOURCE_USERNAME: dockeruser
@@ -35,12 +44,14 @@ services:
       SPRING_RABBITMQ_PORT: 5672
       SPRING_RABBITMQ_USERNAME: guest
       SPRING_RABBITMQ_PASSWORD: guest
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
     ports:
       - "8080:8080"
     depends_on:
       - postgres
       - rabbitmq
-
+      - redis
 
 volumes:
   postgres-data:

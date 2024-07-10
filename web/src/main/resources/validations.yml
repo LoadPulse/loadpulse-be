@@ -21,3 +21,22 @@ sign_up_request:
     pattern:
       code: VAL.SUR0502
       message: Confirmation password has at least 8 characters, containing at least 1 uppercase letter, 1 lowercase letter, 1 numeric character!
+
+sign_in_request:
+  email:
+    not_blank:
+      code: VAL.SIR0101
+      message: Email must be not blank!
+    email:
+      code: VAL.SIR0102
+      message: Email must be a well-formed email address!
+  password:
+    not_blank:
+      code: VAL.SIR0401
+      message: Password must not be blank!
+
+refresh_token_request:
+  refresh_token:
+    not_blank:
+      code: VAL.SRR0101
+      message: Refresh token must not be blank!

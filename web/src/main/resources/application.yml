@@ -31,3 +31,8 @@ spring:
           time_zone: UTC
           lob:
             non_contextual_creation: true
+auth:
+  tokenSecret: 928d4aef-6452-4ca1-8e4e-7dabad510423
+  tokenExpirationMsec: 7200000
+  refreshTokenSecret: cf427568-e272-4d5d-8195-18cc8bcbd0c4
+  refreshTokenExpirationMsec: 2592000000
