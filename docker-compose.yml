@@ -6,10 +6,10 @@ services:
     hostname: postgres
     container_name: postgres-container
     ports:
-      - "5433:5432"
+      - "5432:5432"
     environment:
-      POSTGRES_DB: dockerdb
-      POSTGRES_USER: dockeruser
+      POSTGRES_DB: loadpulse
+      POSTGRES_USER: postgres
       POSTGRES_PASSWORD: dockerpassword
     volumes:
       - postgres-data:/var/lib/postgresql/data
@@ -24,6 +24,7 @@ services:
   redis:
     image: redis:latest
     container_name: redis-container
+    hostname: redis
     ports:
       - "6379:6379"
 
@@ -37,8 +38,8 @@ services:
       - rabbitmq
       - redis
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/dockerdb
-      SPRING_DATASOURCE_USERNAME: dockeruser
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/loadpulse
+      SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: dockerpassword
       SPRING_RABBITMQ_HOST: rabbitmq
       SPRING_RABBITMQ_PORT: 5672

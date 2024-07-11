@@ -11,4 +11,6 @@ public interface UserService {
   UserInfoResponse signUp(SignUpRequest signUpRequest);
 
   User findById(UUID id);
+
+  void confirmEmail(String confirmationToken);
 }
