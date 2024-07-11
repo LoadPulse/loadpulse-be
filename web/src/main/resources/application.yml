@@ -32,7 +32,7 @@ spring:
           lob:
             non_contextual_creation: true
 auth:
-  tokenSecret: 928d4aef-6452-4ca1-8e4e-7dabad510423
+  tokenSecret: 41c9425ac8d185985f513ac833b94d8def071f69a27b2c1e4e9921e805bed586
   tokenExpirationMsec: 7200000
-  refreshTokenSecret: cf427568-e272-4d5d-8195-18cc8bcbd0c4
+  refreshTokenSecret: 29110aaf4cb5050c89059c886aa5fa68c97738076721bc6b9f657eb31e0befc5
   refreshTokenExpirationMsec: 2592000000

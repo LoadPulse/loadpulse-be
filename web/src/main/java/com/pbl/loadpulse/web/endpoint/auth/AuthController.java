@@ -66,7 +66,7 @@ public class AuthController {
     }
   }
 
-  @PostMapping("/refresh_tokens")
+  @PostMapping("/refresh-tokens")
   @PreAuthorize("hasRole('USER')")
   public ResponseEntity<ResponseDataAPI> refreshTokenUser(
       @Valid @RequestBody RefreshTokenRequest refreshTokenRequest,
