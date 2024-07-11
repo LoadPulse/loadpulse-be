@@ -39,8 +39,14 @@ expired_token:
 revoked_token:
   code: ERR.TOK0106
   message: Token was be revoked!
+expired_confirmation_token:
+  code: ERR.TOK0107
+  message: Expired confirmation token!
 
 #User
 user_not_found:
   code: ERR.USE0101
   message: User was not found!
+email_is_not_verified:
+  code: ERR.USE0102
+  message: Email is not verified!

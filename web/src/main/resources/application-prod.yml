@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/load-testing
-    username: postgres
-    password: duchuy
+    url: jdbc:postgresql://localhost:5432/loadpulse
+    username: loadpulse
+    password: loadpulse2024
     hikari:
       max-lifetime: 60000
   rabbitmq:
@@ -12,5 +12,5 @@ spring:
     password: guest
   data:
     redis:
-      host: localhost
+      host: redis
       port: 6379

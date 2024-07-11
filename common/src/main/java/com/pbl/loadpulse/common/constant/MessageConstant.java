@@ -30,6 +30,9 @@ public class MessageConstant {
 
   public static final String EXPIRED_REFRESH_TOKEN = "expired_refresh_token";
 
+  public static final String EXPIRED_CONFIRMATION_TOKEN = "expired_confirmation_token";
   // User
   public static final String USER_NOT_FOUND = "user_not_found";
+
+  public static final String EMAIL_IS_NOT_VERIFIED = "email_is_not_verified";
 }

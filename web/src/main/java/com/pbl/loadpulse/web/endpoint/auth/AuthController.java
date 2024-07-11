@@ -60,7 +60,7 @@ public class AuthController {
     } catch (InternalAuthenticationServiceException e) {
       throw new UnauthorizedException(e.getMessage());
     } catch (DisabledException e) {
-      throw new UnauthorizedException(MessageConstant.USER_NOT_FOUND);
+      throw new UnauthorizedException(MessageConstant.EMAIL_IS_NOT_VERIFIED);
     } catch (AuthenticationException e) {
       throw new UnauthorizedException(MessageConstant.INTERNAL_SERVER_ERROR);
     }
@@ -74,5 +74,13 @@ public class AuthController {
     return ResponseEntity.ok(
         ResponseDataAPI.successWithoutMeta(
             tokenUtils.refreshToken(refreshTokenRequest.getRefreshToken())));
+  }
+
+  @GetMapping("/confirm-email")
+  @Operation(summary = "API confirm email")
+  public ResponseEntity<ResponseDataAPI> confirmEmail(
+      @RequestParam(name = "confirmation-token") String confirmationToken) {
+    userService.confirmEmail(confirmationToken);
+    return ResponseEntity.ok(ResponseDataAPI.successWithoutMetaAndData());
   }
 }

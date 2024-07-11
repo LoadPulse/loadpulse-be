@@ -68,6 +68,21 @@ public class UserServiceImpl implements UserService {
         .orElseThrow(() -> new NotFoundException(MessageConstant.USER_NOT_FOUND));
   }
 
+  @Override
+  public void confirmEmail(String confirmationToken) {
+    UUID userId =
+        (UUID) redisTemplate.opsForValue().get(String.format("%s:confirmToken", confirmationToken));
+    if(userId == null) {
+      throw new BadRequestException(MessageConstant.EXPIRED_CONFIRMATION_TOKEN);
+    }
+    User user = this.findById(userId);
+
+    user.setIsConfirmed(true);
+    user.setConfirmedAt(CommonFunction.getCurrentDateTime());
+
+    userRepository.save(user);
+  }
+
   private boolean isEmailExist(String email) {
     return userRepository.existsByEmail(email);
   }
@@ -79,6 +94,6 @@ public class UserServiceImpl implements UserService {
   private void setConfirmationTokenToRedis(User user, UUID token) {
     redisTemplate
         .opsForValue()
-        .set(String.format("%s:confirmToken", user.getEmail()), token, Duration.ofMinutes(5));
+        .set(String.format("%s:confirmToken", token), user.getId(), Duration.ofMinutes(5));
   }
 }
